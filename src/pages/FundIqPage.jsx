@@ -116,7 +116,7 @@ function FundIqPage() {
               </h2>
             </div>
             <div className="footer-actions">
-              <Link className="btn-primary" to="/insights">
+              <Link className="btn-primary" to="/assessment">
                 Start Assessment
               </Link>
               <span className="mono footer-note">
