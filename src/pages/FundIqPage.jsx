@@ -35,12 +35,14 @@ const confidenceCards = [
     title: "Every lender, side by side",
     body: "Compare 30+ lenders at once and see who'll give you the most for your circumstances.",
     image: lendersPanelImage,
+    imageTreatment: "crop-border",
   },
   {
     index: "03",
     title: "Properties within reach",
     body: "See which suburbs and listings you can actually afford before you fall in love.",
     image: propertiesPanelImage,
+    imageTreatment: "crop-border",
   },
   {
     index: "04",
@@ -271,7 +273,12 @@ function FeatureGrid() {
       {confidenceCards.map((card) => (
         <article className="paperlp-feature-card" key={card.index}>
           <div className="paperlp-feature-visual" aria-hidden="true">
-            <img src={card.image} alt="" loading="lazy" />
+            <img
+              className={card.imageTreatment ? `paperlp-feature-image-${card.imageTreatment}` : undefined}
+              src={card.image}
+              alt=""
+              loading="lazy"
+            />
           </div>
           <div className="paperlp-feature-copy">
             <span>{card.index}</span>
