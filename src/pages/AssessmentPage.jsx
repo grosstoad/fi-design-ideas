@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import InstagramAffordabilityCard from "../components/InstagramAffordabilityCard";
+import AssessmentInsightExperiments from "../components/AssessmentInsightExperiments";
 
 function AssessmentPage() {
   return (
@@ -36,6 +37,28 @@ function AssessmentPage() {
 
         <section className="assessment-card-wrap">
           <InstagramAffordabilityCard />
+        </section>
+
+        <section className="assessment-experiments">
+          <div className="section-cap mono">
+            <span>[ EXPERIMENTAL VISUALS ]</span>
+            <div className="section-line" />
+            <span>ALTERNATE WAYS TO COMMUNICATE BORROWING POWER</span>
+          </div>
+
+          <div className="split-heading assessment-experiment-heading">
+            <h2>
+              More ways to read
+              <br />
+              your borrowing edge.
+            </h2>
+            <p>
+              Concept visuals designed to compare sensitivity, surface strategic actions, and explain how borrowing
+              confidence evolves over time.
+            </p>
+          </div>
+
+          <AssessmentInsightExperiments />
         </section>
       </main>
     </div>

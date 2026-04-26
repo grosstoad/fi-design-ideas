@@ -1,0 +1,14 @@
+.env
+.env.*
+.env*.local
+.DS_Store
+node_modules
+dist
+.captures
+.codex
+.paper-rebuild
+.paper-rebuild-mobile
+output
+linear-inspo
+docs
+scripts
