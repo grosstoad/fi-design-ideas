@@ -1693,6 +1693,10 @@ a {
   object-fit: cover;
 }
 
+.paperlp-feature-visual .paperlp-feature-image-crop-border {
+  transform: scale(1.08);
+}
+
 .paperlp-feature-copy {
   padding: 28px;
 }
