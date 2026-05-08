@@ -1,6 +1,7 @@
 import { Suspense, lazy } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import FundIqPage from "./pages/FundIqPage";
+import BuyingRangePage from "./pages/BuyingRangePage";
 import InsightsPage from "./pages/InsightsPage";
 import AssessmentPage from "./pages/AssessmentPage";
 import "./dashboard-comparison.css";
@@ -15,6 +16,7 @@ function App() {
     <Suspense fallback={null}>
       <Routes>
         <Route path="/" element={<FundIqPage />} />
+        <Route path="/buying-range" element={<BuyingRangePage />} />
         <Route path="/insights" element={<InsightsPage />} />
         <Route path="/assessment" element={<AssessmentPage />} />
         <Route path="/comparison" element={<FundIqChartsComparisonPage />} />
