@@ -4,6 +4,7 @@ import FundIqPage from "./pages/FundIqPage";
 import BuyingRangePage from "./pages/BuyingRangePage";
 import InsightsPage from "./pages/InsightsPage";
 import AssessmentPage from "./pages/AssessmentPage";
+import NegativeGearingPostPage from "./pages/NegativeGearingPostPage";
 import "./dashboard-comparison.css";
 
 const LibraryComparisonPage = lazy(() => import("./pages/LibraryComparisonPage"));
@@ -17,6 +18,7 @@ function App() {
       <Routes>
         <Route path="/" element={<FundIqPage />} />
         <Route path="/buying-range" element={<BuyingRangePage />} />
+        <Route path="/learn/negative-gearing-budget" element={<NegativeGearingPostPage />} />
         <Route path="/insights" element={<InsightsPage />} />
         <Route path="/assessment" element={<AssessmentPage />} />
         <Route path="/comparison" element={<FundIqChartsComparisonPage />} />
