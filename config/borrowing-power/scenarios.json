@@ -1,0 +1,126 @@
+{
+  "scenario_version": "v1",
+  "currency": "AUD",
+  "scenarios": [
+    {
+      "scenario_id": "single_ooc_v1",
+      "applicant_type": "single",
+      "loan_purpose": "owner_occupied",
+      "loan_term_years": 30,
+      "repayment_type": "principal_and_interest",
+      "state": "NSW",
+      "dependants": {
+        "children": 0,
+        "adults": 0
+      },
+      "income": {
+        "applicant_1_gross_annual": 120000,
+        "applicant_2_gross_annual": 0,
+        "other_annual": 0
+      },
+      "expenses": {
+        "monthly_living": 3500,
+        "monthly_rent_after_purchase": 0
+      },
+      "liabilities": {
+        "credit_card_limit": 10000,
+        "personal_loan_monthly": 0,
+        "existing_home_loan_monthly": 0,
+        "other_monthly_commitments": 0
+      },
+      "investment": {
+        "expected_weekly_rent": 0
+      }
+    },
+    {
+      "scenario_id": "joint_ooc_v1",
+      "applicant_type": "joint",
+      "loan_purpose": "owner_occupied",
+      "loan_term_years": 30,
+      "repayment_type": "principal_and_interest",
+      "state": "NSW",
+      "dependants": {
+        "children": 0,
+        "adults": 0
+      },
+      "income": {
+        "applicant_1_gross_annual": 120000,
+        "applicant_2_gross_annual": 90000,
+        "other_annual": 0
+      },
+      "expenses": {
+        "monthly_living": 5500,
+        "monthly_rent_after_purchase": 0
+      },
+      "liabilities": {
+        "credit_card_limit": 15000,
+        "personal_loan_monthly": 0,
+        "existing_home_loan_monthly": 0,
+        "other_monthly_commitments": 0
+      },
+      "investment": {
+        "expected_weekly_rent": 0
+      }
+    },
+    {
+      "scenario_id": "single_inv_v1",
+      "applicant_type": "single",
+      "loan_purpose": "investment",
+      "loan_term_years": 30,
+      "repayment_type": "principal_and_interest",
+      "state": "NSW",
+      "dependants": {
+        "children": 0,
+        "adults": 0
+      },
+      "income": {
+        "applicant_1_gross_annual": 120000,
+        "applicant_2_gross_annual": 0,
+        "other_annual": 0
+      },
+      "expenses": {
+        "monthly_living": 3500,
+        "monthly_rent_after_purchase": 2500
+      },
+      "liabilities": {
+        "credit_card_limit": 10000,
+        "personal_loan_monthly": 0,
+        "existing_home_loan_monthly": 0,
+        "other_monthly_commitments": 0
+      },
+      "investment": {
+        "expected_weekly_rent": 650
+      }
+    },
+    {
+      "scenario_id": "joint_inv_v1",
+      "applicant_type": "joint",
+      "loan_purpose": "investment",
+      "loan_term_years": 30,
+      "repayment_type": "principal_and_interest",
+      "state": "NSW",
+      "dependants": {
+        "children": 0,
+        "adults": 0
+      },
+      "income": {
+        "applicant_1_gross_annual": 120000,
+        "applicant_2_gross_annual": 90000,
+        "other_annual": 0
+      },
+      "expenses": {
+        "monthly_living": 5500,
+        "monthly_rent_after_purchase": 2500
+      },
+      "liabilities": {
+        "credit_card_limit": 15000,
+        "personal_loan_monthly": 0,
+        "existing_home_loan_monthly": 0,
+        "other_monthly_commitments": 0
+      },
+      "investment": {
+        "expected_weekly_rent": 650
+      }
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import lenderProofBackground from "../assets/fundiq/lender-proof-background-v2.jpg";
 import lendersPanelImage from "../assets/what-you-get/lenders-side-by-side-paper-panel.png";
@@ -99,6 +99,86 @@ function ArrowIcon() {
   );
 }
 
+function PurchasingPowerCta({ className = "" }) {
+  const ref = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const [size, setSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    const node = ref.current;
+
+    if (!node) {
+      return undefined;
+    }
+
+    const updateSize = () => {
+      const { width, height } = node.getBoundingClientRect();
+      setSize({
+        width: Math.round(width),
+        height: Math.round(height),
+      });
+    };
+
+    updateSize();
+
+    if (!("ResizeObserver" in window)) {
+      window.addEventListener("resize", updateSize);
+      return () => window.removeEventListener("resize", updateSize);
+    }
+
+    const resizeObserver = new ResizeObserver(updateSize);
+    resizeObserver.observe(node);
+
+    return () => resizeObserver.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const node = ref.current;
+
+    if (!node || !("IntersectionObserver" in window)) {
+      setIsVisible(true);
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVisible(entry.isIntersecting),
+      { threshold: 0.25 },
+    );
+
+    observer.observe(node);
+
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <Link
+      ref={ref}
+      to="/assessment"
+      className={`paperlp-primary paperlp-primary-animated${isVisible ? " is-visible" : ""}${className ? ` ${className}` : ""}`}
+    >
+      {size.width > 0 && size.height > 0 ? (
+        <svg
+          className="paperlp-primary-border"
+          aria-hidden="true"
+          focusable="false"
+          viewBox={`0 0 ${size.width} ${size.height}`}
+        >
+          <rect
+            x="1"
+            y="1"
+            width={Math.max(size.width - 2, 0)}
+            height={Math.max(size.height - 2, 0)}
+            rx="7"
+            pathLength="100"
+          />
+        </svg>
+      ) : null}
+      <span>Calculate my purchasing power</span>
+      <ArrowIcon />
+    </Link>
+  );
+}
+
 function Header() {
   return (
     <header className="paperlp-nav">
@@ -107,8 +187,8 @@ function Header() {
       </Link>
       <nav className="paperlp-links" aria-label="Primary navigation">
         <a href="#how-it-works">How it works</a>
-        <a href="#learn">Learn</a>
-        <a href="#contact">Contact</a>
+        <Link to="/learn/negative-gearing-budget">Learn</Link>
+        <a href="#contact" className="paperlp-mobile-optional">Contact</a>
         <Link to="/assessment" className="paperlp-nav-button">
           Calculate
         </Link>
@@ -383,7 +463,7 @@ function Footer() {
           <span>Product</span>
           <a href="#calculator">Calculator</a>
           <a href="#how-it-works">How it works</a>
-          <a href="#learn">Learn</a>
+          <Link to="/learn/negative-gearing-budget">Learn</Link>
           <a href="#lender-panel">Lender panel</a>
         </nav>
         <nav aria-label="Company">
@@ -419,9 +499,7 @@ function FundIqPage() {
           <p className="paperlp-subhead">
             See your real purchasing power across every lender - and lock in the right home before someone else does.
           </p>
-          <Link to="/assessment" className="paperlp-primary">
-            Calculate my purchasing power <ArrowIcon />
-          </Link>
+          <PurchasingPowerCta />
         </section>
 
         <LenderProof />
@@ -450,9 +528,7 @@ function FundIqPage() {
         <section className="paperlp-cta">
           <h2>Stop guessing. Start buying with confidence.</h2>
           <p>Your real purchasing power is 3 minutes away.</p>
-          <Link to="/assessment" className="paperlp-primary">
-            Calculate my purchasing power <ArrowIcon />
-          </Link>
+          <PurchasingPowerCta />
         </section>
       </main>
       <Footer />

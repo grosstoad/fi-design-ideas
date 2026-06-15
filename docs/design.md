@@ -8,6 +8,14 @@ This file is the shared aesthetic guide for building FundIQ product and marketin
 
 For the consumer CRO landing variant, also follow the section **Consumer CRO Landing Variant** below. That route intentionally uses a warmer, more playful buyer-facing expression than the core product/results screens.
 
+## Fundora Input-Flow Override
+
+For the Fundora mobile input-flow Paper work on the Inputs page, the numbered specs in `docs/mobile-ui/` override the older FundIQ/results-page styling in this file.
+
+Use the About You Paper screens as the canonical visual scaffold: `393 x 852` iPhone 16 frames, 32px content rails, system UI typography, quiet white surfaces, teal active controls, anchored bottom safe-area CTAs, and state labels placed outside the phone artboards. Income, Properties, Other Liabilities, and Expenses should look like one continuous product session.
+
+For Paper review work, build a comprehensive canonical state library for every major input step. A single preferred screen or sample row is not enough: every required resting, focused, keyboard, sheet/picker, validation, review/edit/remove, and stress state needs to be present and clearly labelled outside the phone.
+
 FundIQ should feel calm, precise, useful, and premium. The interface should suggest real lender modelling underneath without making the user feel like they are inside a bank calculator or a heavy finance dashboard.
 
 ## Brand Feel
