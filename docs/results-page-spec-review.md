@@ -220,19 +220,60 @@ Also unify: "Max property price by lender" (desktop) vs "Max price by lender" (m
 
 ---
 
-## 9. Priority questions (ranked)
+## 9. Outstanding decisions to resolve — with recommendations
 
-1. **Source of truth:** Results.html direction vs design.md system — or a stated hybrid. Everything else inherits from this. (§0)
-2. **Deposit / funds-to-complete double-count:** define the real relationship between savings, usable deposit, costs, and max price — and whether surplus/shortfall returns. (§3.1)
-3. **Do loan-detail edits re-rank borrowing power?** Defines the page's core feedback loop. (§3.2)
-4. **Mobile detail pattern:** sheet or push (recommend sheet + dock suppression). (§7)
-5. **Desktop hero:** lead with the answer ($3.10M) or keep category-label H1. (§7)
-6. **Lender panel scale:** 8 vs 30+ changes list, sort, and view-all design. (§1.2 D6)
-7. **Accent colour + bar style + animation** — close the three tweak-panel decisions. (§2)
-8. **Empty/no-eligibility and loading states** — guaranteed states, zero design. (§4)
-9. **Broker form production states** (submitting/failure/duplicate) + consent/privacy line legal review. (§1.4)
-10. **Accessibility baseline:** focus styles, dialog semantics, sheet close button, contrast of muted-2. (§6)
-11. **Dead controls:** wire or cut Sort, View product, Edit financials, Menu, Save & exit. (§5)
-12. **State/stamp-duty engine and LMI** presence. (§3.3, §3.5)
-13. **Comparison-rate legality** when rates are adjusted client-side. (§3.7)
-14. **Naming:** unify the three "max price" title variants; confirm dynamic lede grammar. (§8)
+Ranked by how much downstream work each unblocks. Each entry: the decision, the realistic options, and a **recommendation** with rationale. Marking a ✅/✋ against each of these turns this review into a buildable spec.
+
+### 9.1 Source of truth — design.md system vs Results.html direction (§0)
+- **Options:** (a) Results.html wins, rewrite design.md · (b) design.md wins, redesign Results.html · (c) stated hybrid.
+- **Recommendation: (a) with two carve-outs.** Results.html is newer, fully resolved on both platforms, and its master–detail pattern scales to a real lender panel far better than the MD's chart-plus-detail. Adopt its typography (Hanken Grotesk), cream/forest palette, and interaction model, and rewrite design.md's results section and tokens to match. **Carry two things back from design.md:** (1) the *available funds / remaining cash* concept — it's the correct answer to the deposit double-count (9.2); (2) the voice/disclaimer rules ("Indicative only" etc.), which the new design dropped entirely.
+
+### 9.2 Deposit maths and funds-to-complete (§3.1)
+- **Options:** (a) keep prototype maths (deposit counts fully toward price *and* costs) · (b) usable-deposit model · (c) hide funds-to-complete until the engine is right.
+- **Recommendation: (b).** Define `usable deposit = savings − stamp duty − fees − (optional cash buffer)` and `max price = lender max loan + usable deposit` (solved iteratively, since stamp duty depends on price). Recast the "Funds to complete" block as a **cash check**: savings vs cash required, ending in a surplus/shortfall verdict line. This is the one place the old MD was strictly better — restore it. Never ship (a); it overstates buying power by ~$150–200k at these price points.
+
+### 9.3 Do loan-detail edits re-rank borrowing power? (§3.2)
+- **Options:** (a) rates only (prototype behaviour) · (b) full re-run: borrowing power, prices, and ranking update live.
+- **Recommendation: (b).** Investment/IO materially reduce borrowing power; showing unchanged loan amounts with loaded rates is misleading. Re-run the engine on change, animate the list re-rank (FLIP-style reorder, ~250ms), keep the edited lender selected, and show its rank change in the detail sub-line. If engine latency is real, debounce 300ms and shimmer the affected values rather than blocking the panel. If (b) is infeasible for v1, at minimum label the figures "at owner-occupier P&I rates" and scope the edit panel to repayment display only.
+
+### 9.4 Mobile detail pattern — sheet vs push (§1.3 M6, §7)
+- **Options:** (a) bottom sheet · (b) pushed screen.
+- **Recommendation: (a) sheet**, which the design itself marks recommended. It preserves list context and makes lender-hopping cheap (tap, glance, dismiss, tap next). Required fixes: suppress the dock while the sheet is open (kills the duplicate Connect CTA), add a visible ✕ (gesture-only dismissal fails accessibility), two snap points (~65% and full), and sync selection to the URL (`?lender=macq`) so back-button and share behave. Keep the push variant's one great idea — the 56px hero number — by moving it to the list screen (see 9.5).
+
+### 9.5 Hero: lead with the answer or the category label (§7)
+- **Options:** (a) keep "Max property price by lender" H1 with the number buried in the lede · (b) hero leads with the top number.
+- **Recommendation: (b) on both platforms.** Desktop: eyebrow "Results" → hero figure "$3.10M" (≈56px) → support line "Your highest estimated purchase price — with Macquarie, strongest of your 8 lenders. Select any lender to see the loan behind the number." Mobile list screen: same pattern at 44–48px. This answers the user's actual question first, reuses the push-screen's proven moment, and removes the desktop/mobile emphasis inconsistency. Add "Indicative only · [how we estimate]" directly beneath it — one slot, page-wide.
+
+### 9.6 Lender panel scale (§1.2 D6)
+- **Options:** (a) design for ~8 · (b) design for 30+.
+- **Recommendation: (b), collapsed to top 6.** Keep "View all lenders (32)" but expand into an internally scrolling region within the card (max-height ≈ 7 rows) instead of growing the page; "Show fewer" resets scroll. Below ~rank 10, consider condensing rows (no bar) to keep the list scannable. The bar scale should stay pinned to the top lender regardless of how many rows are visible.
+
+### 9.7 The three tweak-panel decisions: accent, bar style, animation (§2)
+- **Accent — recommendation: deep forest `#15362A`.** It's the only candidate whose derived link/text colours comfortably pass contrast on cream/white (mint `#86C6A6` and amber `#E0A23C` both need heavy darkening, and amber-derived reds read as errors). It also unifies CTA + headline banner into one brand colour. Keep mint/amber as *chart or illustration* accents only.
+- **Bar style — recommendation: keep per-lender colours (`color`),** because the row colour ties to the detail card's dot and makes the list↔detail mapping legible. Two conditions: publish a fixed 8–10 colour cycle assigned by *rank at first render* and explicitly **not** brand-matched (CBA-gold/Westpac-red lookalikes invite trademark trouble and imply endorsement), and never let colour be the only identifier (name is always adjacent — already true).
+- **Animation — recommendation: on, first render only.** 850ms count-up + 900ms bar fill on page load; **no re-animation on lender selection** (remount-triggered replays get tiresome by the third click — swap values instantly, animate only the headline banner value ~300ms). Honour `prefers-reduced-motion` by rendering final values immediately.
+
+### 9.8 Loading and empty states (§4)
+- **Recommendation:** make loading a *trust moment*: staged reveal — "Checking 32 lenders against your profile…" with rows resolving top-down (the landing page's "running across panel" concept already sketches this). For **no eligible lenders**: keep the page frame, replace the list with a short explanation of the binding constraint where known ("Your deposit is below the minimum lenders accept for this price range"), make **Edit financials the primary CTA** and broker connect secondary ("A broker can help with low-deposit options"). Design few-lender (1–3) as the default layout minus view-all, with the lede grammar handling singular.
+
+### 9.9 Broker form production hardening (§1.4)
+- **Recommendation:** add submitting state (button spinner + disabled + single-flight guard), failure banner above the submit with retry (preserve input), scroll-to-first-error on invalid submit, AU-specific phone validation (04xx/+61 normalisation), prefill name/email/mobile from the flow where collected, and replace the implicit fine print with an **explicit consent checkbox + privacy policy link** (safer under AU privacy law — legal to confirm). After success, reflect it on the page: docked/inline CTA becomes "Call back requested ✓" (disabled or reopening the success view) to prevent duplicate leads.
+
+### 9.10 Accessibility baseline (§6)
+- **Recommendation (non-negotiable set):** global focus token (2px `accent-strong` ring, 2px offset) on every interactive element; `role="dialog"` + `aria-modal` + focus trap + Esc + focus-return on both overlays; visible close button on the lender sheet; `aria-selected`/`aria-live="polite"` on the list/detail pair; single announced value (no count-up churn) for screen readers; darken `muted-2` to ≈`#82826F` or restrict it to decorative text; 44px minimum touch targets for chips and mini-seg options.
+
+### 9.11 Dead controls — wire or cut (§5)
+- **Sort — cut for v1.** "Sorted by max price" is the right default and the only sort with an obvious user question behind it; keep the static note, drop the button until a second sort (rate? repayment?) is validated.
+- **View product — cut for v1** (it's a dead end into lender marketing); if kept later, open lender product page in a new tab with an interstitial disclaimer.
+- **Edit financials — wire (required):** returns to the form flow at a review step with all answers preserved, and back into results with recalculation.
+- **Save & exit — wire minimally:** email-me-a-link / resume-token session save; full accounts later. Mobile parity: put it in **Menu**, which otherwise should be cut.
+- **Progress bar (mobile) — drop on results.** The flow is complete; the header back affordance is enough.
+
+### 9.12 State, stamp duty, and LMI (§3.3, §3.5)
+- **Recommendation:** stamp duty must be a real state/territory engine (state from the earlier flow step; surface it as a visible, editable assumption — a small "NSW · change" chip near the funds block), including FHB concessions and foreign-buyer surcharge as engine inputs even if v1 UI doesn't expose them. Include **LMI whenever LVR > 80%** in both funds-to-complete and repayments; if v1 caps all scenarios at 80% LVR instead, say so on-page.
+
+### 9.13 Comparison rates (§3.7)
+- **Recommendation:** display only the product's **published** comparison rate, never a client-side-adjusted one (comparison rates are regulated, formula-defined figures). Adjust the actual rate for purpose/IO/fixed as designed, and add the standard comparison-rate warning text in the page footer. Legal sign-off required.
+
+### 9.14 Naming and copy unification (§8)
+- **Recommendation:** standardise on **"Max property price"** everywhere (desktop H1 "Max property price by lender" may stay as the exploration-section title if 9.5's hero is adopted; mobile "Max price by lender" goes). Lock the dynamic lede template with pluralisation rules, and write the missing copy set: loading, empty, error, disclaimer, stamp-duty caveat, consent line.
