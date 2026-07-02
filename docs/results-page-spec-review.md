@@ -1,302 +1,238 @@
-# Results Page Spec Review — Gaps, Questions, and States
+# Results Page Spec Review — Divergence Audit, Component Inventory, States & Open Questions
 
-**Reviewed against:** `docs/design.md` (sections "Results Page Components", "Controls", "Surfaces", "Layout", "Accessibility")
-**Reference design:** `Results.html` in Claude Design project `1b5ef3f2-6b1c-47b5-a69a-03411abcfadd` — *not accessible from this session (authentication required); items that must be verified against it are marked** `[verify vs Results.html]`.*
-**Status of implementation:** the results page is **not yet built** in this repo. `/`, `/buying-range`, `/insights`, `/assessment` exist; none implements the results page described in the MD.
-
-The goal of this document: everything that must be added to `design.md` (or a dedicated results-page spec) before the page can be built without a designer or PM in the room. Organised as: global gaps → component-by-component (anatomy, fields, interactions, states, open questions) → state matrix → responsive/mobile spec → information-hierarchy feedback.
+**Sources reviewed**
+- `docs/design.md` — "Results Page Components" section and supporting system rules
+- `Results.html` + `app/*.jsx` from the Claude Design export (FundIQ_Desktop.zip) — desktop frame (1340px) and mobile frame (392×844), including working prototype logic in `results-data.jsx`, `results-shared.jsx`, `results-desktop.jsx`, `results-mobile.jsx`, `results-broker.jsx`
+- Repo state: the results page is **not implemented** in this codebase; `/`, `/buying-range`, `/insights`, `/assessment` exist but none is this page.
 
 ---
 
-## 1. Global / page-level gaps
+## 0. The headline finding: the MD and the design are two different pages
 
-These apply to the whole page and are entirely unspecified today.
+`design.md` and `Results.html` do not describe the same results page. They differ in typeface, palette, page anatomy, component set, interaction model, and even product scope. **Before any build, one of them must be declared the source of truth and the other rewritten.** The divergences:
 
-### 1.1 Page identity and entry
+| Area | `design.md` says | `Results.html` actually is |
+| --- | --- | --- |
+| Typeface | Helvetica Neue (fallback stack) | **Hanken Grotesk** 400–800 |
+| Core palette | Warm white `#F5F4EF`, ink `#111`, lender blue `#78B5E8` accent | **Cream `#F4F3ED` + forest `#15362B`**, tweakable accent (default `#15362A`), error `#C2462C` |
+| CTA colour | Black/near-black | Forest green |
+| Chart accent | Blue scale (strongest blue = selected, pale blue others) | **Per-lender brand-ish colours** (`#6E9BC4`, `#E3B23C`, `#D98E63`, `#C2462C`, …) |
+| Corner radius | 8–10px | 13–26px (cards 20px, sheets 26px) — the MD explicitly bans "rounded bubbly SaaS components" |
+| Page anatomy | Hero → full-width **Purchase Scenario panel** → two result cards (lender chart + funds) → strips | Header → hero → **master–detail**: lender list (left, 468px) + selected-lender detail card (right) |
+| Scenario controls | Savings amount, State, Loan purpose, Capitalise costs switch, Advanced assumptions (Premium) | **None on the page.** "Edit loan details" (purpose / rate type / repayments / term) lives *inside* the detail card; "Edit financials" is a link out |
+| Funds to complete | Horizontal **stacked bar**, categories (property price, stamp duty, transfer+legal, lender fees), metrics incl. **available funds & remaining cash** | Collapsed 3-line **text breakdown** (deposit, stamp duty, fees) behind a "View breakdown" disclosure; no available funds, no remaining cash |
+| Broker entry | Slim full-width strip below cards | **Primary button** (docked on mobile, in-card on desktop) |
+| Broker modal | Two-column with watercolour panel + 3 benefits | **Single-column form** (sheet on mobile / 560px modal on desktop), no imagery |
+| Premium | Advanced assumptions premium-gated with pill | No premium concept anywhere |
+| Capitalise costs | Required switch | Absent |
+| State (geography) | Required control (drives stamp duty) | Absent — stamp duty is a flat formula |
+| Mobile | Essentially unspecified | Fully designed: docked CTAs, bottom-sheet detail, push-screen alternative, drag-to-dismiss |
 
-- **Route**: What is the URL? (`/results`? `/assessment/results`?) Is scenario state encoded in the URL/query params so a result can be shared or reloaded?
-- **Entry conditions**: What has the user completed before landing here? Which inputs are already known (income, expenses, debts, dependants, savings, state)? What happens on direct navigation with no prior data — redirect to the assessment, or show an empty/demo state?
-- **Persistence**: Do scenario changes persist (localStorage, backend, URL)? If the user leaves and returns, is their scenario restored?
-- **Page title / meta**: Browser tab title, share/OG behaviour if URLs are shareable.
+**Decision 1 (blocks everything):** which direction wins? If Results.html is the new direction, `design.md` needs a full rewrite (tokens, type, radii, component specs). If the MD wins, Results.html is a concept exploration and needs redesigning. A hybrid ("Results.html layout, design.md tokens") is possible but must be stated explicitly.
 
-### 1.2 Data contract
+There is also an internal inconsistency inside the export itself: the About You screen (`app.jsx`) defaults the accent to mint `#86C6A6`, while Results defaults to deep forest `#15362A`. Same flow, two default accents — pick one.
 
-The MD names UI elements but never defines the data that feeds them. Needed:
+---
 
-- **Canonical scenario object**: savings, state, loan purpose, capitalise-costs flag, plus all advanced assumptions — field names, types, units, defaults.
-- **Result object per lender**: lender name, logo?, max purchase price, max loan amount, interest rate, comparison rate, estimated repayment (frequency?), fees. Which of these are required vs optional?
-- **How many lenders** are shown? design.md's landing page shows 4–7; the results chart spec says "horizontal lender rows" with no count. Fixed list, top N, or "show more" expansion? `[verify vs Results.html]`
-- **Sort order** of lender rows: descending by max price? Is the order stable while a user has a row selected and inputs change?
-- **Calculation timing**: Is recalculation client-side and instant, or a backend call? This decides whether loading states (1.4) are real requirements.
-- **Rounding and formatting rules**: `$847k` vs `$847,000` vs `$0.85M` — where is each used? Tabular numerals are specified, but rounding, thousands separators, and currency symbol conventions are not. Repayments: weekly/fortnightly/monthly, and is the frequency user-selectable?
+## 1. What the design actually contains — component inventory
 
-### 1.3 Recalculation behaviour (the core interaction, currently unspecified)
+Extracted from the code, with observed values. This is the baseline the spec must document; **Q:** items are the questions that remain.
 
-Every control in the Purchase Scenario panel presumably re-runs the model. Missing:
+### 1.1 Design tokens (as built)
 
-- **Trigger**: on blur? on keystroke with debounce? explicit "Update" button?
-- **Feedback during recalculation**: do bars animate to new widths? Duration/easing? Does the headline value count up/down or swap?
-- **Selection retention**: if Athena is selected and a change makes another lender the max, does the selection stay on Athena, or move? Does the detail panel show stale data during recalc?
-- **No-result outcome**: what renders when the scenario yields $0 / no lender will lend (savings too low, capitalisation impossible)? This is a guaranteed real-world state and there is no design for it.
+```
+cream #F4F3ED · cream-2 #EFEDE3 · paper #FFFFFF · field #F3F2EB
+ink #181A12 · ink-2 #3C3E34 · muted #76776C · muted-2 #9C9C90
+line #E5E3D8 · line-soft #ECEAE0 · forest #15362B · err #C2462C
+accent (tweakable) → derived: accent-strong (−16% lum), accent-soft (+80% tint),
+accent-text (auto black/white), accent-text-strong (−34%, for links on white)
+```
 
-### 1.4 Page-level states (none are specified)
+- **Q:** The accent is a canvas tweak with four candidates (`#86C6A6`, `#1F6B54`, `#15362A`, `#E0A23C`). Which is final? The derived-accent formula (darken/tint percentages) should be documented as the token generation rule if the system keeps it.
+- **Q:** Per-lender colours are hardcoded per lender (8 values). Who owns this mapping? What's the rule for lender #9? Are these meant to approximate lender brands (CBA gold, NAB dark, Westpac red…) — if so, is that legally/brand-safe?
+- **Q:** No success token (broker success reuses accent-soft), no warning, no focus-ring token documented (inputs use `accent + 4px accent-soft` ring — buttons/rows have **no visible focus style at all**, see §6).
 
-| State | Question |
+### 1.2 Desktop page (1340px frame)
+
+| # | Component | Observed spec | Open questions |
+| --- | --- | --- | --- |
+| D1 | Header | 70px, white, bottom line. Logo (26px forest mark + accent dot + "fundiq" 20/800). Right: "Save & exit" ghost button | **Q:** Save & exit does what — saves scenario to account? Requires auth? Destination? Confirmation if unsaved? Is there really no other nav (no menu, no profile)? |
+| D2 | Hero | Eyebrow "Results" · H1 36/800 "Max property price by lender" · lede 16px: "Across 8 lenders, **Macquarie** gives you the highest estimate at **$3.10M**. Select a lender to see the loan behind the number." | **Q:** Lede is dynamic (count, top lender, price) — confirm template + singular/edge grammar ("Across 1 lender…"). No number in the hero itself — intentional? (Mobile push-screen *does* show a 56px hero number — inconsistent emphasis between platforms, see §7.) |
+| D3 | Lender list card (left, 468px) | Title "Lenders" 17/800 · right: "Sorted by max price" note + **Sort** button (dead in prototype) | **Q:** Sort options (price, rate, repayment, A–Z?), control type (menu?), persistence, and does re-sorting re-rank the numbers? |
+| D4 | Lender row | Grid: rank 22px · name 1fr · bar 120px · price · chevron. 15px/12px padding, r13. Hover cream; selected: accent-soft bg + 1.5px accent border; rank #1 name weight 800 | **Q:** Truncation for long lender names ("Bank of Melbourne")? Logos ever? Tie-breaking for equal prices? |
+| D5 | Comparison bar | 8px pill, per-lender colour on cream-2 track; width = price ÷ (top price × 1.08), count-up 900ms | Bar style is an unresolved tweak: **colour / accent-only / off**. **Q:** decide. Also: bars encode price only relatively — is 1.08 headroom rule final? |
+| D6 | View all | Top 6 shown; "View all lenders (8)" ⇄ "Show fewer lenders" toggle button | **Q:** Real panel size (30+ lenders on the landing page promise vs 8 here). With 30, is it a toggle, pagination, or scroll? Does "show fewer" scroll position reset? |
+| D7 | Detail card (right) | Dot + product 21/800 ("Macquarie Basic Home Loan") + sub "Macquarie · Owner-occupier · P&I · Variable · Rank #1" · "View product ↗" outlined button (dead) | **Q:** View product destination — lender site? internal product page? new tab? tracking? |
+| D8 | Headline banner | Forest block r16: "Max property price with Macquarie" + 42/800 white value, count-up 850ms | |
+| D9 | Stat tiles ×4 | field-bg tiles r14: Loan amount ($2.48M / "borrowing power") · Monthly repayment ($…, "over 30 yrs" or "interest only") · Interest rate (6.09% / "6.21% comparison") · LVR (80% / "$0.62M deposit") | **Q:** Repayment frequency fixed at monthly — toggle to weekly/fortnightly? LVR tile is near-constant by construction (see §3) — is it earning its slot? |
+| D10 | Edit loan details (disclosure) | Chevron rotates 90°; inline panel on field bg: Loan purpose (Owner-occupier/Investment), Rate type (Variable/Fixed 2yr/Fixed 3yr), Repayments (P&I/Interest only), Loan term (25/30 yrs) as mini segmented controls, 2-col | **Q:** Do these edits apply to *all* lenders or just the selected one? (Prototype: global state, but the panel header says "Editing loan · Macquarie Basic Home Loan" — contradictory.) Persisted? Reset control? Fixed 1yr/5yr? terms other than 25/30? Why does changing them not change borrowing power (§3)? |
+| D11 | Funds to complete | Icon + "Funds to complete" + "About $813k in cash needed to settle" + View breakdown/Hide link → rows: Deposit (gap to loan) $620,000 · Stamp duty (est.) · Lender & legal fees $2,800 · total | **Q:** See §3 — no state input, no LMI, no available-funds/shortfall concept. "(est.)" needs a disclaimer link? |
+| D12 | CTA row | Forest primary "Connect with a broker" + text "Edit financials" | **Q:** Edit financials goes where — back into the 7-step flow at step 1? Preserves answers? Warn about losing current view? |
+| D13 | Broker overlay | Centered 560px modal (see §1.4) | |
+
+Selecting a lender resets the edit-loan and funds disclosures closed, and remounts the detail (numbers re-animate). **Q:** intended on every click? Re-animating four tiles on each selection may get tiresome — spec when count-up runs (first load only?).
+
+### 1.3 Mobile page (392×844 frame)
+
+| # | Component | Observed spec | Open questions |
+| --- | --- | --- | --- |
+| M1 | Header | Circular back button (cream), "fundiq" wordmark, "Menu" text button (dead) | **Q:** Back from the results *list* goes where — last form step? Menu contents? |
+| M2 | Progress bar | 7 equal segments, all accent-filled | Results is step 7 of 7. **Q:** Should a *completed* flow still show the stepper? Is it tappable to jump back? |
+| M3 | List screen | Eyebrow "Results" · H1 30/800 "Max price by lender" · sub "Macquarie currently gives you the highest property estimate." | Title differs from desktop ("Max price" vs "Max property price") — unify. |
+| M4 | Lender list | Bordered r18 container; rows: rank · name · 92px bar · price · chevron; hover cream / pressed cream-2 / active accent-soft | Tap target = full row (~56px) ✓. **Q:** same colour/sort/view-all questions as desktop. |
+| M5 | Dock | Bottom gradient-fade: primary "Connect with a broker" + text "Edit financials", always visible | **Q:** Dock overlaps last list rows (150px scroll padding) — confirm. Does the dock persist while the sheet is open? (Yes in prototype — so two "Connect" buttons stack visually; sheet has its own footer CTA. Redundant?) |
+| M6 | Lender detail — **two competing patterns, unresolved tweak** | **(a) Bottom sheet** (default, "recommended"): 34% scrim, r26 sheet ≤90% height, grab handle, drag-down >110px dismisses, click scrim closes. Footer: primary + secondary CTA. **(b) Push screen**: replaces list; eyebrow + "Max property price" + **56/800 hero number** + "Selected lender / View all lenders" row + card; back button closes | **Decision 2:** sheet or push? The spec must pick one (or define when each is used). Sheet: does it snap to heights? Is the list still scrollable behind it? Push: browser back button behaviour, deep-link (`/results/macquarie`)? |
+| M7 | Lender card (in sheet/push) | Cream header: dot + product 17/800 + sub "Owner-occupier · P&I · Variable" · big stat row "Max property price" 26/800 · key-value rows: Rate, Comparison rate, Loan amount, Monthly repayment, LVR · Edit loan details disclosure (1-col) · Funds to complete block (bg `#FBFAF5`, View/Hide) | Mobile shows rate rows where desktop shows tiles — fine, but confirm the field *set* is identical (mobile lacks the "borrowing power"/"deposit" subtexts). |
+| M8 | Broker overlay | Bottom sheet ≤95% height (see §1.4) | **Q:** keyboard avoidance when inputs focus (sheet must rise above keyboard); does sheet-in-sheet occur if broker is opened from the lender sheet? (Prototype: broker renders over everything; lender sheet stays mounted behind — confirm stacking + scroll lock.) |
+
+### 1.4 Broker capture form (shared, fully specced in prototype — the strongest part of the design)
+
+- **Header:** eyebrow "FUNDIQ BROKERS" · title "Connect with a broker" · lede "A real mortgage broker, free to you, who can take this estimate to settlement." · round ✕ close; scrim click closes; panel click doesn't.
+- **Fields:**
+  1. First name / Last name (2-col) — required, error "Enter your first name." / "Enter your last name."
+  2. Mobile (tel keypad, placeholder `0400 000 000`) — regex `[0-9 +()-]{8,}`, error "Enter a valid mobile number."
+  3. Email — standard regex, error "Enter a valid email address."
+  4. Preferred lender — native select, all 8 as "Name — Product" + "No preference"; **prefilled from selected lender**, hint "Pre-filled from your selection".
+  5. "Where are you up to?" — 2×2 chip group, single-select: Just researching / Actively looking / Found a property / Offer made / under contract — required, error "Select where you are in the journey."
+  6. "Anything else?" — optional textarea, hint "Optional", placeholder "e.g. self-employed, looking in inner west, settling in March…"
+- **Validation model:** on submit; per-field error clears on change; error = red border + message below; no scroll-to-first-error (**Q:** add — on mobile the first error can be off-screen).
+- **Submit:** "Request a call back" → success view: tick badge, "You're all set, {first}", "A FundIQ broker will call you on **{mobile}** within one business day to talk through your **{lender}** option." + Done.
+- **Fine print:** "By submitting, you agree a FundIQ broker can contact you. No credit check."
+- **Missing / Q:**
+  - **No network layer:** no submitting/loading state on the button, no failure state, no double-submit guard. All three are mandatory for a real build.
+  - **Consent:** is one implicit fine-print line sufficient for AU privacy/lead-gen compliance, or is an explicit checkbox + privacy policy link required? No privacy link exists.
+  - **Prefill** of name/email/mobile from the earlier flow steps (they were plausibly collected)?
+  - Phone regex accepts junk like `--------`; AU-specific validation (04xx, +61)?
+  - What payload is sent — just the form, or the full scenario (lender ranks, loan settings, financials)? Users should know their numbers are shared; the lede implies it ("take this estimate").
+  - Esc-to-close, focus trap, focus return to trigger, `aria-modal` — none implemented (see §6).
+  - After success + Done: does the page change (CTA becomes "Requested ✓"? banner)? Can the user submit twice?
+
+---
+
+## 2. Prototype-only artefacts that must NOT leak into the spec
+
+- **Tweaks panel** (`tweaks-panel.jsx`) is a canvas control, not product UI — but it encodes four **unmade decisions** that the spec must close: accent colour, bar style (colour/accent/off), mobile selection pattern (sheet/push), entrance animation (on/off).
+- Phone chrome (status bar, 9:41, 5G) is frame decoration.
+- CDN React + Babel-standalone, `window.*` globals, inline `<style>` — none of this is implementation guidance.
+- Count-up implementation is a canvas workaround ("CSS transitions are frozen in some hosts") — the *intent* (850ms cubic-out count-up, 900ms bar fill, 300ms sheet slide) is the spec; the rAF+safety-timeout mechanism is not. Add `prefers-reduced-motion` behaviour (absent).
+
+---
+
+## 3. Data & calculation audit — where the prototype maths cannot be the spec
+
+The prototype derives everything from hardcoded values in `results-data.jsx`. Several relationships are placeholders that would be **wrong in production**; each needs a real definition:
+
+1. **Deposit is a constant $620,000** and `max price = lender max loan + deposit`. Real engine: where does savings/deposit come from (flow step), and does *usable* deposit shrink by stamp duty + fees? In the prototype it doesn't — deposit is counted in full toward price **and** again in full inside "funds to complete", which double-counts reality: a buyer with $620k cash cannot put $620k toward the price *and* pay $193k stamp duty. **This is the single biggest logic question on the page.** (design.md's version answered it with available funds / remaining cash — the concept the new design dropped.)
+2. **Loan settings change rates but not borrowing power.** Switching to Investment or Interest-only adds +0.30/+0.20 to the rate but the loan amount (borrowing power) is untouched. In reality serviceability drops. Spec: does editing loan details re-run borrowing power per lender (re-ranking the list live)? If yes, the list should visibly re-rank/animate — big interaction to design. If no, say why (and label the figures accordingly).
+3. **Stamp duty is `price × 5.2% + $1,300`** with no state/territory input anywhere in this screen — and design.md required a State control. Presumably state was captured in the earlier steps ("postcode" appears in About You). Spec must state: stamp-duty engine (state tiers, FHB concessions, foreign surcharge), and whether the user can see/change the state assumption from the results page.
+4. **Fees are a flat $2,800 for every lender** while the funds line says "Lender & legal fees". Real per-lender fees? Split legal vs lender rows?
+5. **No LMI anywhere**, yet LVR is displayed and the landing page promises LMI modelling. If LVR can exceed 80% in real data, LMI must appear in funds-to-complete and possibly cap logic.
+6. **LVR is ~constant by construction** (loan ÷ (loan + fixed deposit) ≈ same % for every lender at these magnitudes). With real data it varies; confirm the tile stays.
+7. **Comparison-rate handling:** `adjRate` applies the same loading to the comparison rate — comparison rates are regulated figures per product; they can't be arithmetically adjusted. Legal review needed on showing derived "comparison" rates at all.
+8. **Rounding/format rules (observed, need ratification):** price `$X.XXM`; funds `$XXXk` below $1M; money rows `$1,234,567` (en-AU); rates 2dp; LVR whole %. Repayments monthly only.
+9. **Freshness/validity:** rates are hardcoded; production needs a rates feed, an "as at" timestamp, and a disclaimer ("Indicative only" — required by design.md's voice section, currently **absent from the entire results screen**; the only fine print anywhere is inside the broker form).
+
+---
+
+## 4. Missing states (both platforms)
+
+The prototype designs exactly one state: 8 healthy lenders, animation on. A build needs:
+
+| State | Needed spec |
 | --- | --- |
-| Initial load | Skeletons? Which components get placeholders? Or is data always ready because it's computed client-side? |
-| Recalculating | Per-card spinners, dimming, or seamless animation? |
-| Partial failure | One lender's model fails — hide the row or show an error row? |
-| Full failure | Backend unreachable — full-page error with retry, or cached last result? |
-| Empty / no eligibility | No lender returns a positive result — message, illustration, and recovery CTA ("adjust your savings", "talk to a broker")? |
-| Stale scenario | User changed inputs elsewhere (e.g., went back to assessment) — is the result invalidated? |
-
-### 1.5 Header and footer
-
-design.md defines the landing header/footer but never says what the **results page** chrome is:
-
-- Same header? Does "Calculate" become "Recalculate" or "Edit my details"? Is there a save/share/print action? `[verify vs Results.html]`
-- Is the legal disclaimer strip from the landing footer repeated here? The Voice section requires "Indicative only" — where exactly does it live on this page (hero sub-copy, footer strip, both)?
-- Sticky behaviour of the header on scroll, both breakpoints.
-
-### 1.6 Result hero (mentioned only as "Hero/result summary: compact and left-aligned")
-
-The single most important element on the page has no content spec:
-
-- **What is the headline number?** Max purchase price across the panel? For the *selected* lender? A range (min–max across lenders)?
-- Supporting copy above/below it (eyebrow label? "Your estimated maximum purchase price"?).
-- Secondary stats in the hero (loan amount, deposit used, spread across lenders)?
-- Does the hero update live with scenario changes, and does it duplicate the "headline max value" that the Lender Chart card is also required to show? Two big competing numbers is a hierarchy risk — see §7.
-- Confidence framing: "estimate", "indicative range" — exact copy and placement.
+| Loading / calculating | Results arrive from an engine after a 7-step flow — skeleton list? staged reveal ("Running across panel…" like the landing concept)? |
+| No eligible lenders | Guaranteed real state (low deposit, high debts). Empty layout, message, recovery actions ("Edit financials", broker CTA framing) — nothing exists. |
+| Few lenders (1–3) | "View all", the lede sentence, and the bars all assume 6+. |
+| Partial results | One lender's calc fails — omit silently or show an unavailable row? |
+| Error / retry | Engine failure, stale session, expired quote. |
+| Zero/negative edge values | Deposit > price of cheapest scenario, IO monthly < P&I sanity checks, $0 rows. |
+| Returning user | Saved result reopened later — stale-rate banner? recalc prompt? |
+| Broker form: submitting / failed / already-submitted | See §1.4. |
+| Offline (mobile) | At minimum a graceful failure for the docked CTA. |
+| Reduced motion | Count-ups and sheet slide need `prefers-reduced-motion` variants. |
 
 ---
 
-## 2. Purchase Scenario panel
+## 5. Interaction inventory & unwired controls
 
-MD spec: full-width panel below the hero with savings amount, state, loan purpose segmented control, capitalise costs switch, advanced assumptions trigger with Premium pill.
+Every interactive element, with its prototype status — each "dead" item needs a destination or removal:
 
-### 2.1 Savings amount (currency input)
-
-Missing:
-
-- **Format/mask**: live thousands separators? `$` prefix inside the field or as adornment?
-- **Range and validation**: min (0? some floor?), max, step. Behaviour for empty, non-numeric, paste with symbols.
-- **Error display**: inline message? Border colour token? (No error colour exists in the palette — a gap in the design system itself. Only blues/sand/clay/sage/neutrals are defined; there is no semantic error/warning/success token.)
-- **Commit semantics**: recalc on blur/Enter vs while typing.
-- **Keyboard**: numeric inputmode on mobile; increment with arrow keys?
-- States needed: default, hover, focus, filled, invalid, disabled (is it ever disabled?).
-
-### 2.2 State selector
-
-- **Control type**: dropdown/select, or chips? `[verify vs Results.html]`
-- **Options**: all 8 AU states/territories? Order? Default (geolocated? from assessment)?
-- Changing state changes stamp duty — does the Funds to Complete card visually acknowledge the change (flash, animate)?
-- Native `<select>` on mobile vs custom listbox on desktop?
-
-### 2.3 Loan purpose segmented control
-
-- **Options and labels**: presumably "Owner occupier" / "Investment" — confirm exact copy and whether there are more segments (e.g., first-home buyer?). `[verify vs Results.html]`
-- Default selection.
-- Does purpose change more than rates (e.g., stamp duty concessions, LMI)? Worth a helper note?
-- States: active (ink bg/white text per MD), inactive, hover on inactive, keyboard focus ring, disabled. MD specifies active/inactive only.
-- A11y: MD says `aria-pressed` buttons — confirm this vs a radiogroup pattern; needs arrow-key navigation spec if radiogroup.
-
-### 2.4 Capitalise purchase costs switch
-
-- **Exact label copy** and the **helper text** (MD requires helper text beside the label — the actual sentence is unwritten).
-- Default on or off?
-- What visibly changes when toggled — loan amount up, remaining cash up? Should the affected values pulse/animate so the user sees the causal link?
-- Edge case: capitalisation pushes LVR beyond what any lender allows → interacts with the empty state (§1.4).
-- States: on, off, hover, focus, disabled, plus `role="switch"`/`aria-checked` per MD.
-
-### 2.5 Advanced assumptions trigger + Premium pill
-
-- Trigger style: text button, secondary button, or link with chevron? Placement within the panel (right-aligned end?). `[verify vs Results.html]`
-- Premium pill: exact copy ("Premium"?), colours (no premium/upsell colour token exists), and whether the pill is on the trigger, in the modal, or both.
-- Behaviour difference for premium vs free users at the *trigger* level: same modal with locked fields (per MD) — but is the trigger itself ever hidden or fully unlocked for premium users? What does the unlocked experience look like? The MD only designs the locked state.
-
-### 2.6 Panel-level
-
-- Desktop layout: one row with all five controls? Column proportions? Wrapping behaviour at ~1024px?
-- Label style: small uppercase muted per Controls spec — confirm every control follows it.
-- Is the panel sticky on scroll (so controls stay reachable while reading charts)? Not specified either way.
+| Control | Platform | Status | Needs |
+| --- | --- | --- | --- |
+| Lender row select | both | ✔ works | Keyboard/focus spec (§6); deselect behaviour (desktop: none — always one selected; mobile sheet: close = deselect) — confirm asymmetry is intended |
+| Sort | both | ✖ dead | Options, UI, default, persistence |
+| View all / Show fewer | both | ✔ toggle | Behaviour at 30+ lenders; scroll handling |
+| View product ↗ | desktop only | ✖ dead | Destination; why absent on mobile? |
+| Edit loan details | both | ✔ | Scope (global vs per-lender), persistence, live re-rank (§3.2) |
+| Funds View breakdown | both | ✔ | Deep-link from "About $813k" text too? |
+| Connect with a broker | both | ✔ opens form | Post-success page state |
+| Edit financials | both | ✖ dead | Destination step, data preservation |
+| Save & exit | desktop only | ✖ dead | Auth story; mobile equivalent (Menu?) |
+| Menu | mobile only | ✖ dead | Contents |
+| Back (header) | mobile | ✔ only in push-detail | Where does back go from the list? |
+| Progress bar | mobile | static | Tappable? Desktop has none — parity? |
+| Sheet drag/scrim | mobile | ✔ | Snap points, velocity dismiss, a11y alternative (close button — currently the sheet has **no close button**, only gesture/scrim) |
+| Broker form | both | ✔ validate+success | Network states, consent, focus trap (§1.4, §6) |
 
 ---
 
-## 3. Lender chart card ("Max purchase price by lender")
+## 6. Accessibility gaps (blocking, both platforms)
 
-MD spec: title, subtitle ("Select a lender to compare purchase power, rates and repayments"), headline max value, horizontal rows (fixed label/bar/value lanes), selected-row active state, detail panel below with lender name, interest rate, comparison rate, estimated repayments, loan amount.
+design.md sets a11y rules the new design mostly misses:
 
-### 3.1 Anatomy gaps
-
-- **Lane widths**: "fixed width" is stated but no values. Need px/fr for label lane, bar lane, value lane at desktop; and the mobile strategy (see §6).
-- **Bar geometry**: height, corner radius, gap between rows (MD gives 7–10px rhythm), remainder-track treatment ("very pale" — which token? Warm neutral `#EEEDE7`?).
-- **Bar scaling**: are bars proportional to absolute value with the max at 100% of the lane, or normalised some other way? Min visible width for very small values?
-- **Colour assignment**: "Other lenders use muted sand, clay, blue-grey, sage, and warm neutrals" — is the assignment positional (2nd row always sand?) or per-lender-stable? "Blue-grey" is not in the token table — define it. What happens with more lenders than colours?
-- **Lender identity**: names only, or logos? (Landing page uses favicon logos; results spec is silent.) `[verify vs Results.html]`
-- **Headline max value**: exact placement (top-right of card? under subtitle?), size, and its label copy.
-
-### 3.2 Selection interaction
-
-- **Default selection** on page load: highest lender? None (detail panel empty/hidden)? MD's subtitle implies selection is optional — but then what does the detail panel show pre-selection?
-- **Affordances**: hover state on a row (cursor, background tint?), pressed state, focus-visible ring for keyboard (MD requires focusability — specify the visual).
-- **Selected state**: strongest blue bar + what else? Row background? Left indicator? Label weight change? "Active visual state" needs pixels.
-- **Deselection**: can you click the selected row to deselect? Is exactly-one-selected enforced?
-- **Announcement**: `aria-live` on the detail panel when it updates? Role of the row group (listbox with `aria-selected`? radiogroup? buttons?). MD only covers segmented controls and switches.
-- **Hover tooltip**: MD says "hover-only information must also be available on focus" — but never says what the hover information *is*. Tooltip with exact values? Define content, delay, and mobile equivalent (none? long-press?).
-
-### 3.3 Detail panel
-
-- **Layout**: horizontal stat row? 2×2 grid? Divider from the chart? `[verify vs Results.html]`
-- **Fields**: lender name, interest rate, comparison rate, estimated repayments, loan amount — plus units/labels for each ("6.24% p.a.", "comparison 6.51% p.a.", "$4,820/month est."). Repayment frequency fixed or toggleable?
-- **Transition** when selection changes: instant swap, crossfade?
-- Missing data (a lender without a published comparison rate): dash? "n/a"? hide the field?
-- Any CTA inside the detail panel ("Check eligibility with a broker")? Or is the broker strip the only conversion point?
-
-### 3.4 Card-level states
-
-- Loading/recalculating (bars animate? shimmer?), empty (no eligible lenders), partial (some lenders returned $0 — shown as $0 rows or removed?), error.
+1. **No visible focus styles** for lender rows, disclosures, chips, CTAs — only text inputs have a focus ring. Keyboard users cannot see where they are. Define a global focus token.
+2. **Overlays are not accessible:** no `role="dialog"`/`aria-modal`, no focus trap, no Esc handling, no focus return, background not inert, on either the lender sheet or the broker overlay. The lender sheet cannot be dismissed without a pointer (no close button).
+3. **Selection semantics:** lender rows are plain `<button>`s with no `aria-pressed`/`aria-selected`, and the detail panel update is not announced (`aria-live`). MiniSeg uses `aria-pressed` ✓ but `role="group"` lacks a label.
+4. **Bars have no text alternative** and rely on colour alone to distinguish lenders (design.md: "do not rely on colour alone") — the price value adjacent mitigates for the *value*, but bar colour = lender identity needs no meaning, or needs a label.
+5. **Colour contrast:** muted-2 `#9C9C90` on white ≈ 2.7:1 — used for hints, rank numbers, sub-labels (below AA even for large text in some uses). Amber accent `#E0A23C` as accent-text would fail on white (derived −34% may pass — verify per accent option). Headline-banner key text is white at 72% opacity on forest — verify.
+6. **Count-up numbers** churn text for screen readers; final values should be set with a single announced update.
+7. Touch targets: chips/mini-seg options are ~40px — bump to 44px on mobile.
 
 ---
 
-## 4. Funds to Complete card
-
-MD spec: horizontal stacked bar (not pie); categories Property price, Stamp duty, Transfer + legal fees, Lender fees + setup; metrics Funds required, Available funds, Remaining cash; lane-aligned legend; remaining cash treated as outcome, not cost.
-
-### 4.1 Gaps
-
-- **Colour mapping**: which token per segment? (Clay is "cost chart segment", sage "positive or remaining" — so property price = ?, stamp duty = ?, transfer/legal = ?, lender fees = ? Only partially derivable; specify all four.) Segment order in the bar = legend order?
-- **Bar behaviour**: min segment width so tiny fees stay visible? Labels on segments or legend-only? Rounded outer corners only?
-- **Legend rows**: exact lanes (swatch + label | amount | % of total?) — MD says "labels, amounts, and percentages", confirm percentage basis (of funds required?).
-- **Metrics block**: layout of Funds required / Available funds / Remaining cash (three columns? stacked rows with divider per MD's "metric divider"?).
-- **Negative remaining cash** (shortfall): this is a critical, common state — colour (no red/error token exists), copy ("Shortfall of $12,400"), guidance CTA? Completely undesigned.
-- **Coupling to lender selection**: do funds figures change with the selected lender (lender fees differ per lender)? Or does it use the selected lender only for "Lender fees + setup"? This is a key logic question that changes the mental model of the page.
-- **Capitalise-costs interplay**: when costs are capitalised, do they leave the stacked bar (moved into the loan)? The chart's story changes fundamentally — specify both renderings.
-- LMI is absent from the category list, though the landing page copy promises LMI modelling. Intentional (rolled into lender fees?) or a spec omission? `[verify vs Results.html]`
-
----
-
-## 5. Broker CTA strip, Broker modal, Advanced assumptions modal
-
-### 5.1 Broker CTA strip
-
-Copy is fully specced (headline, support, CTA, "No obligation"). Missing:
-
-- Desktop layout confirmed (text left, button right) but mobile stacking order and alignment are not (see §6).
-- Button style: primary ink per Buttons spec — confirm, since the strip sits on white/warm surface.
-- Does the strip carry any scenario context ("Share *this* scenario" implies the payload includes the current inputs/results — confirm what data would be sent, for the form spec below)?
-- Dismissible? Repeated after the modal is completed ("Request sent" replaces strip?)?
-
-### 5.2 Broker modal
-
-Left column fields: Name, Email, Phone, Buying timeframe, CTA. Missing everything a form needs:
-
-- **Field specs**: placeholder/label copy, required flags, validation rules (email format, AU phone format), error messages, input order on mobile.
-- **Buying timeframe**: control type (select? segmented? chips?) and its options ("0–3 months / 3–6 / 6–12 / just researching"?).
-- **Consent**: privacy/consent checkbox or disclosure line? Required for lead-gen in AU — currently absent.
-- **Submission**: CTA label copy; loading state on submit; success state (inline confirmation replacing the form? toast? modal swap?); failure state and retry.
-- **Prefill**: name/email known from earlier steps?
-- **Dismissal**: X button, Esc, backdrop click — all three? Focus trap and focus return to the trigger (a11y requirement not stated).
-- Right column: which watercolour asset, the 3 benefit bullets' exact copy, and how the right column behaves on mobile (hidden? stacked above/below?).
-
-### 5.3 Advanced assumptions modal (Premium)
-
-The MD is strongest here (layout rules, one pill, no repeated locks, segmented Yes/No, example fields). Still missing:
-
-- **Definitive field list** — the MD says "example fields". A build needs the exact list, each field's control type, options, default, and unit:
-  - Property type (options: house/apartment/townhouse/land?)
-  - Foreign buyer (Yes/No)
-  - Include government grant (Yes/No — which grants? FHOG by state?)
-  - Retain cash buffer (Yes/No + amount field?)
-  - Settlement adjustments (Yes/No + amount?)
-  - Transfer fee override (currency input)
-  - Stamp duty override (currency input)
-  - Lender fee assumptions (per-lender? single figure?)
-- **Locked-state behaviour**: are locked fields visible-but-disabled with real defaults shown? Can free users open the modal at all, or does the trigger route straight to upgrade?
-- **Upgrade callout**: copy, price mention?, CTA destination (checkout? plans page?).
-- **Unlocked flow**: Apply/Cancel buttons? Do changes apply live or on "Apply"? Reset-to-defaults control?
-- **Dirty indicator**: after overrides are applied, how does the results page show "custom assumptions active" (pill on the trigger? note in the assumptions strip)? Without this, users forget they've overridden stamp duty and mistrust the numbers.
-- Modal mechanics: width, two-column collapse point, scroll behaviour when content exceeds viewport, focus trap, Esc/backdrop rules — none specified for either modal.
-
-### 5.4 Scenario assumptions strip
-
-Listed under Strips ("Scenario assumptions") but never specced as a component: content (which assumptions summarised — rate used, term, P&I, buffers?), expandable?, link to the advanced modal?, placement (below the result cards? above the broker strip?). `[verify vs Results.html]`
-
----
-
-## 6. Mobile spec — essentially absent
-
-design.md says "Check desktop at 1440px first" and gives desktop-only structure. For mobile the spec needs:
-
-- **Breakpoints**: at least desktop / tablet / mobile values (e.g., 1024/768/375?) and which layout each uses. The two-column card grid collapse point is unstated.
-- **Hero**: headline scale on mobile (desktop is 48–56px; landing mobile precedent is 46px — confirm for results).
-- **Purchase Scenario panel on mobile**: control stacking order (savings → state → purpose → switch → advanced?), full-width segmented control, native select for state, keyboard type per field. Does the panel collapse into an accordion ("Your scenario ▾") to keep results above the fold, or stay expanded?
-- **Lender chart on mobile**: fixed three-lane rows can't fit ~360px. Options: label above bar with value right; shorter label lane with truncation; horizontal scroll (avoid). Which one? Truncation rules for long lender names. Tap targets ≥44px per row. Since hover doesn't exist: does tapping a row scroll to/reveal the detail panel? Is the detail panel sticky-bottom?
-- **Funds to Complete on mobile**: stacked bar full-width; legend lanes reflow — do percentages drop off? Metric block stacks?
-- **Broker strip on mobile**: stack order (headline, copy, button full-width, trust note under button?).
-- **Modals on mobile**: both modals are two-column — do they become full-screen sheets? Bottom sheets? Where does the broker modal's image column go? Keyboard-avoidance for the form?
-- **Sticky elements**: is anything sticky on mobile (scenario summary bar, broker CTA)? Not specified.
-- **Header on mobile**: hamburger? Just brand + one CTA?
-- Touch equivalents for all hover-revealed info (MD covers focus, not touch).
-
----
-
-## 7. Information hierarchy — feedback
+## 7. Information-hierarchy feedback
 
 ### Desktop
 
-1. **Two competing headline numbers.** The hero has a big result number *and* the Lender Chart card must show a "headline max value". If both show the same max, it's redundant; if they diverge (hero = range, card = max), it's confusing. Recommendation: make the hero the single authoritative number (max purchase price + one-line range context), and demote the card's value to a smaller "top lender: $847k" beside the title. Or drop the hero number and make the card the hero. Pick one owner of "the number".
-2. **Scenario controls between the hero and the proof** is the right order (see number → tweak inputs → see evidence), but the control panel must stay visually quieter than the hero and the two cards — a full-width white card with five controls can easily out-weigh the hero. Consider warm-card background (`#F7F6F1`) for the panel so the white result cards pop against it.
-3. **Reading order of the two cards**: Lender chart left, Funds to Complete right is implied but not stated. Lender chart is the differentiator and should be left/first. State it explicitly.
-4. **Remaining cash is the second-most emotionally important number** on the page (can I actually complete the purchase?) but is buried as the third metric of the second card. If it's negative, it must escalate visually. Consider surfacing remaining cash (or shortfall) as a compact stat in the hero row.
-5. **Premium pill placement**: keep it off the primary reading path — it belongs on the advanced trigger only, right-aligned, so the free path never reads as gated.
-6. **Disclaimers**: "Indicative only" needs a consistent, single placement (suggest: small line under the hero number + full legal in footer), otherwise it will get sprinkled per-card and add noise.
+1. **The page answers "which lender" before "what's my number."** The H1 is a category label ("Max property price by lender") and the biggest number on screen (42px) is inside the detail card, *belonging to whichever lender is selected*. A first-time user's actual question — "what can I afford?" — is answered only inside the lede's bold `$3.10M`. Recommendation: give the hero the top-line answer (e.g., "You could buy up to **$3.10M**" + "with Macquarie, your strongest of 8 lenders"), and let the master–detail be the exploration layer. This also restores consistency with mobile-push, which *does* lead with a 56px number.
+2. **Master–detail is the right pattern** for 8+ lenders (a clear improvement over the MD's chart+detail-panel), and rank + bar + price per row scans well.
+3. **Funds to complete is under-weighted.** "Can I actually settle?" is the second most important answer and it's a one-line footnote behind a disclosure — and the current maths double-counts the deposit (§3.1). Whether or not the stacked bar returns, surface the cash number and a **surplus/shortfall verdict** at tile level, not behind "View breakdown".
+4. **Two dead affordances sit in premium positions** ("View product" top-right of detail; "Sort" top-right of list). Unwired controls in prime slots erode trust — wire or cut.
+5. **The forest headline banner competes with the primary CTA** (same colour family, both high-mass). Consider letting the banner own forest and keeping the CTA accent-derived, or vice versa.
+6. **"Indicative only" is missing.** Regulatory/voice requirement; needs a consistent slot (under the lede or under the detail card) without per-card noise.
+7. Detail card ordering is good: identity → price → cost tiles → refine → cash to settle → act. Keep it.
 
 ### Mobile
 
-1. Order should be: hero number → *collapsed* scenario summary (tap to edit) → lender chart → funds to complete → assumptions strip → broker CTA. If the scenario panel renders fully expanded on mobile, the actual result is pushed ~2 screens down — violating the MD's own rule "don't push primary proof below the fold".
-2. The lender detail panel risks being invisible on mobile (user taps a row, the panel updates off-screen below 6+ rows). Either auto-scroll to the panel, move the panel to a sticky bottom summary, or expand details inline under the tapped row (accordion). Decide and spec it.
-3. The broker CTA is the primary business conversion; on mobile consider a persistent (but small) sticky footer CTA after the user has scrolled past the charts — needs an explicit decision since it trades against the calm aesthetic.
+1. **Sheet vs push must be decided.** Recommendation: **sheet** — it keeps list context, matches the docked CTA model, and the code itself marks it "recommended". But then fix: the dock's "Connect" and the sheet's "Connect" duplicate; suppress the dock while the sheet is open.
+2. **The docked broker CTA appears before any lender is explored.** A user who has seen only the list gets "Connect with a broker" as the screen's most prominent action. Consider dock appearing after first selection or after scroll — or accept aggressive conversion placement deliberately (state it).
+3. The **push variant's 56px hero number** is the best "answer-first" moment in the whole design — if sheet wins, consider moving that hero number to the *list* screen top (top lender's price) so mobile leads with the answer too.
+4. Progress bar on a completed flow adds noise on a small screen — replace with breadcrumb/back affordance or drop.
+5. List rows carry five columns on 392px; the 92px bar is the first thing to sacrifice if lender names truncate — set a truncation and minimum-name-width rule.
 
 ---
 
-## 8. Cross-cutting gaps (both breakpoints)
+## 8. Copy inventory needing sign-off
 
-- **Design-token gaps exposed by this page**: no error/negative colour, no success colour, no premium/upsell accent, no focus-ring spec (colour, width, offset), no disabled-state opacity/colour rule, "blue-grey" chart colour referenced but not defined.
-- **Motion**: zero animation spec anywhere — bar width transitions, value changes, modal open/close, switch/segment transitions. Even "150–250ms ease-out, respect `prefers-reduced-motion`" would unblock a build.
-- **Iconography**: which icon set? (Arrow is hand-drawn SVG on landing; modals need close ×, maybe info icons for tooltips.)
-- **Tooltips**: no tooltip component exists in the system, but §3.2 hover-info implies one. Define or explicitly forbid.
-- **Number animation** and `font-variant-numeric: tabular-nums` — stated for values; confirm it applies to bars' value lane and detail panel.
-- **Print/share**: is a shareable or printable result an explicit requirement? (Assessment page has a "share card" concept — does the results page link to it?)
-- **Analytics events**: lender row selected, scenario field changed, advanced opened, broker modal opened/submitted — worth listing in the spec if this page is a conversion surface.
-- **Copy source of truth**: several exact strings exist (chart title, broker strip) but most microcopy (labels, helpers, errors, empty states, tooltips) does not. A copy table per component would close half the questions in this document.
+Confirmed strings exist in the prototype (title, lede, funds note, broker copy, errors, success). Still unwritten: empty/error/loading states (§4), "Indicative only"/disclaimer text, stamp-duty estimate caveat, sort menu labels, Menu contents, Save & exit confirmation, consent line legal review, push-notification/e-mail follow-ups after broker success (out of page scope but implied by "within one business day").
+
+Also unify: "Max property price by lender" (desktop) vs "Max price by lender" (mobile H1) vs "Max property price" (mobile push + card row) — three variants of one concept.
 
 ---
 
-## 9. Priority question list (what to answer first)
+## 9. Priority questions (ranked)
 
-1. What is the hero's headline number, and is it the same value as the lender chart's "headline max value"? (§1.6, §7)
-2. What happens when no lender lends / remaining cash is negative? Both are guaranteed states with zero design. (§1.4, §4.1)
-3. Recalc model: client-side instant vs async — determines all loading-state work. (§1.2–1.4)
-4. Do Funds to Complete figures depend on the selected lender? (§4.1)
-5. Exact field list + defaults for the Advanced Assumptions modal, and the unlocked (premium) flow. (§5.3)
-6. Mobile pattern for the lender chart rows and detail panel. (§6, §7-mobile)
-7. Scenario panel mobile behaviour: expanded vs collapsed summary. (§6)
-8. Definitive lender count, ordering, and colour assignment rules. (§3.1)
-9. Broker modal form validation, consent line, and success/failure states. (§5.2)
-10. Error/negative and premium colour tokens. (§8)
-
----
-
-## 10. Verification checklist once Results.html is available
-
-Because the Claude Design file couldn't be imported from this environment, the following must be cross-checked against `Results.html` and folded back into `design.md`:
-
-- Hero content and exact headline treatment
-- Header variant used on results
-- Control types for state selector and advanced trigger
-- Lender count, logo usage, lane widths, selected-row styling, detail-panel layout
-- Funds to Complete segment colours and legend lanes, presence/absence of LMI
-- Scenario assumptions strip content and placement
-- Any components present in the HTML but absent from the MD (and vice versa — MD bans e.g. the "Panel spread" footer and top-right promo cards; confirm the HTML complies)
-
-*To get the file into a session: open the project at claude.ai/design and use "Send to Claude Code Web", or run `/design-login` in a local interactive Claude Code session, or paste/commit the exported `Results.html` into this repo.*
+1. **Source of truth:** Results.html direction vs design.md system — or a stated hybrid. Everything else inherits from this. (§0)
+2. **Deposit / funds-to-complete double-count:** define the real relationship between savings, usable deposit, costs, and max price — and whether surplus/shortfall returns. (§3.1)
+3. **Do loan-detail edits re-rank borrowing power?** Defines the page's core feedback loop. (§3.2)
+4. **Mobile detail pattern:** sheet or push (recommend sheet + dock suppression). (§7)
+5. **Desktop hero:** lead with the answer ($3.10M) or keep category-label H1. (§7)
+6. **Lender panel scale:** 8 vs 30+ changes list, sort, and view-all design. (§1.2 D6)
+7. **Accent colour + bar style + animation** — close the three tweak-panel decisions. (§2)
+8. **Empty/no-eligibility and loading states** — guaranteed states, zero design. (§4)
+9. **Broker form production states** (submitting/failure/duplicate) + consent/privacy line legal review. (§1.4)
+10. **Accessibility baseline:** focus styles, dialog semantics, sheet close button, contrast of muted-2. (§6)
+11. **Dead controls:** wire or cut Sort, View product, Edit financials, Menu, Save & exit. (§5)
+12. **State/stamp-duty engine and LMI** presence. (§3.3, §3.5)
+13. **Comparison-rate legality** when rates are adjusted client-side. (§3.7)
+14. **Naming:** unify the three "max price" title variants; confirm dynamic lede grammar. (§8)
