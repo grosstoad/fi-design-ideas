@@ -154,4 +154,6 @@ Optional modules: **SOCIAL** (testimonials/UGC — only when real quotes exist; 
 
 **Compliance notes (all concepts):** "indicative only" appears in HERO trust note or CVP sub-line *and* FOOT; no lender logos without the informational-context treatment (names + "modelled on published rules"); no "approval", "guaranteed", "pre-qualified" anywhere; the ACL/credit-guide footer block from the current paperlp page carries over.
 
+**Voice variants (Concept A, implemented):** `/landing-a` ships two copy sets — `classic` (the §3 draft) and `warm` (`?copy=warm`), an Up-bank-inspired tone dialled down for a home-buying context. Warm-voice rules: contractions everywhere, second person, at most one wink per section, humour lives in supporting copy only (never in the H1 promise, the numbers, or the trust facts, which stay literal), and no brand puns. Signature lines: hero "So, how much home can you actually afford?", gap "That bank calculator? It's one opinion.", final band "Three minutes now beats a heartbreak at auction." A/B the two sets before committing the brand voice.
+
 **Measurement (all concepts):** hero CTA click-through, scroll-to-GAP rate, demo interaction rate (B), FAQ open rate (C), and flow-start → results-complete as the true conversion. Test one variable at a time: H1 first, CTA label second, proof visual third.

@@ -3,8 +3,11 @@
 // Scroll interactions: IntersectionObserver reveals, in-view bar fills and
 // count-ups — transform/opacity only, fully disabled under reduced motion.
 // Asset placeholders carry data-asset ids mapped in docs/landing-a-assets.md.
+//
+// Copy variants: ?copy=warm switches to the toned-down-playful voice
+// (Up-bank-inspired; one wink per section, trust facts stay literal).
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import "../landing-a.css";
 
 /* ---------------- data (illustrative example scenario) ---------------- */
@@ -18,67 +21,158 @@ const EXAMPLE_LENDERS = [
 ];
 const EXAMPLE_MAX = EXAMPLE_LENDERS[0].price * 1.08;
 
-const PILLARS = [
-  {
-    asset: "pillar-price",
-    title: "A price, not a loan figure",
-    body: "Your top purchase price with deposit, stamp duty and buying costs already taken out. The number you can actually shop with.",
-  },
-  {
-    asset: "pillar-lenders",
-    title: "Every lender, ranked",
-    body: "See who'd stretch furthest for your situation — and who wouldn't. No favourites, no ads.",
-  },
-  {
-    asset: "pillar-sliders",
-    title: "Move the sliders, watch it move",
-    body: "Change your deposit, spending or loan setup and see your price shift live.",
-  },
-  {
-    asset: "pillar-settle",
-    title: "Cash-to-settle, spelled out",
-    body: "Exactly what you'll need on the day: deposit, stamp duty, fees — and what's left over.",
-  },
-];
-
-const STEPS = [
-  {
-    n: "1",
-    title: "Answer a few questions",
-    body: "Income, spending, savings. About 3 minutes, no documents, no sign-up wall.",
-  },
-  {
-    n: "2",
-    title: "We run every lender's rules",
-    body: "The real serviceability maths lenders use, not a one-size formula.",
-  },
-  {
-    n: "3",
-    title: "Get your number — and keep it",
-    body: "Your ranked lender list, your price, saved to revisit as things change.",
-  },
-];
-
-const TRUST_FACTS = [
-  {
-    q: "Will this affect my credit score?",
-    a: "No — we never run a credit check.",
-  },
-  {
-    q: "Is this a loan application?",
-    a: "No — nothing goes to any lender.",
-  },
-  {
-    q: "What does it cost?",
-    a: "Nothing. If you later choose to talk to a broker, they're paid by lenders, not you.",
-  },
-  {
-    q: "How accurate is it?",
-    a: "A realistic estimate built on each lender's published rules — indicative, not an approval.",
-  },
-];
-
 const LENDER_NAMES = ["Macquarie", "CBA", "NAB", "Westpac", "ANZ", "ING", "Bankwest", "Suncorp"];
+
+/* ---------------- copy variants ---------------- */
+
+const COPY = {
+  classic: {
+    chips: ["Free", "No credit check", "Not a loan application", "~3 minutes"],
+    navCta: "Show me my number",
+    h1: "Know the most you can spend on a home.",
+    subhead:
+      "FundIQ runs your numbers through 30+ lenders’ actual rules and shows your top price — deposit, stamp duty and costs included.",
+    ctaLabel: "Show me my number",
+    ctaSub: "Private. Nothing is shared unless you ask.",
+    credLine: "Modelled on the lending rules of 30+ Australian lenders",
+    gapH2: "The bank’s calculator only tells you the bank’s answer.",
+    gapBody: (
+      <>
+        Every lender sizes you up differently — same income, same deposit, answers up to{" "}
+        <strong>$184,000 apart</strong>. If you&rsquo;ve only checked one calculator, you&rsquo;ve
+        seen one lender&rsquo;s opinion.
+      </>
+    ),
+    pillarsH2: "What you walk away with",
+    pillars: [
+      {
+        asset: "pillar-price",
+        title: "A price, not a loan figure",
+        body: "Your top purchase price with deposit, stamp duty and buying costs already taken out. The number you can actually shop with.",
+      },
+      {
+        asset: "pillar-lenders",
+        title: "Every lender, ranked",
+        body: "See who’d stretch furthest for your situation — and who wouldn’t. No favourites, no ads.",
+      },
+      {
+        asset: "pillar-sliders",
+        title: "Move the sliders, watch it move",
+        body: "Change your deposit, spending or loan setup and see your price shift live.",
+      },
+      {
+        asset: "pillar-settle",
+        title: "Cash-to-settle, spelled out",
+        body: "Exactly what you’ll need on the day: deposit, stamp duty, fees — and what’s left over.",
+      },
+    ],
+    howH2: "Three minutes, start to number",
+    steps: [
+      {
+        n: "1",
+        title: "Answer a few questions",
+        body: "Income, spending, savings. About 3 minutes, no documents, no sign-up wall.",
+      },
+      {
+        n: "2",
+        title: "We run every lender’s rules",
+        body: "The real serviceability maths lenders use, not a one-size formula.",
+      },
+      {
+        n: "3",
+        title: "Get your number — and keep it",
+        body: "Your ranked lender list, your price, saved to revisit as things change.",
+      },
+    ],
+    trustH2: "The questions everyone asks first",
+    trust: [
+      { q: "Will this affect my credit score?", a: "No — we never run a credit check." },
+      { q: "Is this a loan application?", a: "No — nothing goes to any lender." },
+      {
+        q: "What does it cost?",
+        a: "Nothing. If you later choose to talk to a broker, they’re paid by lenders, not you.",
+      },
+      {
+        q: "How accurate is it?",
+        a: "A realistic estimate built on each lender’s published rules — indicative, not an approval.",
+      },
+    ],
+    finalH2: "Three minutes. Thirty-plus lenders. One honest number.",
+  },
+
+  warm: {
+    chips: ["Free, actually", "No credit check", "Not a loan application", "About 3 minutes"],
+    navCta: "Get my number",
+    h1: "So, how much home can you actually afford?",
+    subhead:
+      "We run your numbers through 30+ lenders’ real rules and hand you a straight answer — your top price, with deposit, stamp duty and all the boring costs baked in.",
+    ctaLabel: "Get my number",
+    ctaSub: "Just between us. Nothing’s shared unless you say so.",
+    credLine: "Built on the lending rules of 30+ Australian lenders — yes, the big ones too",
+    gapH2: "That bank calculator? It’s one opinion.",
+    gapBody: (
+      <>
+        Lenders can land <strong>$184,000 apart</strong> on the exact same you — same pay, same
+        savings, same weekend plans. We show you the whole spread, not the first guess.
+      </>
+    ),
+    pillarsH2: "What you’ll actually get",
+    pillars: [
+      {
+        asset: "pillar-price",
+        title: "A price, not a loan figure",
+        body: "Your top purchase price with deposit, stamp duty and buying costs already subtracted. A number you can shop with — no asterisks.",
+      },
+      {
+        asset: "pillar-lenders",
+        title: "Every lender, ranked",
+        body: "See who’d stretch furthest for you, and who’s playing it safe. No favourites, no ads, no funny business.",
+      },
+      {
+        asset: "pillar-sliders",
+        title: "Move the sliders, watch it move",
+        body: "Nudge your deposit or spending and watch your price move in real time. Weirdly satisfying.",
+      },
+      {
+        asset: "pillar-settle",
+        title: "Cash-to-settle, spelled out",
+        body: "The cash you’ll need on the day — deposit, stamp duty, fees — and what’s left for, you know, furniture.",
+      },
+    ],
+    howH2: "Here’s how it goes",
+    steps: [
+      {
+        n: "1",
+        title: "Answer a few questions",
+        body: "Income, spending, savings. About three minutes. No documents, no sign-up wall, no drama.",
+      },
+      {
+        n: "2",
+        title: "We run every lender’s rules",
+        body: "The same serviceability maths the lenders use — run across the lot of them at once.",
+      },
+      {
+        n: "3",
+        title: "Get your number — and keep it",
+        body: "Your price, your ranked lenders, saved for whenever. It updates when life does.",
+      },
+    ],
+    trustH2: "The questions everyone asks first",
+    trust: [
+      { q: "Will this affect my credit score?", a: "Nope. No credit check, no footprint, no surprises." },
+      { q: "Is this a loan application?", a: "No. Nothing leaves the building — no lender hears about you." },
+      {
+        q: "What does it cost?",
+        a: "Nothing. If you ever chat to a broker, lenders pay them — not you.",
+      },
+      {
+        q: "How accurate is it?",
+        a: "It’s built on each lender’s published rules — a proper estimate, not an approval. Nobody can promise that, and you should side-eye anyone who does.",
+      },
+    ],
+    finalH2: "Three minutes now beats a heartbreak at auction.",
+  },
+};
 
 /* ---------------- scroll/motion utilities ---------------- */
 
@@ -137,8 +231,7 @@ function useCountUp(target, run, duration = 900) {
 
 /* ---------------- shared bits ---------------- */
 
-function TrustChips({ compact }) {
-  const chips = ["Free", "No credit check", "Not a loan application", "~3 minutes"];
+function TrustChips({ chips, compact }) {
   return (
     <ul className={`lpa-chips ${compact ? "lpa-chips-compact" : ""}`} aria-label="What to expect">
       {chips.map((c) => (
@@ -174,7 +267,7 @@ function Reveal({ as: Tag = "div", className = "", children, threshold }) {
 
 /* ---------------- sections ---------------- */
 
-function Nav() {
+function Nav({ c }) {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -192,7 +285,7 @@ function Nav() {
         <a href="#how-it-works">How it works</a>
         <a href="#trust">FAQ</a>
         <Link to="/assessment" className="lpa-nav-cta">
-          Show me my number
+          {c.navCta}
         </Link>
       </nav>
     </header>
@@ -243,27 +336,24 @@ function ProofCard() {
   );
 }
 
-function Hero() {
+function Hero({ c }) {
   return (
     <section className="lpa-hero">
       <div className="lpa-hero-copy">
-        <TrustChips />
-        <h1>Know the most you can spend on a home.</h1>
-        <p className="lpa-subhead">
-          FundIQ runs your numbers through 30+ lenders&rsquo; actual rules and shows your top price —
-          deposit, stamp duty and costs included.
-        </p>
-        <CtaButton sub="Private. Nothing is shared unless you ask.">Show me my number</CtaButton>
+        <TrustChips chips={c.chips} />
+        <h1>{c.h1}</h1>
+        <p className="lpa-subhead">{c.subhead}</p>
+        <CtaButton sub={c.ctaSub}>{c.ctaLabel}</CtaButton>
       </div>
       <ProofCard />
     </section>
   );
 }
 
-function Credibility() {
+function Credibility({ c }) {
   return (
     <Reveal as="section" className="lpa-cred" threshold={0.4}>
-      <p>Modelled on the lending rules of 30+ Australian lenders</p>
+      <p>{c.credLine}</p>
       <ul aria-label="Lenders modelled">
         {LENDER_NAMES.map((n) => (
           <li key={n}>{n}</li>
@@ -273,17 +363,13 @@ function Credibility() {
   );
 }
 
-function Gap() {
+function Gap({ c }) {
   const [ref, inView] = useReveal(0.4);
   return (
     <section className="lpa-gap" ref={ref}>
       <Reveal className="lpa-gap-copy">
-        <h2>The bank&rsquo;s calculator only tells you the bank&rsquo;s answer.</h2>
-        <p>
-          Every lender sizes you up differently — same income, same deposit, answers up to{" "}
-          <strong>$184,000 apart</strong>. If you&rsquo;ve only checked one calculator, you&rsquo;ve
-          seen one lender&rsquo;s opinion.
-        </p>
+        <h2>{c.gapH2}</h2>
+        <p>{c.gapBody}</p>
       </Reveal>
       <div className={`lpa-gap-chart ${inView ? "is-in" : ""}`} role="img"
         aria-label="Chart: for the same buyer, lender A offers $712,000 and lender F offers $896,000 — a gap of $184,000">
@@ -305,14 +391,14 @@ function Gap() {
   );
 }
 
-function Pillars() {
+function Pillars({ c }) {
   return (
     <section className="lpa-pillars">
       <Reveal>
-        <h2>What you walk away with</h2>
+        <h2>{c.pillarsH2}</h2>
       </Reveal>
       <div className="lpa-pillar-grid">
-        {PILLARS.map((p, i) => (
+        {c.pillars.map((p, i) => (
           <Reveal as="article" key={p.asset} className="lpa-pillar" threshold={0.2}>
             <div className="lpa-pillar-art" data-asset={p.asset} aria-hidden="true">
               <span className="lpa-pillar-art-mark">{String(i + 1).padStart(2, "0")}</span>
@@ -326,14 +412,14 @@ function Pillars() {
   );
 }
 
-function How() {
+function How({ c }) {
   return (
     <section className="lpa-how" id="how-it-works">
       <Reveal>
-        <h2>Three minutes, start to number</h2>
+        <h2>{c.howH2}</h2>
       </Reveal>
       <ol className="lpa-steps">
-        {STEPS.map((s) => (
+        {c.steps.map((s) => (
           <Reveal as="li" key={s.n} threshold={0.3}>
             <span className="lpa-step-n" aria-hidden="true">{s.n}</span>
             <h3>{s.title}</h3>
@@ -345,14 +431,14 @@ function How() {
   );
 }
 
-function Trust() {
+function Trust({ c }) {
   return (
     <section className="lpa-trust" id="trust">
       <Reveal>
-        <h2>The questions everyone asks first</h2>
+        <h2>{c.trustH2}</h2>
       </Reveal>
       <div className="lpa-trust-grid">
-        {TRUST_FACTS.map((t) => (
+        {c.trust.map((t) => (
           <Reveal as="div" key={t.q} className="lpa-trust-tile" threshold={0.25}>
             <h3>{t.q}</h3>
             <p>{t.a}</p>
@@ -363,14 +449,14 @@ function Trust() {
   );
 }
 
-function FinalCta() {
+function FinalCta({ c }) {
   return (
     <Reveal as="section" className="lpa-final" threshold={0.35}>
       <div className="lpa-final-art" data-asset="final-band-suburb" aria-hidden="true" />
       <div className="lpa-final-inner">
-        <h2>Three minutes. Thirty-plus lenders. One honest number.</h2>
-        <CtaButton>Show me my number</CtaButton>
-        <TrustChips compact />
+        <h2>{c.finalH2}</h2>
+        <CtaButton>{c.ctaLabel}</CtaButton>
+        <TrustChips chips={c.chips} compact />
       </div>
     </Reveal>
   );
@@ -398,17 +484,19 @@ function Footer() {
 }
 
 function LandingANumberPage() {
+  const [params] = useSearchParams();
+  const c = COPY[params.get("copy")] || COPY.classic;
   return (
     <div className="lpa-page">
-      <Nav />
+      <Nav c={c} />
       <main>
-        <Hero />
-        <Credibility />
-        <Gap />
-        <Pillars />
-        <How />
-        <Trust />
-        <FinalCta />
+        <Hero c={c} />
+        <Credibility c={c} />
+        <Gap c={c} />
+        <Pillars c={c} />
+        <How c={c} />
+        <Trust c={c} />
+        <FinalCta c={c} />
       </main>
       <Footer />
     </div>
