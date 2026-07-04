@@ -561,6 +561,237 @@
   }
 }
 
+/* ---------------- interactive gap demo ---------------- */
+
+.lpa-demo-eyebrow {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--lpa-accent-text-strong);
+  margin-bottom: 12px;
+}
+
+.lpa-demo-cta {
+  margin-top: 26px;
+}
+
+.lpa-demo-panel {
+  background: var(--lpa-cream);
+  border: 1px solid var(--lpa-line);
+  border-radius: 18px;
+  padding: 26px 26px 18px;
+}
+
+.lpa-demo-slider-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.lpa-demo-slider-row label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--lpa-ink-2);
+}
+
+.lpa-demo-slider-row strong {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.lpa-demo-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 26px;
+  background: transparent;
+  cursor: pointer;
+  margin: 0 0 20px;
+}
+
+.lpa-demo-range::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 99px;
+  background: linear-gradient(
+    to right,
+    var(--lpa-forest) var(--lpa-slider-pos, 30%),
+    var(--lpa-cream-2) var(--lpa-slider-pos, 30%)
+  );
+}
+
+.lpa-demo-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 24px;
+  height: 24px;
+  margin-top: -8px;
+  border-radius: 50%;
+  background: var(--lpa-paper);
+  border: 3px solid var(--lpa-forest);
+  box-shadow: 0 2px 6px rgba(20, 30, 20, 0.25);
+}
+
+.lpa-demo-range::-moz-range-track {
+  height: 8px;
+  border-radius: 99px;
+  background: var(--lpa-cream-2);
+}
+
+.lpa-demo-range::-moz-range-progress {
+  height: 8px;
+  border-radius: 99px;
+  background: var(--lpa-forest);
+}
+
+.lpa-demo-range::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--lpa-paper);
+  border: 3px solid var(--lpa-forest);
+  box-shadow: 0 2px 6px rgba(20, 30, 20, 0.25);
+}
+
+/* Focus lives on the thumb, not a page-wide outline box around the track. */
+.lpa-demo-range:focus-visible {
+  outline: none;
+}
+
+.lpa-demo-range:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 2px 6px rgba(20, 30, 20, 0.25), 0 0 0 4px var(--lpa-accent-soft);
+}
+
+.lpa-demo-range:focus-visible::-moz-range-thumb {
+  box-shadow: 0 2px 6px rgba(20, 30, 20, 0.25), 0 0 0 4px var(--lpa-accent-soft);
+}
+
+.lpa-demo-out {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.lpa-demo-row {
+  display: grid;
+  grid-template-columns: 150px 1fr max-content;
+  align-items: center;
+  gap: 14px;
+}
+
+.lpa-demo-k {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.lpa-demo-k span {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--lpa-ink);
+  line-height: 1.25;
+}
+
+.lpa-demo-k small {
+  font-size: 11.5px;
+  color: var(--lpa-muted-2);
+}
+
+.lpa-demo-track {
+  position: relative;
+  height: 26px;
+  border-radius: 8px;
+  background: var(--lpa-cream-2);
+  overflow: hidden;
+}
+
+.lpa-demo-track i {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 8px;
+  transition: width 0.45s cubic-bezier(0.22, 0.7, 0.3, 1), left 0.45s cubic-bezier(0.22, 0.7, 0.3, 1);
+}
+
+.lpa-demo-bar-typical {
+  background: var(--lpa-muted-2);
+}
+
+.lpa-demo-bar-range {
+  background: linear-gradient(to right, #35594b, var(--lpa-forest));
+}
+
+.lpa-demo-v {
+  font-size: 15.5px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  min-width: 118px;
+  text-align: right;
+}
+
+.lpa-demo-verdict {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 6px;
+  padding-top: 16px;
+  border-top: 1px solid var(--lpa-line-soft);
+}
+
+.lpa-demo-badge {
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--lpa-accent-text-strong);
+  background: var(--lpa-accent-soft);
+  border-radius: 99px;
+  padding: 7px 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.lpa-demo-verdict p {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--lpa-muted);
+}
+
+.lpa-demo-note {
+  margin-top: 14px;
+  font-size: 11.5px;
+  color: var(--lpa-muted-2);
+  text-align: right;
+}
+
+@media (max-width: 640px) {
+  .lpa-demo-row {
+    grid-template-columns: 1fr max-content;
+  }
+
+  .lpa-demo-k {
+    grid-column: 1 / -1;
+  }
+
+  .lpa-demo-v {
+    min-width: 0;
+  }
+
+  .lpa-demo-row .lpa-demo-track {
+    grid-column: 1;
+  }
+
+  .lpa-demo-verdict {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}
+
 /* ---------------- pillars ---------------- */
 
 .lpa-pillars {

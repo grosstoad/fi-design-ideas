@@ -391,6 +391,103 @@ function Gap({ c }) {
   );
 }
 
+// Interactive gap demo — the income slider from FundIqPage's GuessworkPanel,
+// rebuilt on the results design system (concepts doc: Concept B module, A/B'd
+// into Concept A's GAP slot). Pure client maths on illustrative averages.
+const DEMO_BASE = 120000; // income at which the base figures hold
+const DEMO = { typical: 760000, low: 712000, high: 896000 };
+
+function fmtDemo(n) {
+  return n >= 995000 ? `$${(n / 1e6).toFixed(2)}M` : `$${Math.round(n / 1000)}k`;
+}
+
+function InteractiveGap() {
+  const [ref, inView] = useReveal(0.3);
+  const [income, setIncome] = useState(150000);
+  const r = income / DEMO_BASE;
+  const typical = DEMO.typical * r;
+  const low = DEMO.low * r;
+  const high = DEMO.high * r;
+  const scaleMax = high * 1.06; // track headroom so the top bar never hits the edge
+  const pct = (v) => `${Math.round((v / scaleMax) * 100)}%`;
+  const sliderPct = ((income - 80000) / (320000 - 80000)) * 100;
+
+  return (
+    <section className={`lpa-gap lpa-demo ${inView ? "is-in" : ""}`} ref={ref} id="demo">
+      <Reveal className="lpa-gap-copy">
+        <p className="lpa-demo-eyebrow">Try it — no details needed</p>
+        <h2>Drag your income. Watch the gap.</h2>
+        <p>
+          A quick sketch using averaged lender rules. Your real range depends on your whole picture
+          — spending, debts, deposit — which is exactly what the full check reads.
+        </p>
+        <div className="lpa-demo-cta">
+          <CtaButton sub="Free · no credit check · about 3 minutes">Find my real range</CtaButton>
+        </div>
+      </Reveal>
+
+      <div className="lpa-demo-panel">
+        <div className="lpa-demo-slider-row">
+          <label htmlFor="lpa-demo-income">Household income, before tax</label>
+          <strong aria-hidden="true">
+            {income.toLocaleString("en-AU", { style: "currency", currency: "AUD", maximumFractionDigits: 0 })}
+          </strong>
+        </div>
+        <input
+          id="lpa-demo-income"
+          className="lpa-demo-range"
+          type="range"
+          min="80000"
+          max="320000"
+          step="5000"
+          value={income}
+          onChange={(e) => setIncome(Number(e.target.value))}
+          style={{ "--lpa-slider-pos": `${sliderPct}%` }}
+          aria-valuetext={`${income.toLocaleString("en-AU")} dollars`}
+        />
+
+        <div className="lpa-demo-out" aria-live="polite">
+          <div className="lpa-demo-row">
+            <div className="lpa-demo-k">
+              <span>A typical calculator says</span>
+              <small>one formula, one number</small>
+            </div>
+            <div className="lpa-demo-track">
+              <i className="lpa-demo-bar-typical" style={{ width: inView ? pct(typical) : "0%" }} />
+            </div>
+            <strong className="lpa-demo-v">{fmtDemo(typical)}</strong>
+          </div>
+
+          <div className="lpa-demo-row">
+            <div className="lpa-demo-k">
+              <span>Across 30+ lenders</span>
+              <small>lowest to strongest offer</small>
+            </div>
+            <div className="lpa-demo-track">
+              <i
+                className="lpa-demo-bar-range"
+                style={{ left: pct(low), width: inView ? `calc(${pct(high)} - ${pct(low)})` : "0%" }}
+              />
+            </div>
+            <strong className="lpa-demo-v">
+              {fmtDemo(low)} – {fmtDemo(high)}
+            </strong>
+          </div>
+
+          <div className="lpa-demo-verdict">
+            <span className="lpa-demo-badge">{fmtDemo(high - low)} between lenders</span>
+            <p>
+              Somewhere in that gap is your actual budget. The demo can&rsquo;t tell you where —
+              the full check can.
+            </p>
+          </div>
+        </div>
+        <p className="lpa-demo-note">Illustrative averages only — not lender quotes.</p>
+      </div>
+    </section>
+  );
+}
+
 function Pillars({ c }) {
   return (
     <section className="lpa-pillars">
@@ -492,7 +589,7 @@ function LandingANumberPage() {
       <main>
         <Hero c={c} />
         <Credibility c={c} />
-        <Gap c={c} />
+        {params.get("gap") === "static" ? <Gap c={c} /> : <InteractiveGap />}
         <Pillars c={c} />
         <How c={c} />
         <Trust c={c} />
