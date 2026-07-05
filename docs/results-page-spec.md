@@ -1,6 +1,8 @@
 # FundIQ Results Page — Build Specification (Draft for review)
 
-**Status:** DRAFT v1 — ready for owner review. Everything measurable is taken from the Results.html design export; judgement calls follow the recommendations in `docs/results-page-spec-review.md` §9 and are marked **[ADOPTED]** (override if wrong). Items requiring owner/business input are marked **🔶 FILL-IN #n** inline and collected in §14 as a checklist.
+**Status:** DRAFT v2 — ready for owner review. Everything measurable is taken from the Results.html design export; judgement calls follow the recommendations in `docs/results-page-spec-review.md` §9 and are marked **[ADOPTED]** (override if wrong). Items requiring owner/business input are marked **🔶 FILL-IN #n** inline and collected in §14 as a checklist.
+
+**v2 changes (owner direction from Paper designs, July 2026):** dual-stat headline (max property price + loan amount at equal hierarchy, §7.6/§10.5); interest rate and comparison rate at equal prominence and size everywhere — legal requirement (§7.6, §10.5, §12a); funds-to-complete breakdown now shows funds required *and* where they're sourced from (§8). Reference frames: Paper `01KSYP7T…/3-0/19MF-0` (price display + funds CTA) and Paper `01KMVY07…/4WM-0` (funds required/sourced — inspiration, not literal). *Neither frame was fetchable from this environment (auth-gated); §7.6/§8 encode the owner's written direction and must be eyeballed against the frames before build sign-off.*
 
 **How to review this doc:** read top to bottom, correct any [ADOPTED] decision you disagree with, and answer the numbered FILL-INs (many are one-liners). Once §14 is answered, this spec is intended to be handed to an engineer or a coding agent verbatim.
 
@@ -33,6 +35,9 @@ Out of scope: the preceding form flow, broker CRM internals, authentication UI.
 | A10 | Dead controls | "View product" cut for v1. "Menu" (mobile) replaced by "Save & exit". Progress bar removed from results. Sort cut (A6). "Edit financials" wired (§7.9). |
 | A11 | Comparison rates | Published product comparison rate only, never client-adjusted (§5.6). |
 | A12 | Naming | "Max property price" is the canonical term everywhere. |
+| A13 | Dual headline stat *(owner direction)* | Lender detail leads with max property price AND loan amount at the same hierarchy — price left, loan right; stacked top/bottom where narrow (§7.6, §10.5). |
+| A14 | Rate prominence *(owner direction — legal requirement)* | Interest rate and comparison rate always identical in size, weight, and prominence, on every surface that shows a rate (§7.6, §10.5, §12a, landing proof card). |
+| A15 | Funds sourced view *(owner direction)* | Funds-to-complete "View breakdown" shows funds required and where they're sourced from, two aligned groups + verdict (§8). Paper 4WM-0 is inspiration, not a literal target. |
 
 ---
 
@@ -276,16 +281,20 @@ Grid `22px | 1fr | 120px | max-content | 18px`, gap 14px, padding 15px 12px, rad
 White card, r20, shadow (§3.3), padding 28px 30px 30px. Contents update **in place** on selection (no remount animation, [A9]).
 
 1. **Identity row**: 13px colour dot (lender cycle colour) · product title 21px/800 `{name} {product}` · sub-line 13.5px `--muted`: `{name} · {Purpose label} · {Repay label} · {Rate type label} · Rank #{r}`. ("View product" removed [A10].)
-2. **Headline banner**: `--forest` block r16, padding 20px 22px; label `Max property price with {name}` 15px/600 `rgba(255,255,255,.72)` (verify contrast ≥ 4.5:1; bump to .78 if needed); value 42px/800 white = selected lender's `maxPrice`. Value changes animate 300ms count (only interior animation permitted on selection).
+2. **Headline banner — dual stat [A13]**: `--forest` block r16, padding 20px 22px; two stats at **identical hierarchy**, separated by a 1px `rgba(255,255,255,.16)` vertical rule:
+   - Left: label `Max property price with {name}` · value = `maxPrice`.
+   - Right: label `Loan amount` · value = `maxLoan`.
+   - Both values 32px/800 white tabular; both labels 14px/600 `rgba(255,255,255,.78)`. No size, weight, or colour difference between the two stats — position (price left) is the only precedence cue. Below 560px of available card width the stats stack vertically (price above loan), keeping identical treatment. Value changes animate 300ms count (only interior animation permitted on selection). Reference: Paper `…/3-0/19MF-0` shows the price stat treatment (stacked variant); the loan stat mirrors it.
 3. **Stat tiles** — grid 4×1fr, 12px gap; tile: `--field` bg, 1px `--line-soft`, r14, padding 16px:
 
 | Tile | Value | Sub |
 | --- | --- | --- |
-| Loan amount | `maxLoan` `$X.XXM` | "borrowing power" |
 | Monthly repayment | `$X,XXX` | "over {term} yrs" / "interest only" |
-| Interest rate | `X.XX%` | "{comparisonRate}% comparison" (or "comparison n/a") |
+| Interest rate | `X.XX% p.a.` | "{rateType label}" |
+| Comparison rate | `X.XX% p.a.` | "for this product" (or value "—" + sub "not published") |
 | LVR | `XX%` | "{usableDeposit fmt $XXXk} deposit" |
 
+   **[A14 — legal]** The Interest rate and Comparison rate tiles are visually identical: same tile size, same value type size/weight/colour, same label treatment. The comparison rate must never be demoted to a sub-label, footnote, or smaller type anywhere a rate is shown. (Loan amount leaves the tiles — it lives in the banner per A13.)
    If `lmi > 0`, the LVR tile sub becomes "incl. LMI ${lmi fmt k}" 🔶 FILL-IN #7b: confirm LMI display slot.
 4. **Edit loan details** disclosure (§7.7).
 5. **Funds to complete** block (§8), separated by 1px `--line-soft` top border, 18px padding-top.
@@ -332,7 +341,9 @@ Replaces the prototype's breakdown (which double-counted the deposit).
 - Icon chip 34px `--accent-soft` r10 with info icon · title "Funds to complete" 14.5px/800 · note 13px `--muted`: `About {$XXXk} in cash needed to settle` where the figure = `savings` allocated (i.e., deposit + costs) — with the usable-deposit model this equals savings; if a buffer exists it reads `{savings − buffer}`.
 - Right: text link "View breakdown" ⇄ "Hide". `aria-expanded`.
 
-**Expanded rows** (13.5px key `--muted` / value 700 `--ink`, 9px gaps):
+**Expanded view [A15]** — two aligned groups then the verdict, inspired by Paper `…/4WM-0`'s required-vs-sourced framing (adapted, not copied). Desktop: two columns side by side (equal width, 24px gutter); mobile and narrow cards: stacked groups, required first. Row style: 13.5px key `--muted` / value 700 `--ink` tabular, 9px gaps; group headers 12px/700 uppercase `--muted-2`.
+
+*Group 1 — "What you'll need":*
 
 | Row | Value |
 | --- | --- |
@@ -342,7 +353,24 @@ Replaces the prototype's breakdown (which double-counted the deposit).
 | Lender fees ({name}) | per-lender (🔶 #8) |
 | LMI (if LVR > 80%) | engine value; row hidden when 0 |
 | **Total funds to complete** | sum — divider above, 14.5px/700 |
-| **Remaining cash after settlement** | `savings − total` — the verdict line, 700 |
+
+*Group 2 — "Where it comes from":*
+
+| Row | Value |
+| --- | --- |
+| Savings | `savings` (from the flow) |
+| Gift / family contribution | 🔶 #25 — only if captured in the flow |
+| First Home Owner Grant | 🔶 #25 — only when eligible and captured |
+| Proceeds of sale / other | 🔶 #25 |
+| **Total available** | sum — divider above, 14.5px/700 |
+
+In v1, if savings is the only captured source, Group 2 renders as the single Savings row + total (no empty placeholder rows). Rows in the two groups share a baseline grid so the totals align horizontally on desktop.
+
+*Verdict (full width, below both groups):*
+
+| Row | Value |
+| --- | --- |
+| **Remaining cash after settlement** | `total available − total funds to complete` — 700 |
 
 **Verdict states:**
 - Remaining ≥ 0: value in `--ink`, sub-note "kept aside from your savings".
@@ -407,8 +435,8 @@ Results recalculate on open (rates may have moved). If any figure changed vs the
 
 ### 10.5 Lender card (inside sheet)
 - Header band `--cream`, 18px padding: 11px dot + `{name} {product}` 17px/800 + sub 13px `{Purpose} · {Repay} · {Rate type} · Rank #{r}` (rank added for desktop parity).
-- Big stat row: "Max property price" 14.5px/600 · value 26px/800.
-- Key-value rows (14.5px/15.5px, `--line-soft` separators, 12px vertical padding): Rate `{x}% p.a.` · Comparison rate `{x}% p.a.` (or "n/a") · Loan amount · Monthly repayment ("(interest only)" suffix when IO) · LVR (+ "incl. LMI" per §7.6).
+- **Dual stat block [A13]** (replaces the single big-stat row): two stacked stats — "Max property price" then "Loan amount" — top/bottom per the owner's direction, both label 14.5px/600 + value 26px/800 tabular, 10px between stats, thin `--line-soft` rule separating them. Identical treatment for both; order (price first) is the only precedence cue.
+- Key-value rows (14.5px/15.5px, `--line-soft` separators, 12px vertical padding): Interest rate `{x}% p.a.` · Comparison rate `{x}% p.a.` (or "—") · Monthly repayment ("(interest only)" suffix when IO) · LVR (+ "incl. LMI" per §7.6). Loan amount leaves the rows — it's in the dual stat. **[A14 — legal]** The Interest rate and Comparison rate rows use identical key and value type (size, weight, colour) — already true of the row pattern; this makes it a requirement, not a coincidence.
 - Edit loan details disclosure — single-column panel, same fields/behaviour as §7.7 (global scope; re-rank is visible when the sheet closes; the card's own values update live).
 - Funds to complete block per §8.
 
@@ -447,12 +475,13 @@ Numbers are announced to AT once, at final value (render final value into the ac
 | hero.disclaimer | Indicative estimates only — not loan offers. Rates as at {date}. How we estimate |
 | list.title / list.sortnote | Lenders / Sorted by max price |
 | list.viewall / list.viewfewer | View all lenders ({n}) / Show fewer lenders |
-| detail.banner | Max property price with {lender} |
-| tiles.* | Loan amount · borrowing power / Monthly repayment · over {t} yrs · interest only / Interest rate · {x}% comparison / LVR · {d} deposit |
+| banner.price / banner.loan | Max property price with {lender} / Loan amount |
+| tiles.* | Monthly repayment · over {t} yrs · interest only / Interest rate · {rate type} / Comparison rate · for this product · not published / LVR · {d} deposit |
 | editloan.eyebrow | Loan settings — applies to all lenders |
 | editloan.reset | Reset to defaults |
 | funds.title / funds.note | Funds to complete / About {x} in cash needed to settle |
-| funds.rows | Deposit toward purchase / Stamp duty ({state}, est.) / Transfer & legal fees / Lender fees ({lender}) / LMI / Total funds to complete / Remaining cash after settlement |
+| funds.groups | What you'll need / Where it comes from |
+| funds.rows | Deposit toward purchase / Stamp duty ({state}, est.) / Transfer & legal fees / Lender fees ({lender}) / LMI / Total funds to complete / Savings / Gift or family contribution / First Home Owner Grant / Proceeds of sale / Total available / Remaining cash after settlement |
 | funds.shortfall | Your savings don't cover the costs at this price. Lower the price range or talk to a broker about options. |
 | cta.primary / cta.secondary | Connect with a broker / Edit financials |
 | cta.done | Call back requested ✓ |
@@ -463,6 +492,10 @@ Numbers are announced to AT once, at final value (render final value into the ac
 | saved.banner | Rates have moved since you saved — your numbers are refreshed. |
 
 Broker strings in §13. 🔶 FILL-IN #17: overall copy sign-off (especially disclaimer, empty, shortfall — legal-sensitive).
+
+### 12a. Rate display rule [A14 — legal requirement]
+
+Wherever an interest rate appears — detail tiles, mobile rows, any future tooltip, marketing surfaces including the landing proof card — the comparison rate appears with it at **equal prominence**: same type size, weight, and colour, adjacent placement. Never as a sub-label, footnote, or hover-only detail. If the comparison rate is unavailable for a product, show "—" at the same size with an explanatory sub ("not published"). 🔶 FILL-IN #26: compliance to confirm (a) the standard comparison-rate warning wording and where it must appear on this page, and (b) whether the rule extends to rates inside the broker success message or emails.
 
 ---
 
@@ -533,5 +566,8 @@ Under submit, 12px centered `--muted-2`: "No credit check. We'll only use these 
 | 22 | Condensed rows below rank 10 in expanded list? | §7.5 | No (default stated) |
 | 23 | Partial engine failure: tolerate or all-or-nothing | §9.3 | No (default: tolerate) |
 | 24 | Next/prev lender pager in mobile sheet | §10.4 | No (default: later) |
+| 25 | Funding sources beyond savings: are gifts, First Home Owner Grant, FHSS release, or sale proceeds captured in the flow (or planned)? Determines Group 2 of the funds breakdown — v1 default is Savings only | §8 | No (default stated) |
+| 26 | Compliance: comparison-rate warning wording + placement, and scope of the equal-prominence rule (broker comms? emails?). The rule itself is adopted (A14), not in question | §12a | Yes — before launch |
+| 27 | Visual verification of §7.6 banner and §8 breakdown against Paper frames `…/19MF-0` and `…/4WM-0` (not fetchable from this session — export the frames or review side-by-side) | §7.6, §8 | Yes — design sign-off |
 
 **Definition of ready for build:** #1, #2, #4, #5, #12 answered; everything else has a stated default an engineer can ship behind a flag or stub.

@@ -277,3 +277,25 @@ Ranked by how much downstream work each unblocks. Each entry: the decision, the 
 
 ### 9.14 Naming and copy unification (§8)
 - **Recommendation:** standardise on **"Max property price"** everywhere (desktop H1 "Max property price by lender" may stay as the exploration-section title if 9.5's hero is adopted; mobile "Max price by lender" goes). Lock the dynamic lede template with pluralisation rules, and write the missing copy set: loading, empty, error, disclaimer, stamp-duty caveat, consent line.
+
+---
+
+## 10. Addendum — owner design direction from Paper (July 2026)
+
+The owner supplied two Paper frames and written direction after the v1 spec; spec v2 encodes them. Neither frame was fetchable from this session (Paper auth) — direction below is from the owner's description, and **FILL-IN #27** requires a side-by-side check against the frames before design sign-off.
+
+**Direction received:**
+1. **Dual headline stat** — lender detail shows max property price and loan amount at the *same* hierarchy: price left / loan right on desktop, stacked top/bottom acceptable (Paper `01KSYP7T…/19MF-0` shows the price treatment; the loan stat mirrors it). Spec §7.6 item 2 and §10.5.
+2. **Equal-prominence rates (legal requirement)** — interest rate and comparison rate always the same size and prominence. Spec §7.6 item 3, §10.5, §12a.
+3. **Funds to complete** — keep the compact CTA + "View breakdown" pattern; expanded view shows funds *required* and *where they're sourced from* (Paper `01KMVY07…/4WM-0` as inspiration, not literal). Spec §8.
+
+**What this resolves from the earlier audit:**
+- The "two competing headline numbers" concern (§7 desktop item 1, review v1) is now partially settled at the *card* level: the card leads with a dual stat, and loan amount leaves the tiles. The page-level hero recommendation (9.5) still stands and is compatible.
+- The comparison-rate demotion flagged in the design export (comparison as a sub-label under the interest tile) is now formally banned, which also retires half of 9.13's risk — though 9.13's other half (never client-adjust a published comparison rate) still applies.
+- The funds block regains the "sources" dimension the old design.md had (available funds), strengthening the 9.2 usable-deposit recommendation: Group 2 totals are exactly the "available funds" input.
+
+**New questions raised by the direction (now FILL-INs #25–#27):**
+1. **Funding sources data** — the flow currently captures savings only. Are gift/family contributions, First Home Owner Grant, FHSS release, or sale proceeds captured or planned? Without them Group 2 is a single row, which is fine but worth confirming as intentional (#25).
+2. **Scope of the equal-prominence rule** — confirmed for product UI; does compliance require it in broker communications and emails that quote a rate, and what comparison-rate warning text must accompany rates on this page (#26)?
+3. **Banner geometry** — two values now share the forest banner; spec sets both at 32px (down from a single 42px). Verify against `…/19MF-0` that the price stat's intended scale survives the pairing (#27).
+4. **Consistency sweep** — one was found and fixed immediately: the `/landing-a` proof card displayed a lender interest rate with no comparison rate. Under A14 every existing and future surface needs the same sweep (results prototypes, share cards, the assessment page's lender table).

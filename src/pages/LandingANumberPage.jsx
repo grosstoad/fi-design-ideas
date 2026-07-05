@@ -13,7 +13,7 @@ import "../landing-a.css";
 /* ---------------- data (illustrative example scenario) ---------------- */
 
 const EXAMPLE_LENDERS = [
-  { name: "Macquarie", price: 1140000, label: "$1.14M", color: "#6E9BC4", rate: "6.09%", repay: "$4,980/mo" },
+  { name: "Macquarie", price: 1140000, label: "$1.14M", color: "#6E9BC4", rate: "6.09%", comparison: "6.21%", repay: "$4,980/mo" },
   { name: "CBA", price: 1065000, label: "$1.07M", color: "#E3B23C" },
   { name: "NAB", price: 1010000, label: "$1.01M", color: "#D98E63" },
   { name: "Westpac", price: 956000, label: "$956k", color: "#5E8FB5" },
@@ -327,8 +327,10 @@ function ProofCard() {
       </ul>
       <div className="lpa-proof-detail">
         <span className="lpa-proof-dot" style={{ backgroundColor: EXAMPLE_LENDERS[0].color }} />
+        {/* Rate + comparison rate at equal prominence — legal requirement (spec §12a). */}
         <span>
-          <strong>Macquarie</strong> · {EXAMPLE_LENDERS[0].rate} p.a. · {EXAMPLE_LENDERS[0].repay}
+          <strong>Macquarie</strong> · {EXAMPLE_LENDERS[0].rate} p.a. · {EXAMPLE_LENDERS[0].comparison} p.a.
+          comparison · {EXAMPLE_LENDERS[0].repay}
         </span>
       </div>
       <p className="lpa-proof-caption">Example — Sydney couple, $160k income, $120k saved</p>
