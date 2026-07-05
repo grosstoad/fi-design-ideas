@@ -10,6 +10,7 @@ const LibraryComparisonPage = lazy(() => import("./pages/LibraryComparisonPage")
 const RechartsDashboardPage = lazy(() => import("./pages/recharts-dashboard"));
 const PolarisVizDashboardPage = lazy(() => import("./pages/polaris-viz-dashboard"));
 const FundIqChartsComparisonPage = lazy(() => import("./pages/FundIqChartsComparisonPage"));
+const LandingANumberPage = lazy(() => import("./pages/LandingANumberPage"));
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
       <Routes>
         <Route path="/" element={<FundIqPage />} />
         <Route path="/buying-range" element={<BuyingRangePage />} />
+        <Route path="/landing-a" element={<LandingANumberPage />} />
         <Route path="/insights" element={<InsightsPage />} />
         <Route path="/assessment" element={<AssessmentPage />} />
         <Route path="/comparison" element={<FundIqChartsComparisonPage />} />
