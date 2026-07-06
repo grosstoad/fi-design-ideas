@@ -4,7 +4,8 @@
 **Authoritative sources, in priority order:**
 1. `docs/results-page-spec.md` — the build spec. Section references below (§) point into it.
 2. `docs/results-page-spec-review.md` — rationale. Read §3 (calculation audit) and §9 (decision register) before writing code.
-3. The design export (`Results.html` + `app/*.jsx` from FundIQ_Desktop.zip) — **visually** authoritative only. See "Traps" below for what NOT to copy from it.
+3. The Paper artboard `18WZ-0` ("Results v8 — Clean selected card + detail flow", file `01KSYP7T3MFEQHHED41F3PQB58`) — **visually** authoritative (mobile). Export the frames "01 Default results", "02 Selected lender clean card", "03 Selected plus funds action", "04 Update details sheet", "05 Sort sheet", "M3 Statement card" as PNG references before starting; pixel comparison against them is part of acceptance (§5.6).
+4. The design export (`Results.html` + `app/*.jsx` from FundIQ_Desktop.zip) — desktop layout reference only; its tokens (Hanken Grotesk, cream/forest) are **retired**, spec §3 wins. See "Traps" below for what NOT to copy from it.
 
 If this document and the spec conflict, the spec wins. If the spec is silent, follow this document. If both are silent, **stop and record the question in the FILL-IN registry (see below) — do not invent product behaviour.**
 
@@ -90,7 +91,8 @@ interface ServiceabilityEngine {
 
 - **URL is the source of truth for selection:** `?lender=<id>` (spec §4.1). Selection changes push history on mobile (sheet open/close = back-button navigable), replace on desktop. Unknown id → rank-1 default.
 - Loan settings + scenario live in one reducer in `useResults`; persisted to `sessionStorage` (`fundiq:results:v1`) so refresh restores state. Version the key.
-- Recalc flow: edit → 300ms debounce → `status: 'recalculating'` (values shimmer, layout frozen) → resolve → FLIP re-rank (§7.7). Guard stale responses: tag each engine call with a sequence number and discard out-of-order results (an agent WILL forget this; rapid segmented-control clicks are the repro).
+- Recalc flow (spec §7.7, revised — no live debounce): Update details sheet → user edits → **"Save and recalculate"** → sheet closes → `status: 'recalculating'` (values shimmer in place, layout frozen, rows stay interactive) → resolve → FLIP re-rank under the active sort. Cancel discards the draft (sheet state is a local draft, never written to the scenario until save). Still guard stale responses: tag each engine call with a sequence number and discard out-of-order results (rapid save → reopen → save is the repro).
+- Sort (spec §7.3a) is pure client-side ordering state — one `sortBy` field, never touches the engine. Keep it separate from the scenario reducer so it can't accidentally trigger recalc.
 
 ---
 
@@ -108,7 +110,7 @@ All strings live in `lib/copy.ts`, keyed exactly as spec §12 (`hero.support`, `
 
 ### 3.3 Token discipline
 
-`tokens.ts` implements the accent derivation formulas (darken 16/34%, tint 80%, luminance text switch) with unit tests asserting the exact hex outputs for the adopted accent `#15362A`. CSS custom properties are written once in `results.css`; components reference variables, never hex. A test greps built CSS for rogue hex values outside the token block (cheap lint, catches drift).
+The Paper palette (spec §3.1) is flat — no derivation formulas. CSS custom properties are written once in `results.css` exactly as spec §3.1 names them (`--bg`, `--field`, `--accent`, `--control`, `--cta`, …); components reference variables, never hex. Font stack: `"Helvetica Neue", system-ui, sans-serif`, weights 400/700 only — if you reach for 500/600/800, the spec says you're off-design. A test greps built CSS for rogue hex values outside the token block (cheap lint, catches drift).
 
 ### 3.4 FILL-IN registry
 
@@ -136,9 +138,9 @@ In dev builds, mount logs a single grouped `console.info` of unresolved FILL-INs
 ## 4. Build order (milestones = commits)
 
 1. **Scaffold + tokens + engine.** Route, `results.css` token block, `types.ts`, `fixtureEngine.ts` + contract tests + format tests. *App shows a blank rp-page; tests green.*
-2. **Desktop list + hero, all list states.** C2, C3 with selection/keyboard/aria, skeleton + staged loading, empty (§9.4), error (§9.3), view-all. *No detail card yet.*
-3. **Desktop detail.** C4: identity, banner, tiles, edge cases (§7.8), funds block C5 with verdict states.
-4. **Edit-loan loop.** §7.7 end-to-end: debounce, recalc shimmer, FLIP re-rank, stale-response guard, selection retention, hero update. *This is the riskiest milestone — see Traps 5–6.*
+2. **Desktop list + hero, all list states.** C2, C3 with selection/keyboard/aria, sort control + sheet/popover (§7.3a), skeleton + staged loading, empty (§9.4), error (§9.3), view-all. *No detail card yet.*
+3. **Desktop detail.** C4: identity band, capacity pair + rate pair, statement rows, compare footer (§7.8a), edge cases (§7.8), funds block C5 with verdict states.
+4. **Update details loop.** §7.7 end-to-end: chooser → property/loan sheets (with conditional rows) → Save and recalculate → recalc shimmer, FLIP re-rank, stale-response guard, selection retention, hero update, cancel-discards-draft. *This is the riskiest milestone — see Traps 5–6.*
 5. **Mobile.** Layout switch, dock, `BottomSheet` (snap/drag/focus trap/history), mobile card, dock suppression.
 6. **Broker capture.** Form, validation, submit states, success, post-success CTA lockout (§13.6). Lead API behind a `submitLead` stub with injected failure for testing.
 7. **States gallery + e2e + a11y pass + docs.** §5.3 gallery, Playwright flows, axe on every gallery state, README/ADRs.
@@ -156,11 +158,12 @@ Do not reorder: mobile before the recalc loop hides the hardest bugs behind two 
 - Engine contract tests (§2.3) — run against the fixture engine now, the real engine later.
 - Broker validation: table-driven cases per §13.2 including AU phone normalisation (`+61 400…` ⇄ `0400…`), and per-field error clearing.
 
-### 5.2 Component / interaction (Testing Library; mock timers for debounce; reduced-motion forced on for determinism)
+### 5.2 Component / interaction (Testing Library; reduced-motion forced on for determinism)
 
 - §7.4: click + Enter/Space + ArrowUp/Down selection; `aria-selected`; exactly-one-selected invariant; announcement region text.
+- §7.3a: sort changes order without any engine call (spy on the engine — zero calls); head-row note updates; compare footer appears when selection ≠ leader (§7.8a) and hides when it is.
 - §7.5: view-all toggle, selected-outside-top-6 note.
-- §7.7: edit → debounce → single engine call; rapid edits → last-wins (stale guard); re-rank order; selection retained; ineligible-selected fallback toast (§7.8).
+- §7.7: chooser routes to the right sheet; conditional rows (IO term, fixed term) appear/disappear with their parent field; Save → exactly one engine call; Cancel → zero calls and scenario unchanged; rapid save/reopen/save → last-wins (stale guard); re-rank order; selection retained; ineligible-selected fallback toast (§7.8).
 - §8: verdict states incl. shortfall styling; rows hidden when LMI = 0.
 - §9: each page state renders from its status prop (drive via fixture engine modes: `slow | fail | partial | empty`).
 - §10.4: sheet focus trap, Esc/scrim/✕ close, focus return, dock hidden while open.
@@ -174,7 +177,7 @@ A dev-only route rendering every named state side-by-side from fixtures: loading
 ### 5.4 E2E (Playwright, preinstalled chromium)
 
 Three journeys, desktop (1340×900) and mobile (392×844) projects:
-1. Load → staged reveal → select 3rd lender → detail matches fixture golden numbers → edit loan to Investment/IO → list re-ranks → selected retained.
+1. Load → staged reveal → select 3rd lender → detail matches fixture golden numbers → Update details → Loan details → set Interest only (IO-term row appears) → Save and recalculate → list re-ranks → selected retained. Plus: sort by monthly repayment → order changes, hero unchanged, compare footer shows.
 2. Mobile: tap row → sheet opens (URL has `?lender=`) → browser back closes sheet → dock reappears.
 3. Broker: open → submit empty → first-error focused → fill valid → success → CTA locked; reload → session persistence check.
 
@@ -184,6 +187,17 @@ Golden numbers: assert exact strings (`$3.10M`) computed once from fixtures into
 
 Don't screenshot-diff animations; don't unit-test CSS hover colours; don't test the real engine's finance maths here (that's the serviceability repo's job — only the contract).
 
+### 5.6 Pixel verification against the Paper frames (acceptance gate)
+
+The Paper reference PNGs (source list in "Authoritative sources" #3) belong in `docs/reference/paper/` — exporting them from Paper is an owner/setup task; if they are missing when the build starts, proceed against spec §3's measured values (they were extracted from the same frames) and treat the PNG comparison as the final gate once the exports land. For each reference, a Playwright script renders the matching app state at 393×852, screenshots it, and produces a side-by-side + overlay diff. This is a **human-judged gate, not an automated threshold** — fixture data differs from the mock's values, so raw pixel-diff percentages are meaningless. What must match exactly:
+
+- Type sizes/weights per spec §3.2 (verify with computed styles, not by eye: H1 25px/700, hero 38px/700, tile values 24px/700, rate pair equal classes).
+- Palette per §3.1 (grep computed styles for the token hexes; zero rogue colours).
+- Structure: element order, alignment lanes, spacing rhythm within ±2px, radii 8px, hairline dividers.
+- The two legal/owner invariants re-checked visually every iteration: rate = comparison-rate prominence; capacity pair equal treatment.
+
+Iterate: render → compare → fix → re-render, per frame, until a reviewer can flick between reference and build without spotting a structural difference. Record each frame's final screenshot pair in the PR description.
+
 ---
 
 ## 6. Traps — what this implementation gets wrong by default (read twice)
@@ -192,7 +206,7 @@ These are the specific places where a competent agent, working from the design e
 
 1. **Do NOT port the maths from `app/results-data.jsx`.** The prototype's `price = loan + deposit` **double-counts the deposit** (the same $620k funds the price gap AND pays $190k+ stamp duty). It looks authoritative — it's executable, commented, and internally consistent — and it is wrong. Spec §5.3's usable-deposit model replaces it. The fixture engine must implement §5.3 and the contract test must enforce the invariant.
 2. **Do not adjust comparison rates.** The prototype's `adjRate` loads the comparison rate alongside the actual rate; comparison rates are regulated published figures ([A11]). Fixture data carries a static published comparison rate; missing → render "n/a".
-3. **Animation runs once.** The prototype remounts the detail on every selection (`key={selId}`), replaying count-ups each click. The spec forbids this ([A9]): update in place; only the banner value animates on selection. Don't copy the remount pattern.
+3. **Animation runs once.** The prototype remounts the detail on every selection (`key={selId}`), replaying count-ups each click. The spec forbids this ([A9]): update in place; only the capacity-pair tile values animate on selection. Don't copy the remount pattern.
 4. **The prototype has no focus styles, no dialog semantics, no sheet close button.** You will be tempted to transcribe its DOM. The spec's a11y layer (§3.4, §7.4, §10.4) is NEW work, not present in the reference — budget for it explicitly.
 5. **Stale async responses.** Rapid segmented-control clicks fire overlapping engine calls; without the sequence guard (§2.4) results arrive out of order and the UI shows lender rankings from a superseded scenario. No visual test catches this; write the unit test first.
 6. **Re-rank + selection + URL interact.** After an edit: selection must survive re-ranking (it's identity-keyed, not index-keyed), the URL must not churn history entries, and if the selected lender becomes ineligible the fallback (§7.8) must fire exactly once. Write these three assertions before implementing the reducer.
