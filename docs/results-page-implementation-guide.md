@@ -4,7 +4,7 @@
 **Authoritative sources, in priority order:**
 1. `docs/results-page-spec.md` — the build spec. Section references below (§) point into it.
 2. `docs/results-page-spec-review.md` — rationale. Read §3 (calculation audit) and §9 (decision register) before writing code.
-3. The Paper artboard `18WZ-0` ("Results v8 — Clean selected card + detail flow", file `01KSYP7T3MFEQHHED41F3PQB58`) — **visually** authoritative (mobile). Export the frames "01 Default results", "02 Selected lender clean card", "03 Selected plus funds action", "04 Update details sheet", "05 Sort sheet", "M3 Statement card" as PNG references before starting; pixel comparison against them is part of acceptance (§5.6).
+3. The Paper artboard `18WZ-0` ("Results v8 — Clean selected card + detail flow", file `01KSYP7T3MFEQHHED41F3PQB58`) — **visually** authoritative (mobile). Deep links to every frame are in the spec's "Paper reference index"; view them via a Paper integration, or use PNG exports in `docs/reference/paper/` if present. Pixel comparison against these frames is part of acceptance (§5.6).
 4. The design export (`Results.html` + `app/*.jsx` from FundIQ_Desktop.zip) — desktop layout reference only; its tokens (Hanken Grotesk, cream/forest) are **retired**, spec §3 wins. See "Traps" below for what NOT to copy from it.
 
 If this document and the spec conflict, the spec wins. If the spec is silent, follow this document. If both are silent, **stop and record the question in the FILL-IN registry (see below) — do not invent product behaviour.**
@@ -189,7 +189,7 @@ Don't screenshot-diff animations; don't unit-test CSS hover colours; don't test 
 
 ### 5.6 Pixel verification against the Paper frames (acceptance gate)
 
-The Paper reference PNGs (source list in "Authoritative sources" #3) belong in `docs/reference/paper/` — exporting them from Paper is an owner/setup task; if they are missing when the build starts, proceed against spec §3's measured values (they were extracted from the same frames) and treat the PNG comparison as the final gate once the exports land. For each reference, a Playwright script renders the matching app state at 393×852, screenshots it, and produces a side-by-side + overlay diff. This is a **human-judged gate, not an automated threshold** — fixture data differs from the mock's values, so raw pixel-diff percentages are meaningless. What must match exactly:
+Reference images come from the Paper frames (deep links in the spec's "Paper reference index") — screenshot them via a Paper integration, or use PNG exports in `docs/reference/paper/` if present. For each reference, a Playwright script renders the matching app state at 393×852, screenshots it, and produces a side-by-side + overlay diff. This is a **human-judged gate, not an automated threshold** — fixture data differs from the mock's values, so raw pixel-diff percentages are meaningless. What must match exactly:
 
 - Type sizes/weights per spec §3.2 (verify with computed styles, not by eye: H1 25px/700, hero 38px/700, tile values 24px/700, rate pair equal classes).
 - Palette per §3.1 (grep computed styles for the token hexes; zero rogue colours).

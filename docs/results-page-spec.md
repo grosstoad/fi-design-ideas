@@ -16,7 +16,26 @@
 
 **How to review this doc:** read top to bottom, correct any [ADOPTED] decision you disagree with, and answer the numbered FILL-INs (many are one-liners). Once §14 is answered, this spec is intended to be handed to an engineer or a coding agent verbatim.
 
-**Companion docs:** `docs/results-page-spec-review.md` (rationale for every decision), `docs/design.md` (legacy system — superseded for this page per review §0/§9.1, pending owner confirmation 🔶 FILL-IN #1).
+**Companion docs:** `docs/results-page-spec-review.md` (rationale for every decision), `docs/design.md` (legacy system — superseded for this page per review §0/§9.1), `docs/results-page-codex-goal-prompt.md` (build task prompt).
+
+**Paper reference index** (open with a Paper integration or in the browser; all on file `01KSYP7T3MFEQHHED41F3PQB58`, page `3-0`, unless noted):
+
+| Frame | What it's authoritative for | Link |
+| --- | --- | --- |
+| Artboard "Results v8 — Clean selected card + detail flow" (all rows + board note) | Everything mobile | https://app.paper.design/file/01KSYP7T3MFEQHHED41F3PQB58/3-0/18WZ-0 |
+| 01 Default results | Header, progress bar, hero, list, sort affordance, CTA stack (§7.2–7.4, §10.1–10.3) | https://app.paper.design/file/01KSYP7T3MFEQHHED41F3PQB58/3-0/18XL-0 |
+| 03 Selected plus funds action | Collapsed funds row + View link (§8) | https://app.paper.design/file/01KSYP7T3MFEQHHED41F3PQB58/3-0/191L-0 |
+| 04 Update details sheet (chooser) | §7.7 chooser rows + copy | https://app.paper.design/file/01KSYP7T3MFEQHHED41F3PQB58/3-0/193F-0 |
+| 05 Sort sheet | §7.3a options, caption, radio treatment | https://app.paper.design/file/01KSYP7T3MFEQHHED41F3PQB58/3-0/194T-0 |
+| B Inline expansion | (explored variant — context only) | https://app.paper.design/file/01KSYP7T3MFEQHHED41F3PQB58/3-0/1987-0 |
+| D Funds receipt | Expanded funds breakdown treatment (§8) | https://app.paper.design/file/01KSYP7T3MFEQHHED41F3PQB58/3-0/19BH-0 |
+| E Non-top selected | Compare footer + caption (§7.8a) | https://app.paper.design/file/01KSYP7T3MFEQHHED41F3PQB58/3-0/19CR-0 |
+| Detail editing destinations (row of 3: Property / Loan / Financial sheets) | §7.7 sheet anatomy, fields, conditional rows, Save and recalculate | https://app.paper.design/file/01KSYP7T3MFEQHHED41F3PQB58/3-0/19EL-0 |
+| Stronger selected-card variations (M1–M5) | Card anatomy explorations; M3 is canonical | https://app.paper.design/file/01KSYP7T3MFEQHHED41F3PQB58/3-0/19IT-0 |
+| M3 Statement card (canonical selected card) | §7.6, §10.5 — identity band, rate/comparison parity, statement rows, funds row | https://app.paper.design/file/01KSYP7T3MFEQHHED41F3PQB58/3-0/19MF-0 |
+| Funds chart card (different file — inspiration only, not literal) | §8 expanded breakdown language (stacked bar + legend + verdict strip) | https://app.paper.design/file/01KMVY07H2B05015VVNPYFHRWS/01KMVY07H36M706X5HW9VW56B4/4WM-0 |
+
+Cards named in the text without a deep link ("02 Selected lender clean card", "03 Capacity pair", header copy variations) sit on the artboard's rows — navigate from `18WZ-0`.
 
 ---
 
