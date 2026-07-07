@@ -146,7 +146,7 @@ Every interactive element: `outline: 2px solid var(--accent); outline-offset: 2p
 
 ### 4.1 Routing
 
-- Route: `/results` 🔶 FILL-IN #18: confirm path and whether it nests under the flow (`/assessment/results`).
+- Route: `/results` [#18 resolved, owner 2026-07-06 — top-level, no nesting].
 - Selected lender syncs to the URL: `/results?lender=<id>` (desktop selection and mobile sheet). Back button on mobile closes the sheet (history entry per open). Unknown/absent id → default selection (§7.4).
 - Direct navigation without a completed flow → redirect to flow start with a toast "Finish a few questions to see your results". 🔶 FILL-IN #19: confirm session model (anonymous session token? account?), session lifetime, and resume behaviour.
 
@@ -256,7 +256,7 @@ Published figure for the specific product/term. If unavailable: render `—` wit
 - 70px tall, white, 1px `--line-soft` bottom border, content padding 0 38px.
 - Left: wordmark "fundiq" 20px/700 (the Paper frames show a plain bold wordmark, no logo mark — drop the v2 forest logo square).
 - Right: **Save & exit** — ghost button, 14.5px/400 `--muted`; hover: `--field` bg, `--ink` text; radius 8px, padding 8px 12px.
-- **Save & exit behaviour [ADOPTED A10]:** opens a small modal — "Save your results" / email input / "Email me a link" primary / "Just exit" text — issuing a resume token. 🔶 FILL-IN #10: confirm mechanism (email link vs account vs silent local save) and destination after exit (marketing home?).
+- **Save & exit behaviour [ADOPTED A10]:** opens a small modal — "Save your results" / email input / "Email me a link" primary / "Just exit" text — issuing a resume token. **Prototype [#19, owner 2026-07-06]:** no durable persistence — the modal renders and validates but "Email me a link" resolves to a stubbed confirmation ("Prototype: nothing was sent"); state lives in sessionStorage only. 🔶 FILL-IN #10: confirm production mechanism (email link vs account vs silent local save) and destination after exit (marketing home?).
 - No other nav. Logo click = same as Save & exit prompt if unsaved 🔶 FILL-IN #10b: or straight to home?
 
 States: default · hover · focus-visible (§3.4) · modal open.
@@ -268,7 +268,7 @@ Anatomy (left-aligned, max-width 760px, 26px bottom margin):
 2. **Page H1** "Max property price by lender" (25px/700 mobile per Paper; 36px desktop).
 3. **Hero figure**: top lender's `maxPrice`, 38px/700 mobile per Paper (56px desktop), count-up on first render (§11).
 4. Support line 14px `--muted` (verbatim from Paper "01 Default results"): `You may be able to afford a property up to {$X.XXM}.` — one plain sentence, no bold spans, no lender name (principle §2a-2: the list right below answers "which lender"). *(Replaces v2's longer "Your highest estimated property price — with {lender}…" template.)*
-5. Disclaimer line 12.5px `--muted-2`: `Indicative estimates only — not loan offers. Rates as at {date}. How we estimate` (last two words are a link → 🔶 FILL-IN #17b: destination/methodology page or popover content).
+5. Disclaimer line 12.5px `--muted-2`: `Indicative estimates only — not loan offers. Rates as at {date}. How we estimate` — the last two words open an **inline popover** (desktop) / small sheet (mobile) [#17b resolved, owner 2026-07-06]: a short plain-English explainer covering the inputs used, the indicative nature of estimates, and the rates date. Draft copy ships in the prototype marked for owner review; no separate page.
 
 Behaviour: hero figure and support line update (no re-animation; 300ms value crossfade) when recalculation changes the top lender (§7.7). The hero always reflects the **max-property-price leader**, regardless of selection or active sort (§7.8a).
 
@@ -289,7 +289,7 @@ Behaviour: hero figure and support line update (no re-animation; 300ms value cro
   5. Loan amount
   6. LVR
   7. Funds to complete
-  8. Policy fit 🔶 FILL-IN #29: "Policy fit" needs a definition (engine eligibility-strength score?) — cut this option if no such metric exists in v1.
+  *(The Paper frame shows an 8th option, "Policy fit" — **cut for v1** per owner 2026-07-06 [#29 resolved]: no backing metric exists; reinstate when an eligibility-strength score does.)*
 - Selecting re-orders the list client-side (FLIP ≈250ms), updates the head-row note ("Sorted by monthly repayment"), closes the sheet/popover. **Never triggers an engine re-run.** Rank numbers re-derive from the active sort order; the hero always shows the max-property-price leader regardless of sort (see §7.8a for the non-top caption).
 - Semantics: `role="radiogroup"`; persist choice for the session.
 
@@ -325,7 +325,7 @@ Grid `22px | 1fr | 120px | max-content | 18px`, gap 14px, padding 15px 12px, rad
 ### 7.5 View all / show fewer
 
 - Default shows top 6. Button full-width below list: `View all lenders ({n})` ⇄ `Show fewer lenders`; white, 1px `--line`, r8, 14px padding, 15px/700; hover `--field`. (Paper shows the plain "View all lenders" label on the default screen and a teal "View all lenders" text link in the selected-lender state — both map to this control.)
-- Expanded: list region gets `max-height: 7 rows` + internal scroll (page doesn't grow) with top/bottom fade masks. Rows below rank 10 render **condensed** (no bar) 🔶 FILL-IN #22: confirm condensed treatment or keep bars on all rows.
+- Expanded: list region gets `max-height: 7 rows` + internal scroll (page doesn't grow) with top/bottom fade masks. **Bars render on all rows at every rank** [#22 resolved, owner 2026-07-06 — condensed treatment rejected].
 - "Show fewer" resets internal scroll to top; if the selected lender is outside the top 6, it stays selected and a one-line note appears under the button: "{name} is selected · rank #{r}".
 - Hidden entirely when n ≤ 6.
 
@@ -371,23 +371,24 @@ White card, r20, shadow (§3.3), padding 28px 30px 30px. Contents update **in pl
 | Purpose | Owner occupied | |
 | First home buyer | Yes | |
 | Savings | $356k | |
-| Property price in mind | Optional | optional target-price input 🔶 FILL-IN #30: engine behaviour when set (cap results? show gap?) |
+| Property price in mind | Optional | **analytics capture only** [#30 resolved, owner 2026-07-06]: stored and editable here, never displayed on Results and never alters the calculation — its purpose is measuring whether results met the user's target (emit `price_target_set` and the target-vs-top-max delta with results events) |
 | Capitalise purchase costs | toggle (`--control` when on) | rolls costs into the loan — interacts with §5.2/§8 maths |
 
 **Loan sheet** — eyebrow "Loan details" · title "Update loan assumptions" · sub "Conditional terms appear only when they matter." Same bordered key-value card; **conditional rows render on a `--field` tinted bg and appear only when applicable**:
 
-| Field | Example | Conditional on |
+| Field | Values [#14 resolved, owner 2026-07-06] | Conditional on |
 | --- | --- | --- |
-| Loan term | 30 years | — |
-| Repayment type | P&I · Interest only | — |
-| Interest-only term | 3 years | Repayment type = Interest only |
-| Product type | Package · Basic | — |
-| Rate type | Variable · Fixed | — |
-| Fixed-rate term | 2 years | Rate type = Fixed |
+| Loan term | 10–30 years, 1-year steps (default 30) | — |
+| Repayment type | P&I · Interest only (default P&I) | — |
+| Interest-only term | 1–5 years, 1-year steps (default 3) | Repayment type = Interest only |
+| Product type | Package · Basic (default Package) | — |
+| Rate type | Variable · Fixed (default Variable) | — |
+| Fixed-rate term | 1–5 years, 1-year steps (default 2) | Rate type = Fixed |
 
-   (This supersedes the v2 "Fixed 2yr/3yr" combined control — rate type and its term are separate fields with the term conditional. 🔶 FILL-IN #14b/c now = allowed value sets for term, IO term, fixed term, product type.)
+   (This supersedes the v2 "Fixed 2yr/3yr" combined control — rate type and its term are separate fields with the term conditional. Value sets are owner-confirmed defaults; tighten later against real lender product data.)
 
-**Financial inputs sheet** — eyebrow "Financial inputs" · title "Choose section to edit" · sub "You will return to Results after saving the selected section." Rows: Income ("Salary, variable income and other income.") · Expenses ("Living costs and recurring commitments.") · Liabilities ("Cards, personal loans and other debts.") · Existing properties ("Values, rents and current home loans."). Each routes into the corresponding flow section. Footer note (tinted panel): "After save, Results returns with stable recalculating lender rows." CTA "Back to Results". 🔶 FILL-IN #11: confirm the flow-section routes and return contract.
+**Financial inputs sheet** — eyebrow "Financial inputs" · title "Choose section to edit" · sub "You will return to Results after saving the selected section." Rows: Income ("Salary, variable income and other income.") · Expenses ("Living costs and recurring commitments.") · Liabilities ("Cards, personal loans and other debts.") · Existing properties ("Values, rents and current home loans."). Footer note (tinted panel): "After save, Results returns with stable recalculating lender rows." CTA "Back to Results".
+**Prototype behaviour [#11 part-resolved, owner 2026-07-06]:** these four rows are intentional dead-ends in the prototype — tapping one shows an inline note "Edited in the main application flow (not part of this prototype)"; the recalc loop is exercised via the Property and Loan sheets. Production routes/return contract remain 🔶 FILL-IN #11.
 
 **Commit model [A3 revised]:** Property and Loan sheets end in a black primary **"Save and recalculate"** (48px) + text "Cancel". No live recalculation while editing; on save → return to Results → affected values shimmer in place (§9.2) → list re-ranks (FLIP ≈250ms) under the *active sort* (§7.3a). Selected lender stays selected; if its rank changed, transient chip "now #3 (was #1)" for 4s; hero updates if the max-price leader changed. Cancel discards.
 **Scope:** edits are global by construction — the sheets edit the scenario, not a lender. (v2's FILL-IN #5c is resolved: global.)
@@ -432,24 +433,24 @@ Replaces the prototype's breakdown (which double-counted the deposit).
 
 | Row | Value |
 | --- | --- |
-| Deposit toward purchase | `usableDeposit` |
+| Property price | `maxPrice` (matches the `4WM-0` reference, whose breakdown leads with Property price) |
 | Stamp duty ({STATE}, est.) | engine value — no inline "change" link; state is edited via Update details → Property details (#6 resolved) |
 | Transfer & legal fees | engine value |
 | Lender fees ({name}) | per-lender (🔶 #8) |
 | LMI (if LVR > 80%) | engine value; row hidden when 0 |
-| **Total funds to complete** | sum — divider above, 14.5px/700 |
+| **Funds required** | sum — divider above, 14.5px/700 |
 
-*Group 2 — "Where it comes from":*
+*(v3.1 note: with the loan now a Group 2 source row [#25], Group 1 is the full purchase cost — price + costs — replacing the earlier cash-only "Deposit toward purchase" framing. The collapsed row's "About {$XXXk} needed to settle" still quotes the **cash** side only: `Funds required − loan`.)*
+
+*Group 2 — "Where it comes from" [#25 resolved, owner 2026-07-06: "it's either savings or the loan, and be clear if there's any savings left over (or a deficit)"]:*
 
 | Row | Value |
 | --- | --- |
-| Savings | `savings` (from the flow) |
-| Gift / family contribution | 🔶 #25 — only if captured in the flow |
-| First Home Owner Grant | 🔶 #25 — only when eligible and captured |
-| Proceeds of sale / other | 🔶 #25 |
+| Loan from {lender} | `maxLoan` (the selected lender's loan amount — same figure as the capacity pair) |
+| Your savings | `savings` (from the flow) |
 | **Total available** | sum — divider above, 14.5px/700 |
 
-In v1, if savings is the only captured source, Group 2 renders as the single Savings row + total (no empty placeholder rows). Rows in the two groups share a baseline grid so the totals align horizontally on desktop.
+No gift/FHOG/sale-proceeds rows in v1 (not captured in the flow). Because the loan is now a source row, Group 1's "what you'll need" total is the **full purchase cost (price + costs)**, not just the cash side — the two groups reconcile: `price + costs = loan + savings − remaining`. Rows in the two groups share a baseline grid so the totals align horizontally on desktop. The leftover-savings figure (or the unlikely deficit) is the verdict strip's job and must always be visible when the breakdown is open.
 
 *Verdict strip (full width, below both groups)* — three figures in a row, matching the `4WM-0` reference's "Funds required / Available funds / Remaining cash" summary:
 
@@ -460,7 +461,7 @@ In v1, if savings is the only captured source, Group 2 renders as the single Sav
 | **Remaining cash** | `Available funds − Funds required`, 13.5px label / 20px/700 value + inline `%` of available funds (matches `4WM-0`'s "$290K \| 8%" treatment) |
 
 **Verdict states:**
-- Remaining ≥ 0: value in `--ink`, sub-note "kept aside from your savings".
+- Remaining ≥ 0: value in `--ink`, sub-note "savings left over after settlement" — the owner explicitly wants leftover savings unmistakable [#25].
 - Shortfall (< 0): value `--err`, row label "Shortfall", plus a compact notice band under the block (r8, `--err` at 8% tint bg): "Your savings don't cover the costs at this price. Lower the price range or talk to a broker about options." with "Update details" link. *(With the usable-deposit model a shortfall shouldn't occur by construction — this state guards engine edge cases and future buffer settings.)*
 
 Mobile: identical block inside the lender card, bg `--field`, link label "View"/"Hide".
@@ -480,7 +481,7 @@ Values (prices, bars, tiles, hero) shimmer in place ≤ engine latency; layout n
 
 ### 9.3 Error
 - Full failure: list card replaced by an error panel — icon, "We couldn't calculate your results" 17px/700, body "Something went wrong on our side. Your answers are saved.", primary "Try again" (re-runs), secondary "Update details". Detail card hidden.
-- Partial failure (some lenders error): show successful lenders; footnote under the list: "{k} lenders couldn't be checked right now." 🔶 FILL-IN #23: confirm partial-tolerance vs all-or-nothing.
+- Partial failure (some lenders error): show successful lenders; footnote under the list: "{k} lenders couldn't be checked right now." [#23 resolved, owner 2026-07-06 — tolerate partial failure.]
 
 ### 9.4 No eligible lenders
 List card body: illustration-free panel — title "No lender matched this scenario" 17px/700; body explains the binding constraint when the engine can name it (`"Your deposit is below the minimum lenders accept."` / generic fallback "Based on your answers, no lender on our panel could offer a loan."); **primary: "Update details"**, secondary text: "Talk to a broker about low-deposit options" (opens §13 with lender = "No preference"). Hero shows an em-dash figure with support line "We couldn't find a match — yet." Dock CTA (mobile) relabels to "Talk to a broker".
@@ -563,7 +564,7 @@ Numbers are announced to AT once, at final value (render final value into the ac
 | hero.disclaimer | Indicative estimates only — not loan offers. Rates as at {date}. How we estimate |
 | list.title / list.sortnote | Lenders / Sorted by {sort label} (default: Sorted by max property price) |
 | list.sort / sort.title / sort.caption | Sort / Sort lenders / Sorting changes the order, not your calculation. |
-| sort.options | Max property price / Monthly repayment / Interest rate / Comparison rate / Loan amount / LVR / Funds to complete / Policy fit (🔶 #29) |
+| sort.options | Max property price / Monthly repayment / Interest rate / Comparison rate / Loan amount / LVR / Funds to complete (Policy fit cut, #29) |
 | list.viewall / list.viewfewer | View all lenders ({n}) / Show fewer lenders |
 | pair.price / pair.loan | Max property price / Loan amount |
 | card.rows | Rate / Comparison rate / Monthly repayment / LVR |
@@ -579,7 +580,8 @@ Numbers are announced to AT once, at final value (render final value into the ac
 | funds.sub | Deposit, purchase costs and remaining cash buffer. |
 | funds.view | View |
 | funds.groups | What you'll need / Where it comes from |
-| funds.rows | Deposit toward purchase / Stamp duty ({state}, est.) / Transfer & legal fees / Lender fees ({lender}) / LMI / Total funds to complete / Savings / Gift or family contribution / First Home Owner Grant / Proceeds of sale / Total available / Remaining cash after settlement |
+| funds.rows | Property price / Stamp duty ({state}, est.) / Transfer & legal fees / Lender fees ({lender}) / LMI / Funds required / Loan from {lender} / Your savings / Total available / Remaining cash · savings left over after settlement |
+| update.financial.deadend | Edited in the main application flow (not part of this prototype) |
 | funds.shortfall | Your savings don't cover the costs at this price. Lower the price range or talk to a broker about options. |
 | cta.primary / cta.secondary | Connect with a broker / Update details |
 | cta.done | Call back requested ✓ |
@@ -593,7 +595,9 @@ Broker strings in §13. 🔶 FILL-IN #17: overall copy sign-off (especially disc
 
 ### 12a. Rate display rule [A14 — legal requirement, verified against Paper 2026-07-04]
 
-Wherever an interest rate appears — detail tiles, mobile rows, any future tooltip, marketing surfaces including the landing proof card — the comparison rate appears with it at **equal prominence**: same type size, weight, and colour, adjacent placement. Never as a sub-label, footnote, or hover-only detail. If the comparison rate is unavailable for a product, show "—" at the same size with an explanatory sub ("not published"). Confirmed directly against the built Paper frames: in every explored "Selected lender detail variations" card on `01KSYP7T3MFEQHHED41F3PQB58/3-0`, Rate and Comparison (or "Comp.") render with the identical Tailwind class — same size, weight, colour — with no exceptions found. 🔶 FILL-IN #26: compliance to confirm (a) the standard comparison-rate warning wording and where it must appear on this page, and (b) whether the rule extends to rates inside the broker success message or emails.
+Wherever an interest rate appears — detail tiles, mobile rows, any future tooltip, marketing surfaces including the landing proof card — the comparison rate appears with it at **equal prominence**: same type size, weight, and colour, adjacent placement. Never as a sub-label, footnote, or hover-only detail. If the comparison rate is unavailable for a product, show "—" at the same size with an explanatory sub ("not published"). Confirmed directly against the built Paper frames: in every explored "Selected lender detail variations" card on `01KSYP7T3MFEQHHED41F3PQB58/3-0`, Rate and Comparison (or "Comp.") render with the identical Tailwind class — same size, weight, colour — with no exceptions found.
+
+**Warning statement placement [#26a resolved, owner 2026-07-06]:** the standard AU comparison-rate warning renders **once, as a footnote in the page's disclaimer block**, with each comparison-rate label carrying a superscript marker linking to it. Prototype ships placeholder warning text clearly marked `[COMPLIANCE TO CONFIRM]`. Still open 🔶 FILL-IN #26: (a) exact wording from compliance, (b) whether the rule extends to rates inside broker comms/emails.
 
 ---
 
@@ -641,8 +645,8 @@ Under submit, 12px centered `--muted-2`: "No credit check. We'll only use these 
 | # | Question | Where | Blocking? |
 | --- | --- | --- | --- |
 | 1 | ~~Confirm Results.html direction as source of truth~~ **RESOLVED 2026-07-06** — owner directed the update to the Paper frames; A1 now names Paper artboard `18WZ-0` as visual source of truth. design.md rewrite still pending as a follow-up task | §2 A1 | Resolved |
-| 2 | Engine integration: client lib vs API, latency | §4.3, §9.1 | **Yes — loading design** |
-| 3 | Savings source field; 3b: retained-buffer feature in v1? (Note: Paper's Property sheet shows Savings $356k as a directly editable field — partial answer) | §4.3, §5.3, §7.7 | Yes |
+| 2 | Engine integration: **owner answered "undecided" (2026-07-06)** — keep the `Engine` interface agnostic (fixture engine with injectable latency for the prototype); real integration decided when engine work starts | §4.3, §9.1 | No for prototype |
+| 3 | Savings source field still to confirm; ~~3b retained-buffer~~ **RESOLVED 2026-07-06: no buffer in v1** — all savings deployed; leftover shows in the funds verdict | §4.3, §5.3, §7.7 | Yes (3 only) |
 | 4 | Reconcile §5 calc definitions against `fundiq-serviceability-calculations` (exists/build per item) | §5 | **Yes — engine scope** |
 | 5 | Edits re-run borrowing power (engine supports?); 5b rates as product lookups; ~~5c global vs per-lender scope~~ **RESOLVED** — global by construction: the Update details sheets edit the scenario, not a lender (§7.7) | §7.7 | **Yes — core loop** |
 | 6 | Stamp-duty engine (states, FHB, foreign) — still open; ~~state editable on this page?~~ **RESOLVED** — yes, via Update details → Property details (Paper "Update purchase assumptions": State, Purpose, First home buyer rows) | §5.2, §7.7, §8 | Yes |
@@ -650,25 +654,26 @@ Under submit, 12px centered `--muted-2`: "No credit check. We'll only use these 
 | 8 | Per-lender fee data source | §4.3, §8 | Yes |
 | 9 | *(merged into #4)* | — | — |
 | 10 | Save & exit mechanism + destination; 10b logo-click behaviour | §7.1 | No (stub OK) |
-| 11 | Update details → Financial inputs: flow-section routes (Income/Expenses/Liabilities/Existing properties) + return contract; 11b mobile back target | §7.7, §10.1 | Yes |
-| 12 | Broker lead: consent legal wording, 12b prefill availability, 12c API + payload (scenario attached?) | §13 | **Yes — compliance** |
-| 13 | Privacy policy URL | §13.2 | Yes |
-| 14 | Repayment frequency toggle? 14b/c *(revised per Paper)*: allowed value sets for Loan term (years), Interest-only term, Fixed-rate term, and Product type (Package/Basic) — the fields themselves are now fixed by the Paper Loan sheet (§7.7) | §4.4, §7.7 | No (defaults stated) |
-| 15 | Analytics: tooling + event list sign-off (suggested: `results_viewed`, `lender_selected`, `sort_changed`, `update_details_opened`, `details_saved`, `funds_expanded`, `viewall_toggled`, `broker_opened/submitted/succeeded`, `save_exit`) | — | No |
-| 16 | ~~Accent sign-off~~ **RESOLVED 2026-07-06** — Paper palette adopted: teal `#167D7F` / mint `#85C7BE` / CTA `#111111` (§3.1). 16b lender cycle palette values still to confirm against the Paper bars | §3.1 | No (defaults stated) |
-| 17 | Copy sign-off: full table §12; 17b "How we estimate" destination; 17c empty-state copy | §12 | Yes (legal lines) |
-| 18 | Route path | §4.1 | No |
-| 19 | Session/auth model, lifetime, resume | §4.1 | Yes |
+| 11 | Update details → Financial inputs: **prototype = dead-end rows with note (owner 2026-07-06)**; production flow-section routes + return contract still open; 11b mobile back target | §7.7, §10.1 | No for prototype |
+| 12 | Broker lead: **prototype = stubbed submit (owner 2026-07-06)**; consent legal wording, 12b prefill, 12c API + payload still owed before launch | §13 | Launch-blocking, not prototype |
+| 13 | Privacy policy URL: **prototype = placeholder `#` marked for replacement (owner 2026-07-06)**; real URL owed before any live traffic | §13.2 | Launch-blocking, not prototype |
+| 14 | ~~Loan picker value sets~~ **RESOLVED 2026-07-06**: Loan term 10–30 yrs (1-yr steps), IO term 1–5 yrs, Fixed term 1–5 yrs, Product type Package/Basic (§7.7). Repayment-frequency toggle stays out of v1 | §4.4, §7.7 | Resolved |
+| 15 | Analytics: tooling + event list sign-off (suggested: `results_viewed`, `lender_selected`, `sort_changed`, `update_details_opened`, `details_saved`, `price_target_set` (#30), `funds_expanded`, `viewall_toggled`, `broker_opened/submitted/succeeded`, `save_exit`) | — | No |
+| 16 | ~~Accent sign-off~~ **RESOLVED 2026-07-06** — Paper palette adopted (§3.1). ~~16b~~ **RESOLVED 2026-07-06**: ship the 8 specced bar colours; owner judges in the running prototype | §3.1 | Resolved |
+| 17 | ~~Copy review process~~ **RESOLVED 2026-07-06: owner reviews copy in the running prototype** and edits `lib/copy.ts` directly. ~~17b~~ **RESOLVED 2026-07-06: inline popover** (§7.2). Still open: 17c empty-state copy; legal lines ride on #26 | §12 | No for prototype |
+| 18 | ~~Route path~~ **RESOLVED 2026-07-06: `/results`** | §4.1 | Resolved |
+| 19 | Session/auth model: **prototype = sessionStorage only, nothing durable (owner 2026-07-06)** — Save & exit renders as a stub acknowledging the prototype. Real model (anonymous link vs account) decided later | §4.1, §7.1 | No for prototype |
 | 20 | Breakpoint 1024px + tablet treatment | §4.2 | No (default stated) |
-| 21 | Rates feed + "as at" timestamp; 21b saved-link recalc policy | §4.3, §9.6 | Yes |
-| 22 | Condensed rows below rank 10 in expanded list? | §7.5 | No (default stated) |
-| 23 | Partial engine failure: tolerate or all-or-nothing | §9.3 | No (default: tolerate) |
-| 24 | Next/prev lender pager in mobile sheet | §10.4 | No (default: later) |
-| 25 | Funding sources beyond savings: are gifts, First Home Owner Grant, FHSS release, or sale proceeds captured in the flow (or planned)? Determines Group 2 of the funds breakdown — v1 default is Savings only | §8 | No (default stated) |
-| 26 | Compliance: comparison-rate warning wording + placement, and scope of the equal-prominence rule (broker comms? emails?). The rule itself is adopted (A14), not in question | §12a | Yes — before launch |
+| 21 | Rates feed + "as at" timestamp (prototype: static fixture date); 21b saved-link recalc policy (moot until #19 has a real answer) | §4.3, §9.6 | No for prototype |
+| 22 | ~~Condensed rows below rank 10~~ **RESOLVED 2026-07-06: bars on all rows** | §7.5 | Resolved |
+| 23 | ~~Partial engine failure~~ **RESOLVED 2026-07-06: tolerate** — show successful lenders + footnote "{k} lenders couldn't be checked right now." (§9.3) | §9.3 | Resolved |
+| 24 | ~~Next/prev pager in mobile sheet~~ **RESOLVED 2026-07-06: later, not v1** | §10.4 | Resolved |
+| 25 | ~~Funding sources~~ **RESOLVED 2026-07-06**: sources are the loan + savings only; make leftover savings (or unlikely deficit) unmistakable in the verdict (§8 rewritten) | §8 | Resolved |
+| 26 | Compliance: ~~placement~~ **26a RESOLVED 2026-07-06: single footnote in the disclaimer block, superscript-linked from each comparison rate**. Still owed: exact warning wording; scope for broker comms/emails | §12a | Yes — before launch |
 | 27 | ~~Visual verification of §7.6 banner and §8 breakdown against Paper frames~~ **RESOLVED 2026-07-04** — both frames fetched and inspected directly (JSX + computed styles + screenshots). §7.6/§10.5/§8 rewritten to match the actual built patterns ("Capacity pair" tiles, verified rate/comparison equality, funds-required/available/remaining verdict strip). No longer blocking. | §7.6, §8 | Resolved |
 | 28 | Desktop frames: the Paper artboard is mobile-only (393px); desktop type/layout values in §3.2/§7 are extrapolated. Design desktop frames in Paper or sign off the extrapolation | §3.2, §7 | No (extrapolation stated) |
 | 29 | "Policy fit" sort option: what metric backs it? Cut from the sort sheet if no engine eligibility-strength score exists in v1 | §7.3a | No (default: cut if undefined) |
 | 30 | "Property price in mind" (optional field, Property sheet): engine behaviour when set — cap displayed results at the target, show a gap indicator, or informational only? | §7.7 | No (default: informational only) |
 
-**Definition of ready for build:** #2, #4, #5, #12 answered; everything else has a stated default an engineer can ship behind a flag or stub.
+**Definition of ready — prototype (owner Q&A completed 2026-07-06): READY.** Every open item is either resolved above or has a stated prototype behaviour (stub/placeholder/fixture). Nothing blocks the codex build.
+**Definition of ready — production:** #4 (calc reconciliation), #5/#5b (engine support), #2 (integration choice), #12 (broker lead API + consent), #13 (privacy URL), #26 (comparison-rate warning wording), #17c (empty-state copy), #6–#8 (stamp duty / LMI / fees data), #10, #11, #19, #21 remain owed before real users see this page.
