@@ -10,6 +10,7 @@ import { ListSkeleton, StatePanel } from "./components/PageStates";
 import { UpdateDetailsOverlay } from "./components/UpdateDetailsOverlay";
 import { BottomSheet } from "./components/BottomSheet";
 import { Dock } from "./components/Dock";
+import { BrokerOverlay } from "./components/BrokerOverlay";
 import { createFixtureEngine } from "./engine/fixtureEngine";
 import { useResults } from "./hooks/useResults";
 import { useMediaQuery } from "./hooks/useMediaQuery";
@@ -23,6 +24,8 @@ export default function ResultsPage() {
   const [explainerOpen, setExplainerOpen] = useState(false);
   const [utilityOpen, setUtilityOpen] = useState<"save" | "update" | null>(null);
   const [updateOpen, setUpdateOpen] = useState(false);
+  const [brokerOpen, setBrokerOpen] = useState(false);
+  const [brokerSubmitted, setBrokerSubmitted] = useState(false);
   const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width: 1023px)");
   const results = useResults(engine);
@@ -78,7 +81,8 @@ export default function ResultsPage() {
                 leader={results.maxPriceLeader}
                 scenario={results.scenario}
                 sortBy={results.sortBy}
-                onBroker={() => setUtilityOpen("save")}
+                submitted={brokerSubmitted}
+                onBroker={() => setBrokerOpen(true)}
                 onUpdate={() => setUpdateOpen(true)}
               />
             ) : (
@@ -121,7 +125,8 @@ export default function ResultsPage() {
             leader={results.maxPriceLeader}
             scenario={results.scenario}
             sortBy={results.sortBy}
-            onBroker={() => setUtilityOpen("save")}
+            submitted={brokerSubmitted}
+            onBroker={() => setBrokerOpen(true)}
             onUpdate={() => setUpdateOpen(true)}
           />
         </BottomSheet>
@@ -129,9 +134,19 @@ export default function ResultsPage() {
       {isMobile ? (
         <Dock
           empty={results.status === "empty"}
-          hidden={updateOpen || Boolean(utilityOpen) || mobileDetailOpen || explainerOpen}
-          onBroker={() => setUtilityOpen("save")}
+          submitted={brokerSubmitted}
+          hidden={updateOpen || brokerOpen || Boolean(utilityOpen) || mobileDetailOpen || explainerOpen}
+          onBroker={() => setBrokerOpen(true)}
           onUpdate={() => setUpdateOpen(true)}
+        />
+      ) : null}
+      {brokerOpen ? (
+        <BrokerOverlay
+          lenders={results.lenders}
+          selected={selected}
+          submitted={brokerSubmitted}
+          onSubmitted={() => setBrokerSubmitted(true)}
+          onClose={() => setBrokerOpen(false)}
         />
       ) : null}
       {updateOpen ? <UpdateDetailsOverlay scenario={results.scenario} onClose={() => setUpdateOpen(false)} onSave={results.saveScenario} /> : null}
