@@ -10,7 +10,7 @@ A review of every place in the results experience (spec v3, `docs/results-page-s
 
 > Minimal line icon on a 24×24 grid. Single colour, stroke only — no fills, no gradients, no shadows. Stroke width 1.5px with round caps and round joins. Geometry: simple, slightly rounded rectangles and circles, generous negative space, optically centred, 1.5px padding to the grid edge minimum. Flat and unornamented, matching a Helvetica Neue interface — no perspective, no 3D, no hand-drawn wobble, no duotone. Deliver as SVG with `viewBox="0 0 24 24"`, `fill="none"`, `stroke="currentColor"`, `stroke-width="1.5"` so the interface can colour it via CSS (`--ink #111111`, `--muted #5F5E58`, `--accent #167D7F`, white on the black CTA).
 
-**Build note for codex:** items marked *(standard)* below match stock [Lucide](https://lucide.dev) glyphs at stroke 1.5 — import those rather than generating, and reserve generation for the six custom/semantic icons. Either way, every icon renders through one `<Icon>` component so size/colour stay token-driven.
+**Build note for codex:** items marked *(standard)* below match stock [Lucide](https://lucide.dev) glyphs at stroke 1.5 — import those rather than generating. Category imagery (the Update-details chooser rows) is **not** line iconography at all — it uses the inked-sticker illustration assets defined in `docs/illustration-style.md`. Every line glyph renders through one `<Icon>` component so size/colour stay token-driven; illustrations render as `<img>` from the exported PNGs.
 
 ---
 
@@ -28,17 +28,9 @@ Where: lender rows (§7.4, 16px `--muted-2`, `--accent` when selected), Update-d
 Where: bottom sheets and modals, 34px circular `--field` button (§10.4, §13). Rendered 16px, `--ink`.
 > **Prompt:** A diagonal cross: two straight 1.5px strokes crossing at the centre at 45°, each spanning roughly half the grid, round caps. Perfectly symmetric.
 
-### 2.4 `property-details` — Update details chooser row (custom)
-Where: first chooser row, "Property details — State, purpose, savings and purchase costs." Rendered ~20px inside a 40px `--field` chip (§7.7), `--ink`.
-> **Prompt:** A simple house: pentagon silhouette made of a rectangular body and a triangular roof drawn as one continuous 1.5px outline, flat base, with a small door indicated by a short vertical rounded notch rising from the base line. No chimney, no windows, no ground line.
+### 2.4–2.6 Update details chooser rows — NOT line icons (corrected 2026-07-07)
 
-### 2.5 `loan-details` — Update details chooser row (custom)
-Where: second chooser row, "Loan details — Loan term, repayment type, product and rate type." Rendered ~20px in the 40px chip, `--ink`.
-> **Prompt:** A percent sign built for a loan context: a clean diagonal 1.5px stroke from lower-left to upper-right, with one small outlined circle above-left of the stroke and one below-right. Optically balanced so it reads as "%" at 16px, not as a division sign. No coin, no dollar sign, no document behind it.
-
-### 2.6 `financial-inputs` — Update details chooser row (custom)
-Where: third chooser row, "Financial inputs — Income, expenses, liabilities and existing properties." Rendered ~20px in the 40px chip, `--ink`.
-> **Prompt:** A minimal wallet: a rounded rectangle in a wide landscape ratio with a fold hinted by a second line across the upper third, and a small rounded notch on the right edge suggesting the card slot / clasp, drawn as a tiny rectangle breaking the outline. One object, no cash sticking out, no coins.
+The three chooser rows (Property details / Loan details / Financial inputs) use the product's **inked-sticker illustrations** — textured storybook objects anchored directly in the rows with no chip or thumbnail box, per the Paper frame's own annotation. The assets already exist in Paper (house-with-contract, clipboard-with-%, wallet-with-coins): **reuse them, do not generate line icons and do not regenerate the illustrations.** Full style definition, asset inventory with node IDs, and generation prompts for future pieces: `docs/illustration-style.md`.
 
 ### 2.7 `alert-circle` — error state *(standard: Lucide `alert-circle`)*
 Where: full-failure error panel (§9.3). Rendered 24px, `--ink` (the panel is calm, not red — the copy carries the message).
@@ -66,9 +58,8 @@ Where: M5 funds action card, ~20px in a 40px `--field` chip.
 Where: M5 "Update details" action card, ~20px in the 40px chip.
 > **Prompt:** A rounded square outline with a diagonal pencil entering from the top-right corner and stopping at centre: pencil is a slim elongated body with a small triangular tip, drawn as outline, overlapping the square's corner which breaks its outline where they meet.
 
-### 3.3 Financial-input row icons (custom, set of four — design as one family)
-Income / Expenses / Liabilities / Existing properties, ~18px, `--ink`.
-> **Prompt (set):** Four sibling line icons sharing identical stroke, corner radius and visual weight: (1) *Income* — a circle containing a dollar sign, the "$" drawn as an S-curve with a single vertical stroke through it; (2) *Expenses* — a downward-right arrow leaving a small rounded rectangle (money going out); (3) *Liabilities* — a credit card: landscape rounded rectangle with one full-width horizontal band near the top; (4) *Existing properties* — two overlapping house pentagons, the rear one clipped by the front. Present as a consistent family on one sheet.
+### 3.3 Financial-input row imagery
+If the four Financial-inputs rows (Income / Expenses / Liabilities / Existing properties) ever gain leading imagery, use the **inked-sticker illustration style**, not line icons — the input flow already illustrates these categories (name tag, coffee cup, car key, house key…; see `docs/illustration-style.md` §3 for the inventory and §4 for new-piece prompts). The Paper frames currently leave these rows text-only; that's the default.
 
 ---
 

@@ -355,7 +355,7 @@ White card, r20, shadow (§3.3), padding 28px 30px 30px. Contents update **in pl
 
 **Entry:** the page-level secondary CTA "Update details" (§7.9 / mobile dock §10.6). Desktop presents the same surfaces as centered modals; mobile as bottom sheets.
 
-**Chooser sheet** — title "Update details" 25px/700 · sub 14px `--muted`: "Choose what changes the calculation." · three rows (icon 40px in a `--field` chip, anchored in-row; title 15px/700; description 13px `--muted`; trailing chevron):
+**Chooser sheet** — title "Update details" 25px/700 · sub 14px `--muted`: "Choose what changes the calculation." · three rows (leading **inked-sticker illustration ~40px anchored directly in the row — no chip, no thumbnail box**, per the Paper frame's own note and `docs/illustration-style.md`; title 15px/700; description 13px `--muted`; trailing chevron). Illustrations: house-with-contract (Property), clipboard-with-% (Loan), wallet-with-coins (Financial) — reuse the existing Paper assets, do not regenerate:
 
 | Row | Description (verbatim from Paper) | Destination |
 | --- | --- | --- |
