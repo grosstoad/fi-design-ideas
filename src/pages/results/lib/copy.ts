@@ -1,6 +1,7 @@
 // Spec: results-page-spec.md §12 (canonical strings)
 export const copy = {
   brand: "fundiq",
+  header: { back: "Back", saveExit: "Save & exit" },
   hero: {
     eyebrow: "Results",
     h1: "Max property price by lender",
@@ -92,6 +93,7 @@ export const copy = {
     title: "No lender matched this scenario",
     body: "Based on your answers, no lender on our panel could offer a loan.",
     hero: "We couldn't find a match - yet.",
+    broker: "Talk to a broker about low-deposit options",
   },
   error: {
     title: "We couldn't calculate your results",
