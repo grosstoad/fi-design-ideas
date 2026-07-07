@@ -1,6 +1,6 @@
 // Spec: results-page-spec.md §4.1 (route shell)
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 import "./results.css";
 import { Header } from "./components/Header";
 import { Hero } from "./components/Hero";
@@ -15,10 +15,12 @@ import { createFixtureEngine } from "./engine/fixtureEngine";
 import { useResults } from "./hooks/useResults";
 import { useMediaQuery } from "./hooks/useMediaQuery";
 import { copy } from "./lib/copy";
+import { StatesGallery } from "./dev/StatesGallery";
 
 const engine = createFixtureEngine({ delayMs: 450 });
 
 export default function ResultsPage() {
+  const location = useLocation();
   const [params, setParams] = useSearchParams();
   const [announcement, setAnnouncement] = useState("");
   const [explainerOpen, setExplainerOpen] = useState(false);
@@ -29,6 +31,10 @@ export default function ResultsPage() {
   const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width: 1023px)");
   const results = useResults(engine);
+
+  if (location.pathname.endsWith("/dev-states")) {
+    return <StatesGallery />;
+  }
 
   const selectedId = params.get("lender");
   const defaultSelectedId = results.sortedLenders[0]?.id ?? null;

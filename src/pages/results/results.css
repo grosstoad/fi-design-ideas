@@ -1263,6 +1263,73 @@
   font-weight: 700;
 }
 
+.rp-gallery {
+  padding: 40px;
+}
+
+.rp-gallery > header {
+  max-width: 760px;
+  margin-bottom: 28px;
+}
+
+.rp-gallery h1 {
+  margin: 0 0 8px;
+  font-size: 36px;
+  line-height: 42px;
+}
+
+.rp-gallery > header p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 22px;
+}
+
+.rp-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 20px;
+}
+
+.rp-gallery-cell {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px;
+  background: var(--bg);
+}
+
+.rp-gallery-cell > h2 {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.rp-gallery .rp-update-overlay,
+.rp-gallery .rp-broker-overlay {
+  position: relative;
+  inset: auto;
+  z-index: auto;
+  display: block;
+  place-items: initial;
+}
+
+.rp-gallery .rp-update-scrim {
+  display: none;
+}
+
+.rp-gallery .rp-update-panel,
+.rp-gallery .rp-broker-panel {
+  position: relative;
+  z-index: auto;
+  width: 100%;
+  max-height: none;
+}
+
 @keyframes rp-shimmer {
   to {
     background-position: -220% 0;

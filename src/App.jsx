@@ -22,7 +22,7 @@ function App() {
         <Route path="/landing-a" element={<LandingANumberPage />} />
         <Route path="/insights" element={<InsightsPage />} />
         <Route path="/assessment" element={<AssessmentPage />} />
-        <Route path="/results" element={<ResultsPage />} />
+        <Route path="/results/*" element={<ResultsPage />} />
         <Route path="/comparison" element={<FundIqChartsComparisonPage />} />
         <Route path="/comparison/lending-analytics" element={<LibraryComparisonPage />} />
         <Route path="/comparison/recharts" element={<RechartsDashboardPage />} />
