@@ -1,0 +1,22 @@
+// Spec: results-page-spec.md §3.1 (token guard helpers)
+export const RESULT_TOKEN_HEX = new Set([
+  "#FFFFFF",
+  "#F8F8F5",
+  "#000000",
+  "#111111",
+  "#5F5E58",
+  "#8B8982",
+  "#D8D8D0",
+  "#E2E2DC",
+  "#CFCFC8",
+  "#167D7F",
+  "#85C7BE",
+  "#C2462C",
+  "#6E9BC4",
+  "#D9C34A",
+  "#D98E7A",
+  "#5E8FB5",
+  "#E59A3B",
+  "#7FA37A",
+  "#C98AB0",
+]);

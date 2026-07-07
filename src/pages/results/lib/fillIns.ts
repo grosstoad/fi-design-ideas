@@ -1,0 +1,20 @@
+// Spec: results-page-implementation-guide.md §3.4 (FILL-IN registry)
+export const FILL_INS = [
+  { id: 2, section: "§4.3/§9.1", defaultUsed: "fixture engine with injectable latency", blocking: false },
+  { id: 3, section: "§4.3/§5.3", defaultUsed: "savings supplied by DEFAULT_SCENARIO fixture", blocking: true },
+  { id: 4, section: "§5", defaultUsed: "fixture-only calculation definitions", blocking: true },
+  { id: 5, section: "§7.7", defaultUsed: "update details save re-runs fixture borrowing power", blocking: true },
+  { id: 6, section: "§5.2/§8", defaultUsed: "placeholder NSW-like stamp-duty curve", blocking: true },
+  { id: 7, section: "§7.6/§8", defaultUsed: "fixture LMI approximation above 80% LVR", blocking: true },
+  { id: 8, section: "§8", defaultUsed: "per-lender fixture fees", blocking: true },
+  { id: 10, section: "§7.1", defaultUsed: "Save & exit stubbed confirmation", blocking: false },
+  { id: 11, section: "§7.7", defaultUsed: "financial-input rows show prototype dead-end note", blocking: false },
+  { id: 12, section: "§13", defaultUsed: "broker lead stub and placeholder consent", blocking: false },
+  { id: 13, section: "§13.2", defaultUsed: "privacy-policy link uses placeholder href", blocking: false },
+  { id: 17, section: "§12", defaultUsed: "prototype copy in lib/copy.ts", blocking: false },
+  { id: 20, section: "§4.2", defaultUsed: "1024px breakpoint, no tablet-specific layout", blocking: false },
+  { id: 21, section: "§4.3/§9.6", defaultUsed: "static fixture rates-as-at date", blocking: false },
+  { id: 26, section: "§12a", defaultUsed: "placeholder comparison-rate warning", blocking: true },
+  { id: 28, section: "§3.2/§7", defaultUsed: "desktop extrapolated from mobile Paper frames", blocking: false },
+  { id: 30, section: "§7.7", defaultUsed: "property price in mind is informational only", blocking: false },
+] as const;
