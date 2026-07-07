@@ -7,6 +7,7 @@ import { Hero } from "./components/Hero";
 import { LenderDetail } from "./components/LenderDetail";
 import { LenderList } from "./components/LenderList";
 import { ListSkeleton, StatePanel } from "./components/PageStates";
+import { UpdateDetailsOverlay } from "./components/UpdateDetailsOverlay";
 import { createFixtureEngine } from "./engine/fixtureEngine";
 import { useResults } from "./hooks/useResults";
 import { copy } from "./lib/copy";
@@ -18,6 +19,7 @@ export default function ResultsPage() {
   const [announcement, setAnnouncement] = useState("");
   const [explainerOpen, setExplainerOpen] = useState(false);
   const [utilityOpen, setUtilityOpen] = useState<"save" | "update" | null>(null);
+  const [updateOpen, setUpdateOpen] = useState(false);
   const results = useResults(engine);
 
   const selectedId = params.get("lender");
@@ -49,9 +51,9 @@ export default function ResultsPage() {
             {results.status === "loading" ? (
               <ListSkeleton />
             ) : results.status === "error" ? (
-              <StatePanel kind="error" onRetry={results.retry} onUpdate={() => setUtilityOpen("update")} />
+              <StatePanel kind="error" onRetry={results.retry} onUpdate={() => setUpdateOpen(true)} />
             ) : results.status === "empty" ? (
-              <StatePanel kind="empty" onUpdate={() => setUtilityOpen("update")} />
+              <StatePanel kind="empty" onUpdate={() => setUpdateOpen(true)} />
             ) : (
               <LenderList
                 lenders={results.sortedLenders}
@@ -71,7 +73,7 @@ export default function ResultsPage() {
                 scenario={results.scenario}
                 sortBy={results.sortBy}
                 onBroker={() => setUtilityOpen("save")}
-                onUpdate={() => setUtilityOpen("update")}
+                onUpdate={() => setUpdateOpen(true)}
               />
             ) : (
               <aside className="rp-detail-placeholder" aria-live="polite">
@@ -106,6 +108,7 @@ export default function ResultsPage() {
           </button>
         </div>
       ) : null}
+      {updateOpen ? <UpdateDetailsOverlay scenario={results.scenario} onClose={() => setUpdateOpen(false)} onSave={results.saveScenario} /> : null}
     </div>
   );
 }

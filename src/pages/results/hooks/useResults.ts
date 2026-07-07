@@ -69,7 +69,7 @@ export function useResults(engine: ServiceabilityEngine) {
 
   useEffect(() => {
     void runCalculation(scenario, "loading");
-  }, [runCalculation, scenario]);
+  }, [runCalculation]);
 
   useEffect(() => {
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ scenario, sortBy }));

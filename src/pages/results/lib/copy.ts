@@ -46,6 +46,7 @@ export const copy = {
     title: "Update details",
     sub: "Choose what changes the calculation.",
     save: "Save and recalculate",
+    saving: "Saving...",
     cancel: "Cancel",
     back: "Back to Results",
     property: {
