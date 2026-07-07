@@ -8,8 +8,11 @@ import { LenderDetail } from "./components/LenderDetail";
 import { LenderList } from "./components/LenderList";
 import { ListSkeleton, StatePanel } from "./components/PageStates";
 import { UpdateDetailsOverlay } from "./components/UpdateDetailsOverlay";
+import { BottomSheet } from "./components/BottomSheet";
+import { Dock } from "./components/Dock";
 import { createFixtureEngine } from "./engine/fixtureEngine";
 import { useResults } from "./hooks/useResults";
+import { useMediaQuery } from "./hooks/useMediaQuery";
 import { copy } from "./lib/copy";
 
 const engine = createFixtureEngine({ delayMs: 450 });
@@ -20,6 +23,8 @@ export default function ResultsPage() {
   const [explainerOpen, setExplainerOpen] = useState(false);
   const [utilityOpen, setUtilityOpen] = useState<"save" | "update" | null>(null);
   const [updateOpen, setUpdateOpen] = useState(false);
+  const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
+  const isMobile = useMediaQuery("(max-width: 1023px)");
   const results = useResults(engine);
 
   const selectedId = params.get("lender");
@@ -38,6 +43,7 @@ export default function ResultsPage() {
   function selectLender(id: string) {
     const lender = results.sortedLenders.find((item) => item.id === id);
     setParams({ lender: id });
+    if (isMobile) setMobileDetailOpen(true);
     if (lender) setAnnouncement(copy.list.announcement(lender.name, lender.product));
   }
 
@@ -107,6 +113,26 @@ export default function ResultsPage() {
             {copy.update.cancel}
           </button>
         </div>
+      ) : null}
+      {isMobile && selected && results.maxPriceLeader && mobileDetailOpen ? (
+        <BottomSheet title={`${selected.name} ${selected.product}`} onClose={() => setMobileDetailOpen(false)}>
+          <LenderDetail
+            lender={selected}
+            leader={results.maxPriceLeader}
+            scenario={results.scenario}
+            sortBy={results.sortBy}
+            onBroker={() => setUtilityOpen("save")}
+            onUpdate={() => setUpdateOpen(true)}
+          />
+        </BottomSheet>
+      ) : null}
+      {isMobile ? (
+        <Dock
+          empty={results.status === "empty"}
+          hidden={updateOpen || Boolean(utilityOpen) || mobileDetailOpen || explainerOpen}
+          onBroker={() => setUtilityOpen("save")}
+          onUpdate={() => setUpdateOpen(true)}
+        />
       ) : null}
       {updateOpen ? <UpdateDetailsOverlay scenario={results.scenario} onClose={() => setUpdateOpen(false)} onSave={results.saveScenario} /> : null}
     </div>

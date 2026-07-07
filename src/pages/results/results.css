@@ -26,6 +26,10 @@
   box-sizing: border-box;
 }
 
+.rp-scroll-locked {
+  overflow: hidden;
+}
+
 .rp-page :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
@@ -1050,6 +1054,38 @@
   gap: 10px;
 }
 
+.rp-dock,
+.rp-mobile-sheet {
+  display: none;
+}
+
+.rp-mobile-scrim {
+  position: fixed;
+  inset: 0;
+  border: 0;
+  background: rgba(0, 0, 0, 0.34);
+}
+
+.rp-mobile-sheet-panel {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: 90vh;
+  overflow: auto;
+  border-radius: 16px 16px 0 0;
+  background: var(--bg);
+  padding: 12px 0 136px;
+  box-shadow: 0 -10px 40px -12px rgba(0, 0, 0, 0.25);
+}
+
+.rp-sheet-title {
+  margin: 0 56px 12px 32px;
+  font-size: 20px;
+  line-height: 25px;
+  font-weight: 700;
+}
+
 @keyframes rp-shimmer {
   to {
     background-position: -220% 0;
@@ -1203,7 +1239,8 @@
     overflow: hidden;
   }
 
-  .rp-detail-placeholder {
+  .rp-detail-placeholder,
+  .rp-grid > .rp-detail-card {
     display: none;
   }
 
@@ -1265,6 +1302,44 @@
 
   .rp-edit-row {
     min-height: 52px;
+  }
+
+  .rp-mobile-sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 85;
+    display: block;
+  }
+
+  .rp-mobile-sheet .rp-eyebrow {
+    margin: 8px 32px 4px;
+  }
+
+  .rp-mobile-sheet .rp-detail-card {
+    display: block;
+    margin: 0 32px;
+    padding-bottom: 16px;
+  }
+
+  .rp-mobile-sheet .rp-cta-row {
+    position: sticky;
+    bottom: 0;
+    margin: 18px -1px -17px;
+    padding: 14px 16px 18px;
+    border-top: 1px solid var(--line-soft);
+    background: var(--bg);
+  }
+
+  .rp-dock {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 30;
+    display: grid;
+    gap: 9px;
+    padding: 28px 22px calc(26px + env(safe-area-inset-bottom));
+    background: linear-gradient(to top, var(--bg) 72%, rgba(255, 255, 255, 0));
   }
 }
 
