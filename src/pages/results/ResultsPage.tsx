@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import "./results.css";
 import { Header } from "./components/Header";
 import { Hero } from "./components/Hero";
+import { LenderDetail } from "./components/LenderDetail";
 import { LenderList } from "./components/LenderList";
 import { ListSkeleton, StatePanel } from "./components/PageStates";
 import { createFixtureEngine } from "./engine/fixtureEngine";
@@ -63,10 +64,21 @@ export default function ResultsPage() {
                 onSortChange={results.setSortBy}
               />
             )}
-            <aside className="rp-detail-placeholder" aria-live="polite">
-              <h2>{selected ? `${selected.name} ${selected.product}` : copy.card.selected}</h2>
-              <p>{results.status === "recalculating" ? copy.loading.checking(results.lenders.length) : "Detail card lands in milestone 3."}</p>
-            </aside>
+            {selected && results.maxPriceLeader ? (
+              <LenderDetail
+                lender={selected}
+                leader={results.maxPriceLeader}
+                scenario={results.scenario}
+                sortBy={results.sortBy}
+                onBroker={() => setUtilityOpen("save")}
+                onUpdate={() => setUtilityOpen("update")}
+              />
+            ) : (
+              <aside className="rp-detail-placeholder" aria-live="polite">
+                <h2>{copy.card.selected}</h2>
+                <p>{copy.loading.checking(8)}</p>
+              </aside>
+            )}
           </div>
           <div className="rp-live" aria-live="polite">
             {announcement}
