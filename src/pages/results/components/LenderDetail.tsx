@@ -17,7 +17,7 @@ interface LenderDetailProps {
   onUpdate: () => void;
 }
 
-function RatePair({ lender }: { lender: LenderResult }) {
+function MetricsRow({ lender }: { lender: LenderResult }) {
   const comparison = lender.comparisonRate == null ? "—" : fmtPct(lender.comparisonRate, " p.a.");
   return (
     <div className="rp-rate-pair" data-testid="rate-pair">
@@ -29,15 +29,10 @@ function RatePair({ lender }: { lender: LenderResult }) {
         <span>{copy.card.rows.comparisonRate}</span>
         <strong className="rp-rate-value">{comparison}</strong>
       </div>
-    </div>
-  );
-}
-
-function StatementRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rp-statement-row">
-      <span>{label}</span>
-      <strong>{value}</strong>
+      <div>
+        <span>{copy.card.rows.repayment}</span>
+        <strong>{fmtMoney(lender.monthlyRepayment)}</strong>
+      </div>
     </div>
   );
 }
@@ -62,24 +57,19 @@ function CompareFooter({ lender, leader, sortBy }: { lender: LenderResult; leade
 }
 
 export function LenderDetail({ lender, leader, scenario, sortBy, submitted = false, onBroker, onUpdate }: LenderDetailProps) {
-  const repaymentSuffix = scenario.loan.repay === "io" ? " (interest only)" : "";
-  const repayLabel = scenario.loan.repay === "io" ? "Interest only" : "P&I";
-  const rateLabel = scenario.loan.rateType === "fixed" ? "Fixed" : "Variable";
+  const purposeLabel = scenario.loan.purpose === "inv" ? "Investment" : "Owner occupied";
+  const repayLabel = scenario.loan.repay === "io" ? `Interest only ${scenario.loan.interestOnlyYears} years` : "P&I";
+  const rateLabel = scenario.loan.rateType === "fixed" ? `Fixed ${scenario.loan.fixedYears} years` : "Variable";
+  const metadata = [lender.product, purposeLabel, repayLabel, rateLabel, `${scenario.loan.termYears} years`, `${fmtLvr(lender.lvr)} LVR`].join(" · ");
 
   return (
     <aside className="rp-detail-card" aria-labelledby="rp-detail-title">
       <div className="rp-identity-band">
         <div>
-          <h2 id="rp-detail-title">{`${lender.name} ${lender.product}`}</h2>
-          <p>{`${lender.name} · ${repayLabel} · ${rateLabel}`}</p>
-        </div>
-        <div className="rp-corner-tag">
-          <span>{copy.card.maxPriceTag}</span>
-          <strong>{fmtPrice(lender.maxPrice)}</strong>
+          <h2 id="rp-detail-title">{lender.name}</h2>
+          <p>{metadata}</p>
         </div>
       </div>
-
-      <RatePair lender={lender} />
 
       <div className="rp-capacity-pair" data-testid="capacity-pair">
         <div>
@@ -92,10 +82,7 @@ export function LenderDetail({ lender, leader, scenario, sortBy, submitted = fal
         </div>
       </div>
 
-      <div className="rp-statement">
-        <StatementRow label={copy.card.rows.repayment} value={`${fmtMoney(lender.monthlyRepayment)}${repaymentSuffix}`} />
-        <StatementRow label={copy.card.rows.lvr} value={lender.lmi > 0 ? `${fmtLvr(lender.lvr)} · incl. LMI ${fmtMoney(lender.lmi)}` : fmtLvr(lender.lvr)} />
-      </div>
+      <MetricsRow lender={lender} />
 
       <FundsToComplete lender={lender} scenario={scenario} onUpdate={onUpdate} />
       <CompareFooter lender={lender} leader={leader} sortBy={sortBy} />

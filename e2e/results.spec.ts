@@ -6,7 +6,8 @@ test("desktop: select, sort, update details, broker success", async ({ page }, t
   await expect(page.getByRole("option", { name: /1\. Macquarie/ })).toBeVisible();
 
   await page.getByRole("option", { name: /3\. NAB/ }).click();
-  await expect(page.getByRole("heading", { name: /NAB Tailored Home Loan/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "NAB" })).toBeVisible();
+  await expect(page.getByText(/Tailored Home Loan · Owner occupied/)).toBeVisible();
 
   const beforeHero = await page.locator(".rp-hero-figure").textContent();
   await page.getByRole("button", { name: "Sort" }).click();
@@ -19,7 +20,7 @@ test("desktop: select, sort, update details, broker success", async ({ page }, t
   await page.getByLabel("Repayment type").selectOption("io");
   await expect(page.getByText("Interest-only term")).toBeVisible();
   await page.getByRole("button", { name: "Save and recalculate" }).click();
-  await expect(page.getByText(/interest only/)).toBeVisible();
+  await expect(page.locator(".rp-identity-band p").filter({ hasText: "Interest only" })).toBeVisible();
 
   await page.getByRole("button", { name: "Connect with a broker" }).click();
   await page.getByLabel("First name").fill("Sarah");

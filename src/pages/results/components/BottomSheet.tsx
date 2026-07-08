@@ -1,5 +1,5 @@
 // Spec: results-page-spec.md §10.4 (mobile bottom sheet)
-import { useEffect, useId } from "react";
+import { useEffect } from "react";
 import type { ReactNode } from "react";
 import { copy } from "../lib/copy";
 
@@ -10,8 +10,6 @@ interface BottomSheetProps {
 }
 
 export function BottomSheet({ title, children, onClose }: BottomSheetProps) {
-  const titleId = useId();
-
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
@@ -25,7 +23,7 @@ export function BottomSheet({ title, children, onClose }: BottomSheetProps) {
   }, [onClose]);
 
   return (
-    <div className="rp-mobile-sheet" role="dialog" aria-modal="true" aria-labelledby={titleId}>
+    <div className="rp-mobile-sheet" role="dialog" aria-modal="true" aria-label={`${copy.card.selected}: ${title}`}>
       <button type="button" className="rp-mobile-scrim" aria-label={copy.update.cancel} onClick={onClose} />
       <div className="rp-mobile-sheet-panel">
         <div className="rp-sheet-handle" aria-hidden="true" />
@@ -33,9 +31,6 @@ export function BottomSheet({ title, children, onClose }: BottomSheetProps) {
           ×
         </button>
         <div className="rp-eyebrow">{copy.card.selected}</div>
-        <h2 id={titleId} className="rp-sheet-title">
-          {title}
-        </h2>
         {children}
       </div>
     </div>

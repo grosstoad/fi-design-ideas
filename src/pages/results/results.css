@@ -413,10 +413,6 @@
 }
 
 .rp-identity-band {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  align-items: flex-start;
   margin: -12px -14px 16px;
   padding: 16px;
   border-radius: 8px;
@@ -431,40 +427,24 @@
 }
 
 .rp-identity-band p {
-  margin: 2px 0 0;
+  margin: 4px 0 0;
   color: var(--muted);
   font-size: 13.5px;
-  line-height: 18px;
-}
-
-.rp-corner-tag {
-  flex: 0 0 auto;
-  text-align: right;
-}
-
-.rp-corner-tag span {
-  display: block;
-  color: var(--muted-2);
-  font-size: 11px;
-  line-height: 14px;
-}
-
-.rp-corner-tag strong {
-  display: block;
-  margin-top: 2px;
-  font-size: 18px;
-  line-height: 22px;
-  font-weight: 700;
+  line-height: 19px;
 }
 
 .rp-rate-pair {
-  display: flex;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
   margin: 0 0 14px;
+  padding: 12px 0;
+  border-top: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line-soft);
 }
 
 .rp-rate-pair div {
-  min-width: 112px;
+  min-width: 0;
 }
 
 .rp-rate-pair span {
@@ -474,7 +454,7 @@
   line-height: 15px;
 }
 
-.rp-rate-value {
+.rp-rate-pair strong {
   display: block;
   margin-top: 4px;
   color: var(--ink);
@@ -544,6 +524,7 @@
 }
 
 .rp-funds {
+  border-top: 0;
   border-bottom: 1px solid var(--line-soft);
 }
 
@@ -1501,7 +1482,6 @@
 
   .rp-rate-pair,
   .rp-capacity-pair,
-  .rp-statement,
   .rp-funds,
   .rp-compare,
   .rp-cta-row {
@@ -1509,12 +1489,12 @@
     margin-right: 16px;
   }
 
-  .rp-rate-pair {
-    margin-top: 14px;
-  }
-
   .rp-capacity-pair {
     grid-template-columns: 1fr;
+  }
+
+  .rp-rate-pair {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .rp-funds-breakdown {
