@@ -8,7 +8,10 @@ test("desktop: select, sort, update details, broker success", async ({ page }, t
   await page.getByRole("option", { name: /3\. NAB/ }).click();
   await expect(page.getByRole("heading", { name: "NAB" })).toBeVisible();
   await expect(page.locator(".rp-loan-setup strong").filter({ hasText: "Tailored Home Loan" })).toBeVisible();
-  await expect(page.locator(".rp-loan-setup p").filter({ hasText: /Owner occupied · P&I · Variable · 30 years/ })).toBeVisible();
+  await expect(page.locator(".rp-loan-fields div").filter({ hasText: "Loan purposeOwner occupied" })).toBeVisible();
+  await expect(page.locator(".rp-loan-fields div").filter({ hasText: "RepaymentP&I" })).toBeVisible();
+  await expect(page.locator(".rp-loan-fields div").filter({ hasText: "Rate typeVariable" })).toBeVisible();
+  await expect(page.locator(".rp-loan-fields div").filter({ hasText: "Loan term30 years" })).toBeVisible();
 
   const beforeHero = await page.locator(".rp-hero-figure").textContent();
   await page.getByRole("button", { name: "Sort" }).click();
@@ -21,7 +24,7 @@ test("desktop: select, sort, update details, broker success", async ({ page }, t
   await page.getByLabel("Repayment type").selectOption("io");
   await expect(page.getByText("Interest-only term")).toBeVisible();
   await page.getByRole("button", { name: "Save and recalculate" }).click();
-  await expect(page.locator(".rp-loan-setup p").filter({ hasText: "Interest only" })).toBeVisible();
+  await expect(page.locator(".rp-loan-fields div").filter({ hasText: "RepaymentInterest only" })).toBeVisible();
 
   await page.getByRole("button", { name: "Update loan details" }).click();
   await expect(page.getByRole("heading", { name: "Update loan assumptions" })).toBeVisible();

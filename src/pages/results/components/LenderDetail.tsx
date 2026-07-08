@@ -61,7 +61,13 @@ export function LenderDetail({ lender, leader, scenario, sortBy, submitted = fal
   const purposeLabel = scenario.loan.purpose === "inv" ? "Investment" : "Owner occupied";
   const repayLabel = scenario.loan.repay === "io" ? `Interest only ${scenario.loan.interestOnlyYears} years` : "P&I";
   const rateLabel = scenario.loan.rateType === "fixed" ? `Fixed ${scenario.loan.fixedYears} years` : "Variable";
-  const loanSetup = [purposeLabel, repayLabel, rateLabel, `${scenario.loan.termYears} years`, `${fmtLvr(lender.lvr)} LVR`].join(" · ");
+  const loanFields = [
+    [copy.card.loanFields.purpose, purposeLabel],
+    [copy.card.loanFields.repayment, repayLabel],
+    [copy.card.loanFields.rateType, rateLabel],
+    [copy.card.loanFields.term, `${scenario.loan.termYears} years`],
+    [copy.card.loanFields.lvr, fmtLvr(lender.lvr)],
+  ];
 
   return (
     <aside className="rp-detail-card" aria-labelledby="rp-detail-title">
@@ -85,10 +91,15 @@ export function LenderDetail({ lender, leader, scenario, sortBy, submitted = fal
       <MetricsRow lender={lender} />
 
       <section className="rp-loan-setup" aria-label={copy.card.loanDetailsAria}>
-        <div>
-          <strong>{lender.product}</strong>
-          <p>{loanSetup}</p>
-        </div>
+        <strong className="rp-product-name">{lender.product}</strong>
+        <dl className="rp-loan-fields">
+          {loanFields.map(([label, value]) => (
+            <div key={label}>
+              <dt>{label}</dt>
+              <dd>{value}</dd>
+            </div>
+          ))}
+        </dl>
         <button type="button" className="rp-link-button" onClick={onUpdateLoan}>
           {copy.card.updateLoanDetails}
         </button>

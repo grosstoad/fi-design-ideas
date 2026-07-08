@@ -421,8 +421,8 @@
 
 .rp-identity-band h2 {
   margin: 0;
-  font-size: 21px;
-  line-height: 26px;
+  font-size: 19px;
+  line-height: 24px;
   font-weight: 700;
 }
 
@@ -480,25 +480,24 @@
   display: block;
   margin-top: 6px;
   color: var(--ink);
-  font-size: 24px;
-  line-height: 27px;
+  font-size: 22px;
+  line-height: 25px;
   font-weight: 700;
 }
 
 .rp-loan-setup {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
+  display: grid;
+  gap: 10px;
   padding: 0 0 14px;
   border-bottom: 1px solid var(--line-soft);
 }
 
-.rp-loan-setup div {
+.rp-product-name,
+.rp-loan-fields div {
   min-width: 0;
 }
 
-.rp-loan-setup strong {
+.rp-product-name {
   display: block;
   color: var(--ink);
   font-size: 14px;
@@ -506,15 +505,30 @@
   font-weight: 700;
 }
 
-.rp-loan-setup p {
-  margin: 3px 0 0;
+.rp-loan-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+  gap: 10px 12px;
+  margin: 0;
+}
+
+.rp-loan-fields dt {
+  display: block;
   color: var(--muted);
-  font-size: 13px;
-  line-height: 18px;
+  font-size: 11.5px;
+  line-height: 15px;
+}
+
+.rp-loan-fields dd {
+  margin: 4px 0 0;
+  color: var(--ink);
+  font-size: 13.5px;
+  line-height: 17px;
+  font-weight: 700;
 }
 
 .rp-loan-setup .rp-link-button {
-  flex: 0 0 auto;
+  justify-self: start;
   font-size: 13px;
   line-height: 18px;
 }
@@ -1518,20 +1532,25 @@
   }
 
   .rp-capacity-pair {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .rp-capacity-pair div {
+    padding: 12px;
+  }
+
+  .rp-capacity-pair strong {
+    font-size: 20px;
+    line-height: 24px;
   }
 
   .rp-rate-pair {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .rp-loan-setup {
-    display: grid;
-    gap: 8px;
-  }
-
-  .rp-loan-setup .rp-link-button {
-    justify-self: start;
+  .rp-identity-band h2 {
+    font-size: 18px;
+    line-height: 23px;
   }
 
   .rp-funds-breakdown {

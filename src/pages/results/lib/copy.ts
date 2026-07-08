@@ -42,6 +42,13 @@ export const copy = {
     compareAria: "Selected lender comparison",
     loanDetailsAria: "Loan details",
     updateLoanDetails: "Update loan details",
+    loanFields: {
+      purpose: "Loan purpose",
+      repayment: "Repayment",
+      rateType: "Rate type",
+      term: "Loan term",
+      lvr: "LVR",
+    },
     rows: { rate: "Rate", comparisonRate: "Comparison rate", repayment: "Monthly repayment", lvr: "LVR" },
   },
   update: {
