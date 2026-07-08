@@ -15,6 +15,7 @@ interface LenderDetailProps {
   submitted?: boolean;
   onBroker: () => void;
   onUpdate: () => void;
+  onUpdateLoan?: () => void;
 }
 
 function MetricsRow({ lender }: { lender: LenderResult }) {
@@ -56,18 +57,17 @@ function CompareFooter({ lender, leader, sortBy }: { lender: LenderResult; leade
   );
 }
 
-export function LenderDetail({ lender, leader, scenario, sortBy, submitted = false, onBroker, onUpdate }: LenderDetailProps) {
+export function LenderDetail({ lender, leader, scenario, sortBy, submitted = false, onBroker, onUpdate, onUpdateLoan = onUpdate }: LenderDetailProps) {
   const purposeLabel = scenario.loan.purpose === "inv" ? "Investment" : "Owner occupied";
   const repayLabel = scenario.loan.repay === "io" ? `Interest only ${scenario.loan.interestOnlyYears} years` : "P&I";
   const rateLabel = scenario.loan.rateType === "fixed" ? `Fixed ${scenario.loan.fixedYears} years` : "Variable";
-  const metadata = [lender.product, purposeLabel, repayLabel, rateLabel, `${scenario.loan.termYears} years`, `${fmtLvr(lender.lvr)} LVR`].join(" · ");
+  const loanSetup = [purposeLabel, repayLabel, rateLabel, `${scenario.loan.termYears} years`, `${fmtLvr(lender.lvr)} LVR`].join(" · ");
 
   return (
     <aside className="rp-detail-card" aria-labelledby="rp-detail-title">
       <div className="rp-identity-band">
         <div>
           <h2 id="rp-detail-title">{lender.name}</h2>
-          <p>{metadata}</p>
         </div>
       </div>
 
@@ -83,6 +83,16 @@ export function LenderDetail({ lender, leader, scenario, sortBy, submitted = fal
       </div>
 
       <MetricsRow lender={lender} />
+
+      <section className="rp-loan-setup" aria-label={copy.card.loanDetailsAria}>
+        <div>
+          <strong>{lender.product}</strong>
+          <p>{loanSetup}</p>
+        </div>
+        <button type="button" className="rp-link-button" onClick={onUpdateLoan}>
+          {copy.card.updateLoanDetails}
+        </button>
+      </section>
 
       <FundsToComplete lender={lender} scenario={scenario} onUpdate={onUpdate} />
       <CompareFooter lender={lender} leader={leader} sortBy={sortBy} />

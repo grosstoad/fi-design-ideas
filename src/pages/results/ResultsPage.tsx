@@ -8,6 +8,7 @@ import { LenderDetail } from "./components/LenderDetail";
 import { LenderList } from "./components/LenderList";
 import { ListSkeleton, StatePanel } from "./components/PageStates";
 import { UpdateDetailsOverlay } from "./components/UpdateDetailsOverlay";
+import type { UpdateDetailsStep } from "./components/UpdateDetailsOverlay";
 import { BottomSheet } from "./components/BottomSheet";
 import { Dock } from "./components/Dock";
 import { BrokerOverlay } from "./components/BrokerOverlay";
@@ -25,7 +26,7 @@ export default function ResultsPage() {
   const [announcement, setAnnouncement] = useState("");
   const [explainerOpen, setExplainerOpen] = useState(false);
   const [utilityOpen, setUtilityOpen] = useState<"save" | "update" | null>(null);
-  const [updateOpen, setUpdateOpen] = useState(false);
+  const [updateStep, setUpdateStep] = useState<UpdateDetailsStep | null>(null);
   const [brokerOpen, setBrokerOpen] = useState(false);
   const [brokerSubmitted, setBrokerSubmitted] = useState(false);
   const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
@@ -66,9 +67,9 @@ export default function ResultsPage() {
             {results.status === "loading" ? (
               <ListSkeleton />
             ) : results.status === "error" ? (
-              <StatePanel kind="error" onRetry={results.retry} onUpdate={() => setUpdateOpen(true)} />
+              <StatePanel kind="error" onRetry={results.retry} onUpdate={() => setUpdateStep("chooser")} />
             ) : results.status === "empty" ? (
-              <StatePanel kind="empty" onUpdate={() => setUpdateOpen(true)} />
+              <StatePanel kind="empty" onUpdate={() => setUpdateStep("chooser")} />
             ) : (
               <LenderList
                 lenders={results.sortedLenders}
@@ -89,7 +90,8 @@ export default function ResultsPage() {
                 sortBy={results.sortBy}
                 submitted={brokerSubmitted}
                 onBroker={() => setBrokerOpen(true)}
-                onUpdate={() => setUpdateOpen(true)}
+                onUpdate={() => setUpdateStep("chooser")}
+                onUpdateLoan={() => setUpdateStep("loan")}
               />
             ) : (
               <aside className="rp-detail-placeholder" aria-live="polite">
@@ -133,7 +135,8 @@ export default function ResultsPage() {
             sortBy={results.sortBy}
             submitted={brokerSubmitted}
             onBroker={() => setBrokerOpen(true)}
-            onUpdate={() => setUpdateOpen(true)}
+            onUpdate={() => setUpdateStep("chooser")}
+            onUpdateLoan={() => setUpdateStep("loan")}
           />
         </BottomSheet>
       ) : null}
@@ -141,9 +144,9 @@ export default function ResultsPage() {
         <Dock
           empty={results.status === "empty"}
           submitted={brokerSubmitted}
-          hidden={updateOpen || brokerOpen || Boolean(utilityOpen) || mobileDetailOpen || explainerOpen}
+          hidden={Boolean(updateStep) || brokerOpen || Boolean(utilityOpen) || mobileDetailOpen || explainerOpen}
           onBroker={() => setBrokerOpen(true)}
-          onUpdate={() => setUpdateOpen(true)}
+          onUpdate={() => setUpdateStep("chooser")}
         />
       ) : null}
       {brokerOpen ? (
@@ -155,7 +158,7 @@ export default function ResultsPage() {
           onClose={() => setBrokerOpen(false)}
         />
       ) : null}
-      {updateOpen ? <UpdateDetailsOverlay scenario={results.scenario} onClose={() => setUpdateOpen(false)} onSave={results.saveScenario} /> : null}
+      {updateStep ? <UpdateDetailsOverlay scenario={results.scenario} initialStep={updateStep} onClose={() => setUpdateStep(null)} onSave={results.saveScenario} /> : null}
     </div>
   );
 }

@@ -5,10 +5,11 @@ import type { Scenario } from "../engine/types";
 import { copy } from "../lib/copy";
 import { fmtMoneyShort } from "../lib/format";
 
-type Step = "chooser" | "property" | "loan" | "financial";
+export type UpdateDetailsStep = "chooser" | "property" | "loan" | "financial";
 
 interface UpdateDetailsOverlayProps {
   scenario: Scenario;
+  initialStep?: UpdateDetailsStep;
   onClose: () => void;
   onSave: (scenario: Scenario) => Promise<void>;
 }
@@ -24,8 +25,8 @@ function FieldRow({ label, children, conditional = false }: { label: string; chi
   );
 }
 
-export function UpdateDetailsOverlay({ scenario, onClose, onSave }: UpdateDetailsOverlayProps) {
-  const [step, setStep] = useState<Step>("chooser");
+export function UpdateDetailsOverlay({ scenario, initialStep = "chooser", onClose, onSave }: UpdateDetailsOverlayProps) {
+  const [step, setStep] = useState<UpdateDetailsStep>(initialStep);
   const [draft, setDraft] = useState<Scenario>(scenario);
   const [saving, setSaving] = useState(false);
   const [deadend, setDeadend] = useState("");

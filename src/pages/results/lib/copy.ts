@@ -40,6 +40,8 @@ export const copy = {
     viewAll: "View all lenders",
     maxPriceTag: "Max price",
     compareAria: "Selected lender comparison",
+    loanDetailsAria: "Loan details",
+    updateLoanDetails: "Update loan details",
     rows: { rate: "Rate", comparisonRate: "Comparison rate", repayment: "Monthly repayment", lvr: "LVR" },
   },
   update: {

@@ -426,13 +426,6 @@
   font-weight: 700;
 }
 
-.rp-identity-band p {
-  margin: 4px 0 0;
-  color: var(--muted);
-  font-size: 13.5px;
-  line-height: 19px;
-}
-
 .rp-rate-pair {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -490,6 +483,40 @@
   font-size: 24px;
   line-height: 27px;
   font-weight: 700;
+}
+
+.rp-loan-setup {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 0 14px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.rp-loan-setup div {
+  min-width: 0;
+}
+
+.rp-loan-setup strong {
+  display: block;
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 700;
+}
+
+.rp-loan-setup p {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.rp-loan-setup .rp-link-button {
+  flex: 0 0 auto;
+  font-size: 13px;
+  line-height: 18px;
 }
 
 .rp-statement {
@@ -1482,6 +1509,7 @@
 
   .rp-rate-pair,
   .rp-capacity-pair,
+  .rp-loan-setup,
   .rp-funds,
   .rp-compare,
   .rp-cta-row {
@@ -1495,6 +1523,15 @@
 
   .rp-rate-pair {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .rp-loan-setup {
+    display: grid;
+    gap: 8px;
+  }
+
+  .rp-loan-setup .rp-link-button {
+    justify-self: start;
   }
 
   .rp-funds-breakdown {
