@@ -1,4 +1,4 @@
-# FundIQ Results Page — Build Specification (Draft for review)
+# Fundora Results Page — Build Specification (Draft for review)
 
 **Status:** DRAFT v3 — ready for owner review. Everything measurable is taken from the **Paper artboard `18WZ-0` ("Results v8 — Clean selected card + detail flow")**, fetched and measured directly (mobile 393px frames; desktop values extrapolated, 🔶 #28). Judgement calls follow `docs/results-page-spec-review.md` §9 and are marked **[ADOPTED]** (override if wrong). Items requiring owner/business input are marked **🔶 FILL-IN #n** inline and collected in §14 as a checklist.
 
@@ -13,6 +13,8 @@
 - **Board-note principles** (from the artboard's "Focused Paper pass" header) recorded in §2a: clean selected card, no redundant copy, separate controls (sort ≠ update), funds after selection — never the default headline.
 - Non-top-selected treatment ("Compare footer") specced from cards "E Non-top selected" / "M4 Compare footer" (§7.8a).
 - FILL-INs #6 (state editable — yes, via Update details → Property details), #16 (palette) resolved; #27 resolved (frames verified). Reference frames: Paper `01KSYP7T3MFEQHHED41F3PQB58/3-0` artboard `18WZ-0` (all five rows swept: Core flow 01–05, Header copy variations, Selected card hierarchy variations, Selected lender detail variations A–E, Detail editing destinations, Stronger selected-card variations M1–M5) and Paper `01KMVY07H2B05015VVNPYFHRWS` node `4WM-0` — the latter inspiration, not literal, per the owner's note.
+
+**v3.2 changes (casual-client brand alignment, owner decisions 2026-07-08):** brand name is **Fundora** (C1 — reverses the 07-06 fundiq pick, made before the brand repo surfaced); font **Inter 400/600/700** (§3.2); tokens realigned to the casual-client hue system — Grey Page `#FAFAFA` surface model, tiered teal, primary buttons now `--teal` fill with black label everywhere (C2 — reverses the Paper-frame black CTA), mint kept (C3); one shared 10px radius; character/avatar coexists with the object illustrations, scoped to interpretive moments (C4, see `docs/illustration-style.md`); our motion system governs over casual-client's bg-only rule (C5). Full comparison: `docs/casual-client-alignment.md`.
 
 **How to review this doc:** read top to bottom, correct any [ADOPTED] decision you disagree with, and answer the numbered FILL-INs (many are one-liners). Once §14 is answered, this spec is intended to be handed to an engineer or a coding agent verbatim.
 
@@ -41,7 +43,7 @@ Cards named in the text without a deep link ("02 Selected lender clean card", "0
 
 ## 1. Purpose and scope
 
-The results page is the final step (7 of 7) of the FundIQ affordability flow. It shows the user's **maximum property price per lender**, lets them explore each lender's loan behind that number, adjust loan settings, understand the cash needed to settle, and convert to a broker call-back.
+The results page is the final step (7 of 7) of the Fundora affordability flow. It shows the user's **maximum property price per lender**, lets them explore each lender's loan behind that number, adjust loan settings, understand the cash needed to settle, and convert to a broker call-back.
 
 In scope: results list, lender detail, loan-detail editing, funds-to-complete, broker capture, save/exit, loading/empty/error states, desktop + mobile.
 Out of scope: the preceding form flow, broker CRM internals, authentication UI.
@@ -84,20 +86,23 @@ The artboard's "Focused Paper pass" note states four principles that govern ever
 ### 3.1 Colour
 
 ```
---bg:         #FFFFFF   page background (white, not cream)
---field:      #F8F8F5   inset panels (capacity tiles, card header bands, conditional rows, back-button circle)
---ink:        #000000   primary text (Paper frames render pure black; #111111 acceptable)
---cta:        #111111   primary CTA background
---muted:      #5F5E58   body/support text, labels, secondary strings
+--bg:         #FAFAFA   page background — Grey Page, casual-client surface model [owner 2026-07-08; replaces the Paper frames' pure white]
+--card:       #FFFFFF   cards/sheets — raised against --bg by contrast, never by shadow
+--field:      #F3F3F0   inset panels (capacity tiles, header bands, conditional rows, back-button circle) — Grey Light; merges the frames' #F8F8F5
+--ink:        #111111   primary text (Black singleton, shared with casual-client)
+--muted:      #5F5E58   body/support text, labels (kept darker than casual-client's #6f6f6a for contrast)
 --muted-2:    #8B8982   fine hints, corner labels ("Max price", "Rate" corner tags)
---line:       #D8D8D0   card borders (selected card border: #CFCFC8 on the M3 statement card)
---line-soft:  #E2E2DC   internal dividers, list row separators
---accent:     #167D7F   teal — text links ("View all lenders", "Sort", "View", "Update details"), selected-lender name in compare rows
---control:    #85C7BE   mint — progress-bar segments, toggle-on state, sort radio selected fill
---err:        #C2462C   validation errors (carried from v2; not present in the frames)
+--line:       #D8D8D4   borders + dividers — Grey Edge; merges the frames' #D8D8D0/#E2E2DC (selected-card emphasis may step to #CFCFC8)
+--teal-light: #CCF3EF   badge/card tint tier
+--teal:       #14B8A6   Primary at Solid — button fills, bar fills, slider thumbs
+--teal-dark:  #0F766E   Primary at Dark — text links ("View all lenders", "Sort", "View", "Update details"), selected-lender name in compare rows (replaces #167D7F; near-identical)
+--control:    #85C7BE   mint — progress segments, toggle-on, sort radio fill [kept, owner C3 2026-07-08; product-only tint outside the brand ramp]
+--err:        #C2462C   validation errors (deltas, if ever added, use casual-client Green Dark #0b6b4a ↑ / Pink Dark #9d174d ↓)
 ```
 
-Notes: the forest/cream palette from Results.html is retired [A7 revised]. The derived-accent formula system is retired with it — the Paper palette is flat and explicit. Focus rings derive from `--accent` (§3.4).
+**Primary CTA [C2, owner 2026-07-08 — reverses the Paper-frame black button]:** primary buttons fill `--teal` with a **black `--ink` label**, no border (casual-client Button grammar). Default/secondary buttons: `--field` bg, black label, no border. Extended hue ramps (blue/green/amber/pink/yellow, Light/Solid/Dark) import from casual-client's `VISUAL_GRAMMAR.md` for badges/themed cards as needed.
+
+Notes: the forest/cream palette is retired [A7]; **v3.2 aligns tokens to the casual-client (Fundora) brand system per the owner's 2026-07-08 decisions** — full comparison and rationale in `docs/casual-client-alignment.md`. Focus rings derive from `--teal-dark` (§3.4). Aliases: older references below to `--accent` = `--teal-dark`; `--cta` = teal-filled primary button; `--line-soft` = `--line`.
 
 **Lender cycle palette** (assigned by rank at first render, stable for the session; cycles if > 8 lenders) — as observed in the Paper "01 Default results" bars:
 `#6E9BC4 (blue) · #D9C34A (gold) · #D98E7A (salmon) · #C2462C (red) · #5E8FB5 · #E59A3B (orange) · #7FA37A · #C98AB0`
@@ -105,7 +110,7 @@ Notes: the forest/cream palette from Results.html is retired [A7 revised]. The d
 
 ### 3.2 Typography
 
-Font: **Helvetica Neue** (Bold + Regular), fallback `system-ui, sans-serif` — as used across every Paper frame. Weights observed: 700 (all headings, values, CTAs, links) and 400 (labels, support text) — no intermediate weights. `font-variant-numeric: tabular-nums` on every dollar/percent value.
+Font: **Inter** (Google Fonts), weights **400 / 600 / 700** — canonical per casual-client's `VISUAL_GRAMMAR.md` [owner 2026-07-08; the Paper frames' Helvetica Neue is read as an Inter stand-in — both are loaded in the Paper file]. Usage: 400 body/labels/support, **600 button labels, badges, nav links** (new tier), 700 headings/values/links. Fallback `ui-sans-serif, system-ui, sans-serif`. `font-variant-numeric: tabular-nums` on every dollar/percent value. Sizes in the table below are unchanged (measured from the frames; Inter's metrics are close enough that they carry over).
 
 Mobile column = measured from the 393px Paper frames (normative). Desktop column = extrapolated (Paper artboard is mobile-only); keep the same hierarchy ratios. 🔶 FILL-IN #28: desktop frames to be designed in Paper — until then desktop values below are provisional.
 
@@ -131,7 +136,7 @@ Mobile column = measured from the 393px Paper frames (normative). Desktop column
 
 ### 3.3 Shape, elevation, spacing (Paper-verified where mobile)
 
-- Radii: cards and sheets 8px (`rounded-lg` throughout the frames — the 13–26px system from Results.html is retired) · back-button circle 14px on 28px square · progress segments square-ended 4px tall · toggle pill full-round.
+- Radii: one shared radius 10px on cards, sheets, buttons, inputs [owner 2026-07-08, casual-client "one shared radius" rule; nudged from the frames' 8px] · back-button circle 14px on 28px square · progress segments square-ended 4px tall · toggle pill full-round.
 - Borders: 1px `--line` (`#D8D8D0`) on cards; 1px `--line-soft` (`#E2E2DC`) dividers; selected/emphasis cards may use `#CFCFC8`.
 - Elevation: the Paper frames are flat — no card shadows on the results screen. Sheets: single soft shadow `0 -10px 40px -12px rgba(0,0,0,.25)` + scrim. Keep shadows to overlays only.
 - Spacing rhythm: page side padding 32px on the 393px frame (≈8.1%; implement as 24–32px) · card padding 16px · row vertical padding 13–14px · stack gaps 10–14px · CTA height 48px.
@@ -254,8 +259,8 @@ Published figure for the specific product/term. If unavailable: render `—` wit
 ### 7.1 Header (C1)
 
 - 70px tall, white, 1px `--line-soft` bottom border, content padding 0 38px.
-- Left: wordmark "fundiq" 20px/700 (the Paper frames show a plain bold wordmark, no logo mark — drop the v2 forest logo square).
-- Right: **Save & exit** — ghost button, 14.5px/400 `--muted`; hover: `--field` bg, `--ink` text; radius 8px, padding 8px 12px.
+- Left: wordmark "fundora" 20px/700 (the Paper frames show a plain bold wordmark, no logo mark — drop the v2 forest logo square).
+- Right: **Save & exit** — ghost button, 14.5px/400 `--muted`; hover: `--field` bg, `--ink` text; radius 10px, padding 8px 12px.
 - **Save & exit behaviour [ADOPTED A10]:** opens a small modal — "Save your results" / email input / "Email me a link" primary / "Just exit" text — issuing a resume token. **Prototype [#19, owner 2026-07-06]:** no durable persistence — the modal renders and validates but "Email me a link" resolves to a stubbed confirmation ("Prototype: nothing was sent"); state lives in sessionStorage only. 🔶 FILL-IN #10: confirm production mechanism (email link vs account vs silent local save) and destination after exit (marketing home?).
 - No other nav. Logo click = same as Save & exit prompt if unsaved 🔶 FILL-IN #10b: or straight to home?
 
@@ -274,7 +279,7 @@ Behaviour: hero figure and support line update (no re-animation; 300ms value cro
 
 ### 7.3 Lender list card (C3)
 
-- White card, 1px `--line`, r8, padding 20px, width 468px, self-start (doesn't stretch).
+- White card, 1px `--line`, r10, padding 20px, width 468px, self-start (doesn't stretch).
 - Head row: "Lenders" 18px/700 · right: "Sorted by {active sort label}" 13px `--muted` + **"Sort"** text button 14px/700 `--accent` [A6 revised — verified in Paper "01 Default results"].
 - Body: rows (§7.4), then view-all control (§7.5).
 
@@ -295,7 +300,7 @@ Behaviour: hero figure and support line update (no re-animation; 300ms value cro
 
 ### 7.4 Lender row
 
-Grid `22px | 1fr | 120px | max-content | 18px`, gap 14px, padding 15px 12px, radius 13px, rendered as `<button>`:
+Grid `22px | 1fr | 120px | max-content | 18px`, gap 14px, padding 15px 12px, radius 10px, rendered as `<button>`:
 
 | Lane | Content |
 | --- | --- |
@@ -324,14 +329,14 @@ Grid `22px | 1fr | 120px | max-content | 18px`, gap 14px, padding 15px 12px, rad
 
 ### 7.5 View all / show fewer
 
-- Default shows top 6. Button full-width below list: `View all lenders ({n})` ⇄ `Show fewer lenders`; white, 1px `--line`, r8, 14px padding, 15px/700; hover `--field`. (Paper shows the plain "View all lenders" label on the default screen and a teal "View all lenders" text link in the selected-lender state — both map to this control.)
+- Default shows top 6. Button full-width below list: `View all lenders ({n})` ⇄ `Show fewer lenders`; white, 1px `--line`, r10, 14px padding, 15px/700; hover `--field`. (Paper shows the plain "View all lenders" label on the default screen and a teal "View all lenders" text link in the selected-lender state — both map to this control.)
 - Expanded: list region gets `max-height: 7 rows` + internal scroll (page doesn't grow) with top/bottom fade masks. **Bars render on all rows at every rank** [#22 resolved, owner 2026-07-06 — condensed treatment rejected].
 - "Show fewer" resets internal scroll to top; if the selected lender is outside the top 6, it stays selected and a one-line note appears under the button: "{name} is selected · rank #{r}".
 - Hidden entirely when n ≤ 6.
 
 ### 7.6 Lender detail card (C4)
 
-White card, r20, shadow (§3.3), padding 28px 30px 30px. Contents update **in place** on selection (no remount animation, [A9]).
+White card, r10, flat (§3.3), padding 28px 30px 30px. Contents update **in place** on selection (no remount animation, [A9]).
 
 1. **Identity band** (`--field` bg per Paper "M3 Statement card"): product title 21px/700 `{name} {product}` · sub-line 13.5px `--muted`: `{name} · {Repay label} · {Rate type label}` — no colour dot, no purpose, no rank string (Paper shows none; principle §2a-2). Rank context appears only via the compare footer (§7.8a). ("View product" removed [A10].)
 2. **Capacity pair — dual stat [A13, verified against Paper `01KSYP7T…/3-0` "03 Capacity pair"]**: two tiles side by side, NOT a coloured banner — `--field` bg (`#F8F8F5`), r14, padding 14px, 12px gap between tiles, each tile `flex: 1`:
@@ -390,7 +395,7 @@ White card, r20, shadow (§3.3), padding 28px 30px 30px. Contents update **in pl
 **Financial inputs sheet** — eyebrow "Financial inputs" · title "Choose section to edit" · sub "You will return to Results after saving the selected section." Rows: Income ("Salary, variable income and other income.") · Expenses ("Living costs and recurring commitments.") · Liabilities ("Cards, personal loans and other debts.") · Existing properties ("Values, rents and current home loans."). Footer note (tinted panel): "After save, Results returns with stable recalculating lender rows." CTA "Back to Results".
 **Prototype behaviour [#11 part-resolved, owner 2026-07-06]:** these four rows are intentional dead-ends in the prototype — tapping one shows an inline note "Edited in the main application flow (not part of this prototype)"; the recalc loop is exercised via the Property and Loan sheets. Production routes/return contract remain 🔶 FILL-IN #11.
 
-**Commit model [A3 revised]:** Property and Loan sheets end in a black primary **"Save and recalculate"** (48px) + text "Cancel". No live recalculation while editing; on save → return to Results → affected values shimmer in place (§9.2) → list re-ranks (FLIP ≈250ms) under the *active sort* (§7.3a). Selected lender stays selected; if its rank changed, transient chip "now #3 (was #1)" for 4s; hero updates if the max-price leader changed. Cancel discards.
+**Commit model [A3 revised]:** Property and Loan sheets end in a primary **"Save and recalculate"** (48px, `--teal` fill + black label per C2) + text "Cancel". No live recalculation while editing; on save → return to Results → affected values shimmer in place (§9.2) → list re-ranks (FLIP ≈250ms) under the *active sort* (§7.3a). Selected lender stays selected; if its rank changed, transient chip "now #3 (was #1)" for 4s; hero updates if the max-price leader changed. Cancel discards.
 **Scope:** edits are global by construction — the sheets edit the scenario, not a lender. (v2's FILL-IN #5c is resolved: global.)
 Settings persist for the session and round-trip through Save & exit.
 
@@ -411,7 +416,7 @@ When the selected lender is not the max-property-price leader (via sort or direc
 ### 7.9 CTA row (C6)
 
 - Layout: primary button + centered text secondary beneath, 10px gap, margin-top 24px.
-- **Primary "Connect with a broker"**: `--cta` (#111111) bg, white 14px/700 (16px desktop), r8, height 48px; hover `#000`; active translateY(1px); no shadow (§3.3 — flat). Opens broker overlay (§13) with the *selected* lender prefilled.
+- **Primary "Connect with a broker"** [C2, owner 2026-07-08]: `--teal` (#14B8A6) bg, **black `--ink` label** 14px/600 (16px desktop), no border, r10, height 48px; hover: bg deepens toward `--teal-dark`, Motion Slow bg-only; active translateY(1px); no shadow (§3.3 — flat). Opens broker overlay (§13) with the *selected* lender prefilled.
 - **Secondary "Update details"**: text button 14px/700 `--accent`, centered under the primary (per every Paper frame). Opens the chooser (§7.7).
 - After a successful broker submission this row's primary becomes disabled-styled "Call back requested ✓" for the session (§13.6).
 
@@ -462,7 +467,7 @@ No gift/FHOG/sale-proceeds rows in v1 (not captured in the flow). Because the lo
 
 **Verdict states:**
 - Remaining ≥ 0: value in `--ink`, sub-note "savings left over after settlement" — the owner explicitly wants leftover savings unmistakable [#25].
-- Shortfall (< 0): value `--err`, row label "Shortfall", plus a compact notice band under the block (r8, `--err` at 8% tint bg): "Your savings don't cover the costs at this price. Lower the price range or talk to a broker about options." with "Update details" link. *(With the usable-deposit model a shortfall shouldn't occur by construction — this state guards engine edge cases and future buffer settings.)*
+- Shortfall (< 0): value `--err`, row label "Shortfall", plus a compact notice band under the block (r10, `--err` at 8% tint bg): "Your savings don't cover the costs at this price. Lower the price range or talk to a broker about options." with "Update details" link. *(With the usable-deposit model a shortfall shouldn't occur by construction — this state guards engine edge cases and future buffer settings.)*
 
 Mobile: identical block inside the lender card, bg `--field`, link label "View"/"Hide".
 
@@ -498,7 +503,7 @@ Results recalculate on open (rates may have moved). If any figure changed vs the
 ## 10. Mobile components
 
 ### 10.1 Header — per Paper frames
-- Row: circular back button 28px (`--field` bg, chevron-left) · centered wordmark "fundiq" 17px/700 · right: **"Save & exit"** text button (the Paper frames show a placeholder "Menu"; the A10 decision to replace it stands) — same flow as §7.1.
+- Row: circular back button 28px (`--field` bg, chevron-left) · centered wordmark "fundora" 17px/700 · right: **"Save & exit"** text button (the Paper frames show a placeholder "Menu"; the A10 decision to replace it stands) — same flow as §7.1.
 - Back from results → the flow's review step 🔶 FILL-IN #11b: confirm; alternative is Save & exit prompt.
 - **Progress bar stays** [A10 revised — every Paper frame shows it]: 7 segments, 4px tall, all filled `--control` (results = flow complete), full-width row under the header.
 
@@ -508,7 +513,7 @@ Results recalculate on open (rates may have moved). If any figure changed vs the
 
 ### 10.3 Lender list — per Paper "01 Default results"
 - Section head: "Lenders" 18px/700 · right: "Sorted by {sort label}" 13px `--muted` + "Sort" 14px/700 `--accent` → sort sheet (§7.3a).
-- Container: 1px `--line`, r8, rows separated by `--line-soft`.
+- Container: 1px `--line`, r10, rows separated by `--line-soft`.
 - Row grid `22px | 1fr | 92px | max-content | 16px`, padding 14px 12px, min-height 52px. Bar 8px. Price 15px/700.
 - States: pressed `--field`; active (sheet open for that row) `--field` + teal name. Same semantics as §7.4; tapping opens the sheet (§10.4).
 - View-all identical to §7.5 (page grows on mobile instead of internal scroll — the page is the scroll container; expanded list simply lengthens).
@@ -523,15 +528,15 @@ Results recalculate on open (rates may have moved). If any figure changed vs the
 
 ### 10.5 Lender card (inside sheet) — per Paper "M3 Statement card" / "02 Selected lender clean card"
 - Header band `--field`, 16px padding: `{name} {product}` 18px/700 + sub 13px `--muted` `{name} · {Repay label} · {Rate type label}` · top-right corner tag "Max price" 11px `--muted-2` over the price (M3 keeps a compact max-price echo in the band corner).
-- **Capacity pair [A13, verified against Paper "03 Capacity pair" card]**: two tiles stacked top/bottom on mobile width (side by side reflows to stacked below ~360px per §7.6) — "Max property price" (top) then "Loan amount" (bottom), `--field` bg tiles, r8, 12px gap, both label 11px/400 `--muted` + value 24px/700 tabular. Identical treatment for both; order (price first) is the only precedence cue.
+- **Capacity pair [A13, verified against Paper "03 Capacity pair" card]**: two tiles stacked top/bottom on mobile width (side by side reflows to stacked below ~360px per §7.6) — "Max property price" (top) then "Loan amount" (bottom), `--field` bg tiles, r10, 12px gap, both label 11px/400 `--muted` + value 24px/700 tabular. Identical treatment for both; order (price first) is the only precedence cue.
 - **Rate pair** — tight two-column mini block directly under the identity band (not full key-value rows): Rate and Comparison, both same label/value class. **[A14 — legal, verified against Paper]** No visual precedence between them — confirmed in every Paper variant inspected (`19MF-0` and the "Selected lender detail variations" row).
 - Key-value rows (13px key `--muted` / 14px/700 value, `--line-soft` separators, 13px vertical padding): Monthly repayment ("(interest only)" suffix when IO) · LVR (+ "incl. LMI" per §7.6). Loan amount and the rate pair leave these rows — they're in the capacity pair / rate pair above.
 - Funds to complete row per §8 (last row in the card).
 - No in-card edit affordance — Update details is in the sheet footer / dock (§7.7).
 
 ### 10.6 Docked CTA bar
-- Fixed bottom, padding 14px 22px 26px (respect safe-area inset), bg gradient white 72% → transparent upward.
-- Primary "Connect with a broker" full-width (48px, `--cta`, r8) + secondary "Update details" 14px/700 `--accent` centered beneath (matches every Paper frame's CTA stack).
+- Fixed bottom, padding 14px 22px 26px (respect safe-area inset), bg gradient `--bg` 72% → transparent upward.
+- Primary "Connect with a broker" full-width (48px, `--teal` fill + black label per C2, r10) + secondary "Update details" 14px/700 `--accent` centered beneath (matches every Paper frame's CTA stack).
 - Hidden while any sheet/overlay is open. List scroll area reserves 150px bottom padding.
 - In the no-eligibility state the primary relabels "Talk to a broker" (§9.4).
 
@@ -606,7 +611,7 @@ Wherever an interest rate appears — detail tiles, mobile rows, any future tool
 Presentation: desktop centered modal 560px, r22; mobile bottom sheet ≤95% height with grab handle. Scrim `rgba(20,26,18,.42)`. `role="dialog"` `aria-modal`, focus trap, Esc + ✕ + scrim close, focus returns to trigger.
 
 ### 13.1 Header
-Eyebrow "FUNDIQ BROKERS" (11.5px/700 uppercase, `--accent`) · title "Connect with a broker" 23px/700 · ✕ 34px circle · lede: "A real mortgage broker, free to you, who can take this estimate to settlement."
+Eyebrow "FUNDORA BROKERS" (11.5px/700 uppercase, `--accent`) · title "Connect with a broker" 23px/700 · ✕ 34px circle · lede: "A real mortgage broker, free to you, who can take this estimate to settlement."
 
 ### 13.2 Fields
 
@@ -618,10 +623,10 @@ Eyebrow "FUNDIQ BROKERS" (11.5px/700 uppercase, `--accent`) · title "Connect wi
 | 4 | Preferred lender | native select: each lender "Name — Product" + "No preference"; **prefilled from selected lender**; hint "Pre-filled from your selection" | optional |
 | 5 | Where are you up to? | 2×2 chip group, single-select: Just researching / Actively looking / Found a property / Offer made / under contract | required — "Select where you are in the journey." |
 | 6 | Anything else? | textarea rows 3, hint "Optional", placeholder "e.g. self-employed, looking in inner west, settling in March…" | optional, max 500 chars |
-| 7 | **Consent** (new) | checkbox: "I agree that a FundIQ broker may contact me about my scenario. Privacy policy" (link) | required — "Please agree so a broker can contact you." 🔶 FILL-IN #12: legal wording; #13: privacy policy URL |
+| 7 | **Consent** (new) | checkbox: "I agree that a Fundora broker may contact me about my scenario. Privacy policy" (link) | required — "Please agree so a broker can contact you." 🔶 FILL-IN #12: legal wording; #13: privacy policy URL |
 
 Prefill first/last/mobile/email from flow answers where collected 🔶 FILL-IN #12b: which are collected?
-Input spec: 1.5px `--line` border, r8, padding 12px 14px, 15px/400; focus `--accent` border + 4px `rgba(22,125,127,.15)` glow; error `--err` border + 12.5px `--err` message below. Invalid submit scrolls to first error and focuses it.
+Input spec: 1.5px `--line` border, r10, padding 12px 14px, 15px/400; focus `--accent` border + 4px `rgba(22,125,127,.15)` glow; error `--err` border + 12.5px `--err` message below. Invalid submit scrolls to first error and focuses it.
 
 ### 13.3 Submit
 "Request a call back" — primary style. On submit: disable + inline spinner ("Sending…"), single-flight guard.
@@ -630,7 +635,7 @@ Input spec: 1.5px `--line` border, r8, padding 12px 14px, 15px/400; focus `--acc
 Inline banner above submit (r10, err-tint bg): "That didn't send — please try again." Inputs preserved; button re-enabled. 🔶 FILL-IN #12c: lead API endpoint + payload. **Payload question:** form fields only, or attach the scenario (lender ranks, loan settings, financials)? Lede implies the estimate travels — users must be told what's shared (add a line under consent if scenario is attached).
 
 ### 13.5 Success
-Replaces form: 60px `--field` circle with `--accent` check · "You're all set, {first}" 22px/700 · "A FundIQ broker will call you on **{mobile}** within one business day to talk through your **{lender}** option." (no-preference variant: "…to talk through your options.") · "Done" primary.
+Replaces form: 60px `--field` circle with `--accent` check · "You're all set, {first}" 22px/700 · "A Fundora broker will call you on **{mobile}** within one business day to talk through your **{lender}** option." (no-preference variant: "…to talk through your options.") · "Done" primary.
 
 ### 13.6 Post-success page state
 CTAs (desktop row + mobile dock + sheet footer) become non-interactive "Call back requested ✓" for the session; re-open shows the success view. Prevents duplicate leads.

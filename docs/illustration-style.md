@@ -118,9 +118,18 @@ For **T2/T3 pieces**, append scale licence: *"Richer vignette: up to four suppor
 
 Ready subjects the results experience may want: `broker-call` (telephone handset on a notepad with a scribbled note, terracotta pin beside it — the broker success T2 piece, gets the Success beat), `funds-stack` (gold coins leaning on a folded receipt), `savings-jar` (glass jar of coins with a handwritten label), `existing-home` (house with mustard door, slate key against the wall), `income-salary` (pay envelope with a slipping coin), `no-match` (open empty envelope with a magnifying glass — only if spec §9.4's "illustration-free" call is reversed by the owner).
 
+## 5a. The character — scoped exception to "no faces" (C4, owner 2026-07-08)
+
+casual-client's `CREATIVE_BRIEF.md` defines a Fundora **character** — a helpful-friend avatar, "Daria realism + Dora helpfulness", never a mascot. The owner ruled the two systems coexist, scoped:
+
+- **Objects remain the category imagery** — rows, sheets, choosers, everything in §3. The master prompt's "no mascots, no faces" still governs every object piece.
+- **The character may appear ONLY at interpretive moments**, per the brief's own limits: contextual insights after a result, short interpretive notes, onboarding/first-run empty states, comfort-check reframes. Never in tables, charts, forms, dense data, nav, or as a logo; never repeated on one screen; no floating assistant bubbles; no reaction to every action.
+- **Craft condition:** the character must pass the same line-up test as any piece — identical ink line, grain, palette (§1), and the wallet/clipboard check. If the character reads as a different illustrator's work, it doesn't ship. Its design is an open task; no asset exists yet.
+- Motion: the character gets the same §4 vocabulary and budget — no extra moves, no idle chatter loops.
+
 ## 6. Where the style must hold back
 
-The data surfaces stay austere — that's half the concept (§0): results hero, lender list rows, statement/capacity/rate rows, sort sheet rows, CTAs and text links. Spec §9.4's empty state remains illustration-free per the owner's standing decision (the `no-match` prompt above exists for the day that's reversed — a T2 moment there is this page's best award opportunity, worth an explicit owner call).
+The data surfaces stay austere — that's half the concept (§0): results hero, lender list rows, statement/capacity/rate rows, sort sheet rows, CTAs and text links. Spec §9.4's empty state remains illustration-free per the owner's standing decision (the `no-match` prompt above exists for the day that's reversed — a T2 moment there is this page's best award opportunity, worth an explicit owner call; note first-run/onboarding empty states are exactly where the character (§5a) is licensed, so that reversal now has a natural occupant).
 
 ## 7. The award lens (checklist before shipping any new piece or moment)
 

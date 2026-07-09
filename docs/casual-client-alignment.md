@@ -39,15 +39,17 @@ Adopt casual-client as the **brand foundation** (font, hue system, roles, voice)
 5. **Keep our secondary-text grey `#5F5E58`** (darker than theirs = better contrast; theirs fails to justify the loss).
 6. **Voice for the landing revision:** adopt the comfort reframe — lead with "how much won't you regret" energy over bare maximum; keep the results page answer-first (it's the tool; the landing is the pitch). Copy rules from BRAND.md apply: protective realism, no social-caption slogans.
 
-## 3. Genuine conflicts — owner must call these
+## 3. Conflicts — RESOLVED by owner, 2026-07-08
 
-| # | Conflict | Options |
+| # | Conflict | **Decision** |
 | --- | --- | --- |
-| C1 | **Brand name.** casual-client is canonically *Fundora*; the Paper frames say fundora; the owner picked "fundiq" in the 2026-07-06 Q&A — possibly without knowing fundora was real | Re-confirm. If Fundora: copy table + wordmark updates, one-line change in the prototype |
-| C2 | **Primary button.** Teal-Solid + black label (casual-client) vs black + white label (Paper frames, built prototype) | The black CTA is Paper-verified and stronger for the single-CTA results page; teal buttons suit the landing's multi-action surfaces. Recommend: black stays the results primary; landing uses grammar buttons (teal primary / grey-light default). Flag the inconsistency deliberately |
-| C3 | **Mint `#85C7BE`.** Paper's progress/toggle colour isn't in casual-client's palette (closest: Teal Light `#ccf3ef`, much paler) | Keep mint as a product-only control tint, or fold into Teal Light. Recommend keep — it's verified across every Paper frame |
-| C4 | **Character vs no-faces.** CREATIVE_BRIEF wants a helpful-friend avatar near insights/onboarding; illustration-style.md §5 bans mascots/faces | These can coexist: objects = category imagery (rows/sheets), character = interpretive moments (insights, onboarding, comfort-checks — exactly where CREATIVE_BRIEF scopes it, never in tables/forms). Needs an owner yes + a character design that passes the inked-sticker craft test |
-| C5 | **Motion.** casual-client: background-colour transitions only. Ours: rich, awards-aimed | casual-client's rule reads as a static-artefact constraint, not a product philosophy. Recommend our motion spec governs product + landing; casual-client's restraint survives as "hover = bg-only" (which we already do) |
+| C1 | Brand name: Fundora (casual-client + Paper frames) vs fundiq (spec/prototype) | **Fundora.** Reverses the 07-06 pick (made before the brand repo surfaced). Spec renamed; prototype wordmark update owed |
+| C2 | Primary button: teal-Solid + black label vs black + white label | **Teal everywhere** — including the results page, reversing the Paper-frame black CTA. Primary = `--teal #14B8A6` fill, black label, no border; default/secondary = grey-light fill, black label. Spec §3.1/§7.9/§7.7/§10.6 updated |
+| C3 | Mint `#85C7BE` not in the brand ramp | **Keep mint** as a product-only control tint (progress, toggles, radio fills); Teal Light handles badge/card tints |
+| C4 | Character vs illustration doc's no-faces rule | **Coexist, scoped** — objects stay category imagery; character only at interpretive moments (insights, onboarding, comfort-checks), must pass the inked-sticker craft test. Carved into `illustration-style.md` §5a. Character design is an open task |
+| C5 | Motion: bg-only vs our rich system | **Our motion governs** product + landing; casual-client's austerity survives as the hover rule (bg-only), which we already follow |
+
+Foundation decisions from the same session: **Inter everywhere** (400/600/700 — Helvetica Neue read as an Inter stand-in); **one shared 10px radius** (nudged from the frames' 8px); **Grey Page `#FAFAFA` + white shadow-less cards everywhere** — the owner chose full adoption of the casual-client surface model, results page included (goes further than §2's split recommendation; grey-light and `#F8F8F5` merged to `#F3F3F0`). All folded into spec v3.2 §3.
 
 ## 4. Landing revision — practical starting point
 
