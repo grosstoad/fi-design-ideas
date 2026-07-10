@@ -85,7 +85,7 @@
 .lpb-topbar-row {
   display: flex;
   max-width: 1180px;
-  min-height: 64px;
+  min-height: 63px;
   align-items: center;
   gap: 18px;
   padding-inline: 16px;
@@ -1390,7 +1390,7 @@
   }
 
   .lpb-topbar-row {
-    min-height: 64px;
+    min-height: 63px;
     gap: 12px;
     padding-inline: 12px;
   }

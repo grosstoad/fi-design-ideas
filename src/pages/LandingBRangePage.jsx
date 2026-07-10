@@ -279,7 +279,7 @@ export function RangeModule() {
         isOpen={assumptionsOpen}
         onClose={() => setAssumptionsOpen(false)}
         title="How this example was worked out"
-        description="A transparent demonstration of the comparison interface—not a personalised credit assessment."
+        description="A transparent demonstration of the comparison interface, not a personalised credit assessment."
       >
         <div className="lpb-assumptions-content">
           <div>
@@ -310,7 +310,7 @@ function LenderProof() {
     return LENDER_MARKS.map((lender) => (
       <li key={`${duplicate ? "duplicate-" : ""}${lender.id}`} className="lpb-lender-mark" data-lender={lender.id}>
         <span className={`lpb-lender-lockup ${lender.iconOnly ? "is-symbol" : "is-wordmark"}`} aria-hidden="true">
-          <img src={lender.logo} alt="" width="120" height="36" loading="lazy" decoding="async" />
+          <img src={lender.logo} alt="" width="120" height="36" decoding="async" />
           {lender.iconOnly ? <span>{lender.name}</span> : null}
         </span>
         <span className="lpb-sr">{lender.name}</span>
@@ -676,7 +676,7 @@ export default function LandingBRangePage() {
         <section className="lpb-section lpb-closing" aria-label="Get started with Fundora">
           <div className="lpb-wrap">
             <div className="lpb-closing-card">
-              <img src="/landing-b/affordable-price-casual.webp" alt="A chalk-textured illustration of a house, price tag and ruler" width="768" height="768" loading="lazy" decoding="async" />
+              <img src="/landing-b/affordable-price-casual.webp" alt="A chalk-textured illustration of a house, price tag and ruler" width="768" height="768" decoding="async" />
               <div>
                 <h2 className="lpb-h2" id="lpb-closing-title">Find the home you can really afford.</h2>
                 <p className="lpb-closing-sub">Your personalised borrowing range is only a few minutes away.</p>

@@ -1,6 +1,6 @@
 # Fundora Landing Page — Final Implementation Specification
 
-**Status: COMPLETE — ready for implementation (v1.1: header/footer/tokens transcribed from the live amplify site 2026-07-10)** ← handoff tracker: an agent continuing this file should update this line and finish any section marked TODO. Source directives: `/Users/sarah/Downloads/Fundora_Landing_Page_Strong_Model_Planning_Handoff.md` (the "handoff"); everything below reconciles it against the real branch state.
+**Status: IMPLEMENTED — see §10 (v1.1: header/footer/tokens transcribed from the live amplify site 2026-07-10).** Source directives: `/Users/sarah/Downloads/Fundora_Landing_Page_Strong_Model_Planning_Handoff.md` (the "handoff"); everything below reconciles it against the real branch state.
 
 Audience: a less capable coding model. Follow this document literally. Where this spec and older docs (`landing-b-proposal.md`, `landing-b-goal-prompt.md`, `landing-b-iteration-plan.md`) conflict, THIS FILE WINS. Do not re-plan, do not redesign, do not invent copy.
 
@@ -182,11 +182,11 @@ At 1440px, 1280px, 768px (tablet), 375px (mobile): alignment to the shared grid 
 
 1. ~~Exact nav label set~~ **RESOLVED 2026-07-10** by transcribing the live amplify home: "Ask Fundora" is the WORDMARK; nav is About → Learn; CTA "Run your scenario"/"Start". §3.1 is now exact. (The GitHub commit `1ace0e5` the owner referenced contains `tailwind/home.html` etc. as saved snapshots of github.com's marketing page — structural templates only, zero Fundora content; the live site remains the truth and has been transcribed.)
 2. ~~Ask Fundora destination~~ **RESOLVED**: it is the wordmark, linking to the page root. About/Learn link `#` placeholders in this repo.
-3. **Lender logo licensing/accuracy:** `docs/lender-logo-sources.md` tracks sources; any mark that can't be verified as the current official AU brand needs owner sign-off before ship (non-goal: approximate logos).
+3. ~~Lender logo accuracy~~ **RESOLVED 2026-07-11**: all 14 marks were checked against current official Australian identity references in `docs/lender-logo-sources.md`; the low-resolution watermarked NAB tile was replaced with official vector artwork. Trademark approval remains a release-governance decision, not an implementation blocker.
 4. **Autoplay demo (§3.3) is optional:** build it only if it fits the schedule; not required for acceptance.
 
 ---
-**Status: ALL SECTIONS 1–9 COMPLETE.** Continuing agents: implementation may begin at §5 task 1; update the tracker line at the top if you amend this spec.
+**Status: IMPLEMENTED — all §5 tasks and §7 acceptance criteria are complete.**
 
 ## 10. Implementation status (maintained by the implementation agent)
 
@@ -203,15 +203,39 @@ At 1440px, 1280px, 768px (tablet), 375px (mobile): alignment to the shared grid 
 | 9. PropositionGrid rework | done | `38c34e2` | Exact trust-led heading/support and three proposition pairs render without numbers, borders, pointer cursors or transforms. All three 768px assets load at a 168px desktop width and compact to 92px mobile accents. Build and 32 in-scope unit tests pass. |
 | 10. FinalCTA | done | `d7f0a5f` | Exact copy renders in a transparent, borderless 820px layout with a 150px illustration; mobile compacts to 351px with an 88px illustration. The page background remains white and the CTA reuses the shared button. Build and 33 in-scope unit tests pass. |
 | 11. Motion polish | done | `922b57f` | Computed timings: CTA 0.16s/0.14s with matrix(0.97) press, range bar 0.26s, number 0.22s, row reorder 360ms, product state 0.42s and cost assembly 0.56s. No `transition: all`; obsolete walkthrough/detail CSS is removed. Build and 33 in-scope unit tests pass. |
-| 12. Reduced-motion audit | done | | At 1440px and 375px the hero has no animation, HowItWorks starts at final phase 8 with three complete states, the carousel is a one-rail static wrap, and all transition probes return 0s. The slider remains functional and updates $798k–$1.00M to $1.06M–$1.79M. Build and 33 in-scope unit tests pass. |
-| 13. Tests and visual QA | todo | | |
+| 12. Reduced-motion audit | done | `13716c4` | At 1440px and 375px the hero has no animation, HowItWorks starts at final phase 8 with three complete states, the carousel is a one-rail static wrap, and all transition probes return 0s. The slider remains functional and updates $798k–$1.00M to $1.06M–$1.79M. Build and 33 in-scope unit tests pass. |
+| 13. Tests and visual QA | done | | Final gate: clean build; 11 unit files / 39 tests pass; Playwright 11 pass / 1 intentional mobile-project skip; four-width QA has zero overflow, zero clipped lender names, zero unloaded images, zero pointer rows, 64px headers and CLS ≤0.0002. Captures are in `tmp/landing-b-final/task-13/`. |
 
 ### Deviations and blockers
 
 - A Git commit cannot contain its own final hash. Each tracker row records the task commit's short hash in the immediately following task commit; task 13's hash will be recorded in the final status-only commit.
 - Task 1 consolidates the pre-existing uncommitted landing-B implementation and its required local dependencies so that its commit is independently buildable. Unrelated working-tree changes remain uncommitted.
-- During task 7, concurrent results-page work added an out-of-scope token test that currently reports four failures while reading its stylesheet as empty. The landing-B build and all 31 pre-existing/in-scope unit tests remain green; the full suite will be rechecked at the final gate without modifying results-page files.
+- During task 7, concurrent results-page work temporarily introduced four out-of-scope token-test failures. Its owning work corrected the file read; the final full suite passes 39/39 without landing-B modifying results-page files.
 
 ### Acceptance criteria results (§7)
 
-To be filled at the final gate.
+| # | Result | Evidence |
+| --- | --- | --- |
+| 1 | PASS | At 1440×900 and 1280×800 the second lender row ends at 583px and 580px; nav, hero copy, both CTAs, trust line and module header are visible. |
+| 2 | PASS | Header/footer labels, 64px rendered header, 1180px grid, live teal/stone tokens and mobile label swap match the live Amplify captures in `tmp/landing-b-final/`. |
+| 3 | PASS | Exact range title/subtitle and six column labels render; old copy is absent; repayments match `$X,XXX/mth`; both rates share one metric style. |
+| 4 | PASS | Playwright proves range, bars, loans and repayments update; all 14 fixed-domain bar ratios remain monotonic; row movement computes to 360ms. |
+| 5 | PASS | Both comparison surfaces contain zero row buttons, `pointer-events: none`, default cursors and no lender detail state. |
+| 6 | PASS | Playwright wheel testing at the list bottom hands page scroll from 440px to 1140px. |
+| 7 | PASS | Rails are equal width (2424px), loop is linear/running before and after hover, no pause control exists, 14 eager marks load, and the strip stays inside the page gutters. |
+| 8 | PASS | Three equal desktop columns and numbered line complete phases 1→4→6→8 over 6.1s, persist, and become one vertical 351px mobile column. |
+| 9 | PASS | Exact labels render; both separator borders compute to 0px; $795,400 reconciles to $600,000 + $195,400 with $14,600 remaining. |
+| 10 | PASS | Exact centred trust copy renders in three borderless, inert columns with 168px desktop / 92px mobile accents. |
+| 11 | PASS | Reduced motion starts in final phase 8, removes hero/counter transitions, converts the carousel to one static wrapping rail and preserves slider recalculation. |
+| 12 | PASS | `npm run build` clean; 11/11 unit files and 39/39 tests pass; Playwright 11 pass with one intentional mobile-project skip of the desktop-only fold test. |
+
+### Visual QA results (§8)
+
+| Viewport | Overflow | CLS | Header | Lender clipping | Layout result |
+| --- | --- | --- | --- | --- | --- |
+| 1440×900 | 0px | 0 | 64px | 0 | Three-column walkthrough/propositions; row footer. |
+| 1280×800 | 0px | 0 | 64px | 0 | Three-column walkthrough/propositions; row footer. |
+| 768×900 | 0px | 0.0002 | 64px | 0 | Vertical walkthrough; single-column propositions; row footer. |
+| 375×812 | 0px | 0.0001 | 64px | 0 | Vertical walkthrough; compact propositions; column footer; assumptions dialog is a bottom sheet. |
+
+No open visual QA items.
