@@ -6,13 +6,13 @@
 
 ## Goal
 
-Bring the existing results prototype (`/results`, `src/pages/results/**`) up to `docs/results-page-spec.md` **v3.3** visually and structurally, verify it in the browser at desktop and mobile, and keep a status table in this file updated as you go. Visuals only: do NOT touch the engine seam, fixture data values, or production FILL-INs (§14) — those are deferred by the owner.
+Bring the existing results prototype (`/results`, `src/pages/results/**`) up to `docs/results-page-spec.md` **v3.4** visually and structurally, verify it in the browser at desktop and mobile, and keep a status table in this file updated as you go. Visuals only: do NOT touch the engine seam, fixture data values, or production FILL-INs (§14) — those are deferred by the owner.
 
 The spec wins over any other doc or code comment. You are implementing decided design, not designing.
 
 ## Read first
 
-1. `docs/results-page-spec.md` §3 (tokens v3.3), §7.1, §7.7 (chooser illustrations), §8 (funds block v3.3), §10.4 (ResponsiveDialog note), §12 (copy table), §14 rows #31/#32.
+1. `docs/results-page-spec.md` §3 (tokens), **§7.0 (desktop architecture v3.4)**, §7.1, §7.7 (chooser illustrations), §8 (funds block v3.3), §10.4 (ResponsiveDialog note), §12 (copy table), §14 rows #31/#32.
 2. `src/pages/results/README.md` (the prototype's own architecture notes), its token module/CSS token block, and `src/components/ResponsiveDialog.jsx`.
 3. The landing implementation of the funds pattern: `FundsCard` in `src/pages/LandingBRangePage.jsx` + its CSS — §8's reference implementation.
 
@@ -25,8 +25,8 @@ The spec wins over any other doc or code comment. You are implementing decided d
 3. **Chooser illustrations** — Update details rows use casual-client assets: `house.png` (Property), `calculator.png` (Loan), `piggy-bank.png` (Financial), ~40px anchored in-row, no chip box. Copy assets from `/Users/sarah/Code/casual-client/assets/` into the repo if a prior agent hasn't already.
 4. **Funds block rework (§8 v3.3)** — the expanded funds view becomes the landing pattern: segmented horizontal bars (10px, 2px white gaps, rounded outer ends) + colour-dot legends per group; group 2 titled **"Funding breakdown"**; rows **"Loan from {lender} ({XX}% LVR)"** (LVR on the loan row, parentheses, no middle dot) and **"Deposit"**; final row **"Savings left over"** in green-dark `#0b6b4a`; hairlines between groups replaced by spacing. Numbers keep reconciling exactly (§8's invariant). Update the copy module keys per spec §12 (`funds.groups`, `funds.rows`).
 5. **ResponsiveDialog adoption** — every modal/sheet surface (mobile lender sheet, the three Update-details surfaces, broker capture, "How we estimate") renders through `src/components/ResponsiveDialog.jsx` instead of bespoke chrome, preserving each surface's specced content, snap/close and focus behaviour (§10.4, §13).
-6. **Desktop evidence pack (#28)** — at 1180px container: screenshot `/results` desktop master–detail at 1440×900 and 1280×800, plus mobile 393×852, plus the funds block expanded and the Update details chooser open. The owner signs off desktop from these — label the files clearly.
-7. **Desktop rework (spec §7.0, v3.4)** — replace the master–detail split with the full-width comparison table (rank/lender/bar+price/loan/rate/comparison/repayment columns, whole-row viewport fill, internal scroll, no View all, nothing auto-selected), the ~480px slide-over detail peek (no reflow, Esc/✕, URL sync; shares anatomy with the mobile sheet), funds breakdown replacing the peek content with a back link, and the standalone action band below the table. Re-check §12a rate parity in the table columns.
+6. **Desktop rework (spec §7.0, v3.4)** — replace the master–detail split with the full-width comparison table (rank/lender/bar+price/loan/rate/comparison/repayment columns, whole-row viewport fill, internal scroll, no View all, nothing auto-selected), the ~480px slide-over detail peek (no reflow, Esc/✕, URL sync; shares anatomy with the mobile sheet), funds breakdown replacing the peek content with a back link, and the standalone action band below the table. Re-check §12a rate parity in the table columns.
+7. **Desktop evidence pack (#28)** — after the rework, at the 1180px container: screenshot `/results` at 1440×900 and 1280×800 (table on entry, then with the peek open), mobile 393×852, the funds drill-in inside the peek, and the Update details chooser open. The owner signs off desktop from these — label the files clearly.
 8. **Regression sweep** — motion per spec §11 unchanged (count-ups once, FLIP re-rank, reduced-motion final states); rate + comparison rate still identical prominence everywhere (§12a — legal, re-check after every task); states gallery still renders every state; `npm run build` + unit + e2e green.
 
 ## Test-and-verify loop (every task)
@@ -44,8 +44,8 @@ Maintain this table in THIS file, committing doc updates together with each task
 | 3. Chooser illustrations | todo | |
 | 4. Funds block §8 | todo | |
 | 5. ResponsiveDialog | todo | |
-| 6. Desktop evidence pack | todo | |
-| 7. Desktop rework (§7.0 v3.4): full-width table + slide-over peek, funds drill-in, action band | todo | |
+| 6. Desktop rework (§7.0 v3.4): full-width table + slide-over peek, funds drill-in, action band | todo | |
+| 7. Desktop evidence pack | todo | |
 | 8. Regression sweep | todo | |
 
 ### Deviations and blockers
