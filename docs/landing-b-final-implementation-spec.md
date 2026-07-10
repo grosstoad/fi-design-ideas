@@ -1,0 +1,182 @@
+# Fundora Landing Page — Final Implementation Specification
+
+**Status: COMPLETE — ready for implementation** ← handoff tracker: an agent continuing this file should update this line and finish any section marked TODO. Source directives: `/Users/sarah/Downloads/Fundora_Landing_Page_Strong_Model_Planning_Handoff.md` (the "handoff"); everything below reconciles it against the real branch state.
+
+Audience: a less capable coding model. Follow this document literally. Where this spec and older docs (`landing-b-proposal.md`, `landing-b-goal-prompt.md`, `landing-b-iteration-plan.md`) conflict, THIS FILE WINS. Do not re-plan, do not redesign, do not invent copy.
+
+Branch: `landing-b-the-range`. Page: `/landing-b`. Main files: `src/pages/LandingBRangePage.jsx` (~762 lines), `src/landing-b.css` (~1650 lines), `src/pages/landing-b/model.js` (+ tests), `src/components/ResponsiveDialog.jsx`, `e2e/landing-b.spec.ts`. Visual source of truth for nav/footer/type/colour/buttons: the Casual Client build at https://main.d2shr8dw0vjdmh.amplifyapp.com/ — open it side by side while implementing; local reference repo at `/Users/sarah/Code/casual-client`.
+
+---
+
+## 1. Existing feature-branch context (what is already true)
+
+Reviewed: `docs/landing-b-proposal.md`, `docs/landing-b-goal-prompt.md`, `docs/landing-b-iteration-plan.md` (now an execution record), `docs/lender-logo-sources.md`, the page/css/model sources, `e2e/landing-b.spec.ts`.
+
+Already present and KEPT:
+- Components inside `LandingBRangePage.jsx`: `RangeModule` (hero comparison + income slider), `LenderProof` (logo carousel), `HowItWorks` (3-step, currently selectable-stage), `InputPreview` (step-1 form visual), `MiniComparison` (step-2 visual), `FundsCard` (funding breakdown), `PropositionGrid`, `ResultStat`, plus shared `ResponsiveDialog` (modal/bottom-sheet, already used by "How we worked this out").
+- Pure model in `src/pages/landing-b/model.js` with unit tests: per-lender illustrative estimates (income × multiplier, soft cap), fixed global bar scale (monotonic — keep), income range to $1,000,000 with stepped increments (keep), loan amount / rate / comparison rate / repayment derivation, 14-colour palette keyed by lender id.
+- Copy already correct: H1 "Find the home you can really afford."; CTAs "Run your scenario" / "See how it works"; trust line "Free. No impact on your credit score."; module label "Your purchase power range"; "How we worked this out" opens ResponsiveDialog (keep this pattern).
+- Lender logo assets in `src/assets/buying-range/lenders/` (see `docs/lender-logo-sources.md`).
+- Playwright e2e (`e2e/landing-b.spec.ts`) and unit tests — extend, don't delete.
+
+Conflicts with the handoff that MUST change (line numbers approximate):
+- "Example comparison" string (JSX ~L211) — remove.
+- "Est. monthly" (~L225) — rename to "Monthly repayment", values formatted `$11,323/mth`.
+- "View all 14 lenders" (~L314) — remove.
+- "Pause logos" control (~L384) and any hover-pause on the carousel — remove.
+- Standalone price-ceiling section (~L724, id used by "See how it works" anchor) — remove entirely; FundsCard survives only inside HowItWorks step 3. Repoint the secondary CTA anchor to the HowItWorks section.
+- Hero heading oversized; comparison not above the fold — compact per §3.2.
+- Any lender-row click/selection/hover detail (incl. `LenderDetail` usage in step 2) — remove; rows become purely presentational everywhere.
+- HowItWorks selectable-stage pattern — replace with three always-visible columns + connected numbered line (§3.5).
+- Fixed-scale implementation note, min/max income labels, coloured dots beside lender names, surplus hairlines — remove.
+- Footer is two anchor links — replace with Casual Client footer pattern.
+- Nav missing "Ask Fundora" and full label set — match Casual Client (§3.1).
+
+## 2. Final page architecture
+
+```text
+LandingBRangePage                     (src/pages/LandingBRangePage.jsx)
+├── GlobalHeader                      (match Casual Client: wordmark · nav labels incl. Ask Fundora · primary CTA)
+├── HeroSection
+│   ├── HeroCopy                      (compact H1 + supporting copy)
+│   ├── HeroActions                   (Run your scenario · See how it works · trust line)
+│   └── RangeModule                   (lender comparison preview — presentational + income slider)
+├── LenderProof                       (logo carousel, continuous, gutter-bound)
+├── HowItWorks                        (3 visible steps + ConnectedStepLine)
+│   ├── SectionHeader                 ("From your details to a number you can use.")
+│   ├── ConnectedStepLine             (numbered markers on a progress line)
+│   ├── Step1: InputPreview           ("Add your details")
+│   ├── Step2: MiniComparison         ("Compare lender results")
+│   └── Step3: FundsCard              ("Understand your costs")
+├── PropositionGrid                   ("A borrowing number you can trust." — 3 borderless columns)
+├── FinalCTA                          (closing band)
+└── GlobalFooter                      (match Casual Client)
+```
+
+Component names above already exist in the branch — reuse them; only `ConnectedStepLine` and the Casual-Client-matching header/footer are new work.
+
+## 3. Component-by-component specification
+
+### 3.1 GlobalHeader
+- **Reuse/match:** replicate the Casual Client header 1:1 (https://main.d2shr8dw0vjdmh.amplifyapp.com/): same height, typography, spacing, CTA styling, colours, hover/focus states. Do not redesign.
+- **Labels:** use the live site's exact nav label set and order, which must include **Ask Fundora**. Expected set: Insights · Learn · About · Ask Fundora + primary button. If the live site differs from this expectation, the live site wins — copy what it shows.
+- **Primary CTA label on this page:** "Run your scenario" (links to `/assessment`).
+- **Mobile:** match the Casual Client mobile header. If it uses a menu, use the same; otherwise wordmark + CTA with nav links accessible in the footer.
+- **Accessibility:** links are real `<a>`; visible focus ring per site pattern; header is `<header>` with `<nav aria-label="Main">`.
+- **Acceptance:** screenshot of our header at 1440px is visually indistinguishable from the reference site's (allowing for the CTA label).
+
+### 3.2 HeroSection (compact, above-the-fold guarantee)
+- **Copy (exact):** H1 "Find the home you can really afford." · support "Compare what you could borrow across 14+ lenders, based on real lender rules, rates and purchase costs." · primary "Run your scenario" · secondary "See how it works" (anchor-scrolls to HowItWorks) · trust "Free. No impact on your credit score."
+- **Layout:** keep the branch's centred composition; reduce H1 to the Fundora scale (~`clamp(32px, 3.2vw, 44px)`); tighten hero vertical padding so that at 1440×900 AND 1280×800 the viewport shows nav + H1 + support + both CTAs + at least the RangeModule header and first two lender rows. This is a hard acceptance criterion.
+- **Motion (one-time, on load):** (1) heading+support fade in, translateY 8–12px→0; (2) CTAs ~80ms later; (3) RangeModule fades/rises last. `--ease-out: cubic-bezier(0.23,1,0.32,1)`, 280–420ms. Never re-runs on scroll. No scale-from-zero, no bounce, no parallax.
+
+### 3.3 RangeModule (lender comparison preview)
+- **Nature:** presentational. The income slider is the ONLY interaction.
+- **Remove:** "Example comparison" text; "View all 14 lenders"; fixed-scale note; min/max income labels; coloured dots beside lender names; row hover styles; any click/selection/expansion/tooltip on rows (`pointer-events: none` on rows is acceptable); hairlines above column headings, directly below column headings, between list and slider, above the module's bottom area (use spacing; subtle row separators may stay if needed).
+- **Header (exact):** "Your purchase power range" + beneath, regular weight: "The maximum property price you could afford." + the live range figure.
+- **Columns:** Lender · Max property price (bar + value) · Loan amount · Interest rate · Comparison rate · Monthly repayment. Interest rate and Comparison rate MUST be identical size/weight/colour (legal, spec §12a). Numerals right-aligned, tabular-nums; headers aligned over their columns. Rename any "Est. monthly" → "Monthly repayment"; format `$11,323/mth`.
+- **Scrolling:** internal list scroll allowed; NO scroll trap — when the inner list hits its top/bottom, page scroll continues naturally (do not set `overscroll-behavior: contain`). Hidden scrollbar + small edge fades OK; whole rows visible at rest (no half-cut row).
+- **Slider:** on change, range figure, bars, loan amounts and repayments update; ordering may change only as the model dictates. Keep fixed global bar scale (monotonic). Motion: bars 220–300ms ease-out; numbers 180–250ms; row reorder 300–400ms ease-in-out; no bounce, no table flash. Optional one-time autoplay demo before first touch; first user touch stops autoplay permanently.
+- **Accessibility:** rows `aria-hidden` with a text summary alternative; slider keyboard steps preserved; range announced politely on settle only.
+
+### 3.4 LenderProof (logo carousel)
+- **Lenders (min):** CommBank, NAB, Westpac, ANZ, Macquarie, ING, Athena, AMP, Bankwest, Suncorp Bank, Bendigo Bank (+ existing BOQ/HSBC/ubank fine). Correct Australian marks, symbol + name treatment, transparent bg, consistent optical height (`docs/lender-logo-sources.md` tracks sources; replace any wrong/placeholder marks).
+- **Behaviour:** continuous linear loop, seamless join; does NOT pause on hover; remove the "Pause logos" button entirely; keyboard-focus pause MAY remain (a11y). Sits inside the shared content max-width and gutters — never edge-to-edge; subtle edge fades.
+- **Reduced motion:** static wrapping row (all logos visible, no animation).
+- **Heading above strip:** keep "Compare how much you can borrow across 14 lenders" (15–16px, weight 400–500, muted), same background as the strip, no divider lines.
+
+### 3.5 HowItWorks (rebuild interaction pattern)
+- **Replace** the current selectable-stage pattern with **three always-visible equal columns** + a horizontal **ConnectedStepLine**: numbered markers (1·2·3) sitting ON the line; neutral line at rest; teal progress fill sweeps 1→3 as the sequence plays; active marker fills teal; completed markers keep a subtle done state. No glow, no bouncing.
+- **Section header (exact):** title "From your details to a number you can use." · support "See what you could borrow, compare lender results and understand the full cost of buying." Centre-aligned.
+- **Step 1 "Add your details"** — copy: "Tell us about your income, savings and the property you are planning to buy." Visual: `InputPreview` compact Fundora form (Annual income, Buying purpose, Property location, Savings) using real Fundora field styling. Motion (once, in view): income focused → value selected → new value typed → purpose dropdown opens → "Home to live in" selected → savings updates → settle.
+- **Step 2 "Compare lender results"** — copy: "Compare borrowing calculations across 14+ lenders and counting." Visual: `MiniComparison` (purchase-power range, several rows, bars, repayment values). Rows NOT clickable — remove `LenderDetail` usage; delete the component if orphaned. Motion: range appears → bars expand → values update → list scrolls slightly → settle. No per-lender stagger theatrics, no loop.
+- **Step 3 "Understand your costs"** — copy: "See the property costs, how the purchase is funded and what remains after settlement." Visual: `FundsCard` (§3.6). Motion: total appears → cost segments assemble → funding breakdown appears → loan+deposit segments assemble → savings-left-over last. Story: what it costs → how it is funded → what remains.
+- **Sequence:** plays once when section enters viewport, step 1→3 over ~5–7s total, final states persist, never loops. Optional: clicking a visual replays ONLY that visual (no expand/modal/navigation). Reduced motion: no sequence; all three final states shown.
+- **Responsive:** desktop three columns + horizontal line; mobile stacked with a vertical line, same order, visuals kept legible (no tiny screenshots).
+
+### 3.6 FundsCard (funding breakdown — lives ONLY in step 3)
+- **Copy (exact):** heading "You could afford a $760,000 home" · total "$795,400 in total property costs" · cost legend: Property price / Stamp duty / Legal and other costs, each with a colour identifier matching its bar segment · second group heading "Funding breakdown" (renamed from "Where the funds are sourced from") · rows: "Loan from CBA (79% LVR)" — exactly that: CBA not CommBank, parentheses not a middle dot, no separate LVR fragment — and "Deposit" (renamed from "Your savings used") · final row "Savings left over" ($14,600, green-dark).
+- **Structure:** one card; remove hairlines between "Legal and other costs" and "Funding breakdown" and above "Savings left over" — separate zones with spacing/background instead. Numbers must reconcile (760,000+30,000+5,400 = 795,400 = 600,000+195,400).
+
+### 3.7 PropositionGrid
+- **Remove** "More than one number". **Heading (centre, exact):** "A borrowing number you can trust." · support "Fundora brings lender calculations, real purchase costs and scenario modelling into one clear view."
+- **Three borderless columns (exact copy):** 1) "Compare every lender side by side" / "Compare borrowing calculations across 14+ lenders and counting." 2) "Built on real lender calculations" / "See estimates informed by lender policies, rates and the costs of purchasing a home." 3) "Test changes before you make them" / "Adjust your income, deposit or plans and see how your borrowing range responds."
+- **Visuals:** current proposition images are too large — reduce to small product-derived accents (~50% current size), no numbering, no hover interactions, no cards/borders.
+
+### 3.8 FinalCTA
+- **Copy:** "Find the home you can really afford." · "Your personalised borrowing range is only a few minutes away." · button "Run your scenario" (same styling as hero/nav CTAs).
+- **Layout:** aligned to the main grid; proportionate (small) illustration; NOT an oversized card; page background stays consistent (no cream band).
+
+### 3.9 GlobalFooter
+- Replicate the Casual Client footer (structure, links, meta, typography). Replace the current two-anchor footer. Keep the compliance/disclaimer text currently on the page within it.
+
+### 3.10 Page-level typography, background, grid
+- Everything reads ~10% oversized: pull hero/section headings, body, table labels/values, button text and card/section spacing back to the Casual Client scale by choosing the nearest existing Fundora type-scale step — do NOT apply a global 0.9 multiplier.
+- One page background throughout; sections separated by spacing/contained surfaces/subtle borders, not alternating background colours.
+- One shared `max-width` + identical left/right gutters for every section including the carousel.
+
+## 4. File-level change plan
+
+| File | Action |
+| --- | --- |
+| `src/pages/LandingBRangePage.jsx` | Edit heavily: remove "Example comparison", "View all 14 lenders", "Pause logos", min/max income labels, coloured name-dots, standalone price-ceiling section (~L724); rename "Est. monthly"→"Monthly repayment"; strip all row click/hover/`LenderDetail` wiring; rebuild `HowItWorks` to 3-visible-columns + `ConnectedStepLine`; new GlobalHeader/GlobalFooter markup; hero compaction; FinalCTA per §3.8 |
+| `src/landing-b.css` | Edit: type-scale pass (§3.10), hairline removals, header/footer styles matching Casual Client, ConnectedStepLine styles, carousel gutter containment + edge fades, remove pause-button + row-hover styles, dead-rule sweep afterwards |
+| `src/pages/landing-b/model.js` (+ `model.test.js`) | Keep. Verify it exposes loan amount, interest rate, comparison rate, monthly repayment per lender; add repayment formatter `$X,XXX/mth` if missing; keep fixed-scale + monotonicity tests |
+| `src/pages/landing-b/LandingBRangePage.test.jsx` | Update assertions for removed/renamed strings; add: rows have no click handlers; carousel has no pause button |
+| `e2e/landing-b.spec.ts` | Update: above-the-fold check (nav+hero+CTAs+module top at 1440×900 and 1280×800); slider recalcs values; internal scroll hands off to page; reduced-motion static carousel |
+| `src/components/ResponsiveDialog.jsx` | Reuse as-is for "How we worked this out" |
+| `LenderDetail` (inside page file) | Delete if orphaned after step-2 rework |
+| `src/assets/buying-range/lenders/*` | Audit against §3.4 lender list + `docs/lender-logo-sources.md`; replace incorrect/placeholder marks; consistent optical height |
+| `public/landing-b/proposition-*` | Keep files; render smaller per §3.7 (regeneration handled separately — see iteration-plan §8 chroma-key prompts) |
+| `docs/landing-b-proposal.md`, `docs/landing-b-goal-prompt.md` | No longer normative; add a one-line pointer to this spec at top of each (optional) |
+
+## 5. Ordered implementation tasks
+
+1. GlobalHeader + GlobalFooter to Casual Client parity (open the live site; copy labels incl. Ask Fundora).
+2. Page grid/typography/background pass (§3.10) — shared max-width, gutters, type-scale step-down, single background.
+3. Hero compaction + above-the-fold guarantee + hero entrance motion (§3.2).
+4. RangeModule corrections (§3.3): copy, columns/labels/alignment, removals, non-interactive rows, scroll handoff, slider motion timings, optional autoplay.
+5. LenderProof (§3.4): remove Pause control + hover pause, gutters, logo audit/replacement, reduced-motion row.
+6. Remove standalone price-ceiling section; repoint "See how it works" anchor to HowItWorks.
+7. Rebuild HowItWorks (§3.5): three visible columns, ConnectedStepLine, per-step visuals + one-time sequence; delete LenderDetail if orphaned.
+8. FundsCard copy/structure revisions (§3.6).
+9. PropositionGrid rework (§3.7).
+10. FinalCTA (§3.8).
+11. Motion polish pass against the timing table (§6 of handoff / below) + button press feedback; ensure no `transition: all`.
+12. Reduced-motion audit (§7 criteria).
+13. Tests: update unit + e2e; run `npm run build`, unit, e2e; visual QA (§8).
+
+Motion timing table (normative): CTA press 120–150ms · hover colour 150–180ms · field focus 140–180ms · dropdown 160–220ms · number update 180–250ms · bar update 220–300ms · product-state transition 280–420ms · row reorder 300–400ms · cost-bar assembly 400–650ms · HowItWorks sequence 5–7s · carousel slow/linear/continuous. Easings: `--ease-out: cubic-bezier(0.23,1,0.32,1)`; `--ease-in-out: cubic-bezier(0.77,0,0.175,1)`. Button press: `transform: scale(0.97)` @140ms ease-out.
+
+## 6. Explicit non-goals
+
+Do not: make lender rows clickable · add lender hover interactions · retain the standalone price-ceiling section · redesign the navigation or footer · create new Fundora colours · turn HowItWorks into tabs · hide two steps while one is active · add parallax or mouse-follow tilt · loop explanatory animations continuously · use placeholder/approximate lender logos · alternate section backgrounds · run the carousel edge-to-edge · apply a blanket global font scale factor · use `transition: all` · re-run the hero entrance on scroll.
+
+## 7. Acceptance criteria (all testable)
+
+1. **Above the fold** at 1440×900 and 1280×800: nav, H1, support copy, both CTAs, trust line, and RangeModule header + ≥2 lender rows all visible without scrolling.
+2. **Header/footer parity:** labels (incl. Ask Fundora), heights, type, colours, states match the amplify reference side-by-side.
+3. **RangeModule labels:** "Your purchase power range" + "The maximum property price you could afford."; no "Example comparison"; column headers aligned over right-aligned tabular values; "Monthly repayment" with `$X,XXX/mth` format; Interest rate and Comparison rate visually identical in size/weight/colour.
+4. **Slider:** moving it updates range figure, bars, loan amounts, repayments; bar widths never shrink when income increases; reorder animates 300–400ms; autoplay (if built) stops permanently on first touch.
+5. **Rows inert:** clicking/tapping/hovering any lender row (hero or step 2) produces no visual or state change and no pointer cursor.
+6. **Scroll handoff:** wheel/touch scrolling the inner lender list continues into page scroll at list bounds; nothing traps.
+7. **Carousel:** continuous linear loop, seamless wrap; hover does NOT pause; no pause button; strip respects page gutters; correct AU lender marks at consistent height.
+8. **HowItWorks:** three columns always visible (desktop), numbered markers on a connecting line with teal progression; sequence plays once on viewport entry over 5–7s and final states persist; mobile stacks vertically with a vertical line.
+9. **FundsCard:** exact strings from §3.6 incl. "Loan from CBA (79% LVR)", "Deposit", "Funding breakdown"; no hairline between costs and funding groups nor above "Savings left over"; numbers reconcile.
+10. **Propositions:** "A borrowing number you can trust." centred; three borderless columns; visuals visibly smaller than current; no hover effects.
+11. **Reduced motion:** hero/HowItWorks/counters render final states; carousel becomes a static wrapping row; slider still functional; no information lost.
+12. **Build/tests:** `npm run build` clean; unit + e2e suites green.
+
+## 8. Visual QA checklist
+
+At 1440px, 1280px, 768px (tablet), 375px (mobile): alignment to the shared grid · typography steps match the Fundora scale · consistent gutters (carousel included) · no horizontal overflow · no layout shift while animations play · no trapped scrolling · animations reach correct final states · no cursor:pointer on non-interactive elements (lender rows) · reduced-motion behaves per §7.11 · header/footer match reference · single consistent page background.
+
+## 9. Open issues (genuine blockers only)
+
+1. **Exact nav label set:** local casual-client repo doesn't contain "Ask Fundora"; the live amplify site is the truth — implementer must transcribe the live header labels/order at build time (handoff mandates Ask Fundora be present).
+2. **Ask Fundora destination:** no route exists in this repo; link to the amplify URL or `#` placeholder — owner to confirm.
+3. **Lender logo licensing/accuracy:** `docs/lender-logo-sources.md` tracks sources; any mark that can't be verified as the current official AU brand needs owner sign-off before ship (non-goal: approximate logos).
+4. **Autoplay demo (§3.3) is optional:** build it only if it fits the schedule; not required for acceptance.
+
+---
+**Status: ALL SECTIONS 1–9 COMPLETE.** Continuing agents: implementation may begin at §5 task 1; update the tracker line at the top if you amend this spec.
