@@ -1,6 +1,6 @@
 # Fundora Landing Page — Final Implementation Specification
 
-**Status: COMPLETE — ready for implementation** ← handoff tracker: an agent continuing this file should update this line and finish any section marked TODO. Source directives: `/Users/sarah/Downloads/Fundora_Landing_Page_Strong_Model_Planning_Handoff.md` (the "handoff"); everything below reconciles it against the real branch state.
+**Status: COMPLETE — ready for implementation (v1.1: header/footer/tokens transcribed from the live amplify site 2026-07-10)** ← handoff tracker: an agent continuing this file should update this line and finish any section marked TODO. Source directives: `/Users/sarah/Downloads/Fundora_Landing_Page_Strong_Model_Planning_Handoff.md` (the "handoff"); everything below reconciles it against the real branch state.
 
 Audience: a less capable coding model. Follow this document literally. Where this spec and older docs (`landing-b-proposal.md`, `landing-b-goal-prompt.md`, `landing-b-iteration-plan.md`) conflict, THIS FILE WINS. Do not re-plan, do not redesign, do not invent copy.
 
@@ -57,13 +57,15 @@ Component names above already exist in the branch — reuse them; only `Connecte
 
 ## 3. Component-by-component specification
 
-### 3.1 GlobalHeader
-- **Reuse/match:** replicate the Casual Client header 1:1 (https://main.d2shr8dw0vjdmh.amplifyapp.com/): same height, typography, spacing, CTA styling, colours, hover/focus states. Do not redesign.
-- **Labels:** use the live site's exact nav label set and order, which must include **Ask Fundora**. Expected set: Insights · Learn · About · Ask Fundora + primary button. If the live site differs from this expectation, the live site wins — copy what it shows.
-- **Primary CTA label on this page:** "Run your scenario" (links to `/assessment`).
-- **Mobile:** match the Casual Client mobile header. If it uses a menu, use the same; otherwise wordmark + CTA with nav links accessible in the footer.
-- **Accessibility:** links are real `<a>`; visible focus ring per site pattern; header is `<header>` with `<nav aria-label="Main">`.
-- **Acceptance:** screenshot of our header at 1440px is visually indistinguishable from the reference site's (allowing for the CTA label).
+### 3.1 GlobalHeader — transcribed from the LIVE amplify home (2026-07-10; this is now exact, not aspirational)
+Live markup: `<header class="sticky top-0 z-20 w-full bg-white border-b border-stone-300"><nav class="page min-h-16 flex items-center justify-between gap-5" aria-label="Main">…`
+- **Structure:** sticky top, white background, 1px bottom border `stone-300` (#d6d3d1); inner `<nav aria-label="Main">` inside the shared `.page` container; min-height **64px**; flex, space-between, 20px gap (16px on mobile).
+- **Wordmark (left): "Ask Fundora"** — it is the site wordmark, NOT a nav item. 18px / bold / black, links to home. (Note: our page currently says "Fundora"; adopt "Ask Fundora" to match the live brand site.)
+- **Nav (right group): About → Learn** (that order on the live site), each 14px / semibold(600) / black, `transition-colors` hover; hrefs `/about`, `/learn` (placeholders `#` acceptable in this repo).
+- **Primary CTA:** `btn btn-primary` → our `/assessment`; label **"Run your scenario"** at ≥sm, swapping to **"Start"** below sm (the live site does exactly this label swap — copy it).
+- **No hamburger at any width** — the live site keeps wordmark + 2 links + CTA inline on mobile with tighter gaps.
+- **Button spec (live `.btn` / `.btn-primary`):** inline-flex, min-height 38px, padding-inline 16px, border-radius 12px, 14px semibold, no border; default bg `stone-100`, black label; primary bg `teal-400`, black label; background-colour-only transition. Use these values for every CTA on the page.
+- **Acceptance:** side-by-side screenshot vs the live header at 1440px and 375px is structurally identical (wordmark text, link set/order, heights, CTA shape, mobile label swap).
 
 ### 3.2 HeroSection (compact, above-the-fold guarantee)
 - **Copy (exact):** H1 "Find the home you can really afford." · support "Compare what you could borrow across 14+ lenders, based on real lender rules, rates and purchase costs." · primary "Run your scenario" · secondary "See how it works" (anchor-scrolls to HowItWorks) · trust "Free. No impact on your credit score."
@@ -107,13 +109,18 @@ Component names above already exist in the branch — reuse them; only `Connecte
 - **Copy:** "Find the home you can really afford." · "Your personalised borrowing range is only a few minutes away." · button "Run your scenario" (same styling as hero/nav CTAs).
 - **Layout:** aligned to the main grid; proportionate (small) illustration; NOT an oversized card; page background stays consistent (no cream band).
 
-### 3.9 GlobalFooter
-- Replicate the Casual Client footer (structure, links, meta, typography). Replace the current two-anchor footer. Keep the compliance/disclaimer text currently on the page within it.
+### 3.9 GlobalFooter — transcribed from the LIVE amplify home
+Live markup: `<footer class="page flex justify-between gap-[18px] pt-8 pb-11 text-stone-500 text-sm max-sm:flex-col"><p>© 2026 Ask Fundora</p><p>Not financial advice</p></footer>`
+- **Structure:** single row inside `.page`, space-between, 18px gap, padding-top 32px / padding-bottom 44px, 14px `stone-500` text; stacks to a column below sm.
+- **Content:** left "© 2026 Ask Fundora" · right "Not financial advice". That is the whole footer — do NOT build link columns.
+- Our page's longer compliance/disclaimer paragraph moves to a short block immediately above this footer (same `.page` width, 12px `stone-500`), keeping the two-slot footer itself identical to the live site.
 
-### 3.10 Page-level typography, background, grid
-- Everything reads ~10% oversized: pull hero/section headings, body, table labels/values, button text and card/section spacing back to the Casual Client scale by choosing the nearest existing Fundora type-scale step — do NOT apply a global 0.9 multiplier.
-- One page background throughout; sections separated by spacing/contained surfaces/subtle borders, not alternating background colours.
-- One shared `max-width` + identical left/right gutters for every section including the carousel.
+### 3.10 Page-level typography, background, grid — concrete tokens from the live site
+- **Container (`.page`):** max-width **1180px**, `padding-inline: 16px` (12px below sm), centred. Every section including the carousel uses it.
+- **Type scale (Tailwind steps the live site uses):** hero H1 60/48/36px at desktop/lg/sm with line-height 1.02 — but OUR hero must stay compact per §3.2, so use the 48px step at desktop and 36px at mobile; section H2s ~30px; lede/support 18px `stone-500` line-height 1.6; body 16px; labels/small 14px; fine print 12px. Choose these exact steps; do NOT apply a global 0.9 multiplier.
+- **Cards:** border-radius 12px, 1px `stone-300` border, white bg, 24px padding (live `.card`). Align our module/cards to this.
+- **Colours:** black text `#111`ish, muted `stone-500`, borders `stone-300`, surfaces `stone-100`/white, primary `teal-400` fills — do not invent new colours.
+- One page background (white) throughout; sections separated by spacing/contained surfaces/subtle borders, not alternating background colours.
 
 ## 4. File-level change plan
 
@@ -173,8 +180,8 @@ At 1440px, 1280px, 768px (tablet), 375px (mobile): alignment to the shared grid 
 
 ## 9. Open issues (genuine blockers only)
 
-1. **Exact nav label set:** local casual-client repo doesn't contain "Ask Fundora"; the live amplify site is the truth — implementer must transcribe the live header labels/order at build time (handoff mandates Ask Fundora be present).
-2. **Ask Fundora destination:** no route exists in this repo; link to the amplify URL or `#` placeholder — owner to confirm.
+1. ~~Exact nav label set~~ **RESOLVED 2026-07-10** by transcribing the live amplify home: "Ask Fundora" is the WORDMARK; nav is About → Learn; CTA "Run your scenario"/"Start". §3.1 is now exact. (The GitHub commit `1ace0e5` the owner referenced contains `tailwind/home.html` etc. as saved snapshots of github.com's marketing page — structural templates only, zero Fundora content; the live site remains the truth and has been transcribed.)
+2. ~~Ask Fundora destination~~ **RESOLVED**: it is the wordmark, linking to the page root. About/Learn link `#` placeholders in this repo.
 3. **Lender logo licensing/accuracy:** `docs/lender-logo-sources.md` tracks sources; any mark that can't be verified as the current official AU brand needs owner sign-off before ship (non-goal: approximate logos).
 4. **Autoplay demo (§3.3) is optional:** build it only if it fits the schedule; not required for acceptance.
 
