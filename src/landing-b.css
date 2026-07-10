@@ -1644,8 +1644,32 @@
 @media (prefers-reduced-motion: reduce) {
   .lpb-btn,
   .lpb-row-fill,
-  .lpb-comparison-row {
+  .lpb-slider-progress,
+  .lpb-comparison-row,
+  .lpb-connected-steps::after,
+  .lpb-step-marker,
+  .lpb-preview-field,
+  .lpb-mini-comparison,
+  .lpb-mini-list,
+  .lpb-mini-bar i,
+  .lpb-funds-costs,
+  .lpb-funds-funding,
+  .lpb-funds-verdict,
+  .lpb-segmented-bar span {
     transition: none !important;
+  }
+
+  .lpb-h1,
+  .lpb-subhead,
+  .lpb-hero-actions,
+  .lpb-hero .lpb-module,
+  .lpb-number-update,
+  .lpb-preview-option {
+    animation: none !important;
+  }
+
+  .lpb-btn:active {
+    transform: none;
   }
 
   .lpb-lender-marquee {
