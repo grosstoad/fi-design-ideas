@@ -16,6 +16,8 @@
 
 **v3.2 changes (casual-client brand alignment, owner decisions 2026-07-08):** brand name is **Fundora** (C1 — reverses the 07-06 fundiq pick, made before the brand repo surfaced); font **Inter 400/600/700** (§3.2); tokens realigned to the casual-client hue system — Grey Page `#FAFAFA` surface model, tiered teal, primary buttons now `--teal` fill with black label everywhere (C2 — reverses the Paper-frame black CTA), mint kept (C3); one shared 10px radius; character/avatar coexists with the object illustrations, scoped to interpretive moments (C4, see `docs/illustration-style.md`); our motion system governs over casual-client's bg-only rule (C5). Full comparison: `docs/casual-client-alignment.md`.
 
+**v3.3 changes (learnings folded back from the landing-page build, 2026-07-10):** tokens reconciled against the LIVE casual-client site (white page, stone greys, teal-400 `#2DD4BF` primary fills, 12px radius, 1180px container, 38px buttons) — §3.1/§3.3/§4.2/§7.1; §8's expanded funds view adopts the owner-approved landing "funds breakdown" pattern (segmented bars + colour-dot legends, "Funding breakdown" group name, "Loan from {lender} (XX% LVR)", "Deposit", "Savings left over"); sheets/modals note the shared `ResponsiveDialog` component now in the repo; wordmark question flagged (live site wordmark is "Ask Fundora").
+
 **How to review this doc:** read top to bottom, correct any [ADOPTED] decision you disagree with, and answer the numbered FILL-INs (many are one-liners). Once §14 is answered, this spec is intended to be handed to an engineer or a coding agent verbatim.
 
 **Companion docs:** `docs/results-page-spec-review.md` (rationale for every decision), `docs/design.md` (legacy system — superseded for this page per review §0/§9.1), `docs/results-page-codex-goal-prompt.md` (build task prompt).
@@ -86,15 +88,15 @@ The artboard's "Focused Paper pass" note states four principles that govern ever
 ### 3.1 Colour
 
 ```
---bg:         #FAFAFA   page background — Grey Page, casual-client surface model [owner 2026-07-08; replaces the Paper frames' pure white]
+--bg:         #FFFFFF   page background [v3.3: the LIVE casual-client site is white with stone borders — the #FAFAFA "Grey Page" came from the repo's grammar CSS, which the shipped product does not follow; white wins]
 --card:       #FFFFFF   cards/sheets — raised against --bg by contrast, never by shadow
 --field:      #F3F3F0   inset panels (capacity tiles, header bands, conditional rows, back-button circle) — Grey Light; merges the frames' #F8F8F5
 --ink:        #111111   primary text (Black singleton, shared with casual-client)
 --muted:      #5F5E58   body/support text, labels (kept darker than casual-client's #6f6f6a for contrast)
 --muted-2:    #8B8982   fine hints, corner labels ("Max price", "Rate" corner tags)
---line:       #D8D8D4   borders + dividers — Grey Edge; merges the frames' #D8D8D0/#E2E2DC (selected-card emphasis may step to #CFCFC8)
+--line:       #D6D3D1   borders + dividers — stone-300, matched to the live site [v3.3; soft internal dividers may use #E9E9E5]
 --teal-light: #CCF3EF   badge/card tint tier
---teal:       #14B8A6   Primary at Solid — button fills, bar fills, slider thumbs
+--teal:       #2DD4BF   Primary at Solid — button fills, bar fills, slider thumbs [v3.3: matched to the live site's teal-400; hover deepens to #14B8A6]
 --teal-dark:  #0F766E   Primary at Dark — text links ("View all lenders", "Sort", "View", "Update details"), selected-lender name in compare rows (replaces #167D7F; near-identical)
 --control:    #85C7BE   mint — progress segments, toggle-on, sort radio fill [kept, owner C3 2026-07-08; product-only tint outside the brand ramp]
 --err:        #C2462C   validation errors (deltas, if ever added, use casual-client Green Dark #0b6b4a ↑ / Pink Dark #9d174d ↓)
@@ -136,7 +138,7 @@ Mobile column = measured from the 393px Paper frames (normative). Desktop column
 
 ### 3.3 Shape, elevation, spacing (Paper-verified where mobile)
 
-- Radii: one shared radius 10px on cards, sheets, buttons, inputs [owner 2026-07-08, casual-client "one shared radius" rule; nudged from the frames' 8px] · back-button circle 14px on 28px square · progress segments square-ended 4px tall · toggle pill full-round.
+- Radii: one shared radius **12px** on cards, sheets, buttons, inputs [v3.3: matched to the live site's radius-xl; supersedes the 10px pick] · back-button circle 14px on 28px square · progress segments square-ended 4px tall · toggle pill full-round.
 - Borders: 1px `--line` (`#D8D8D0`) on cards; 1px `--line-soft` (`#E2E2DC`) dividers; selected/emphasis cards may use `#CFCFC8`.
 - Elevation: the Paper frames are flat — no card shadows on the results screen. Sheets: single soft shadow `0 -10px 40px -12px rgba(0,0,0,.25)` + scrim. Keep shadows to overlays only.
 - Spacing rhythm: page side padding 32px on the 393px frame (≈8.1%; implement as 24–32px) · card padding 16px · row vertical padding 13–14px · stack gaps 10–14px · CTA height 48px.
@@ -157,7 +159,7 @@ Every interactive element: `outline: 2px solid var(--accent); outline-offset: 2p
 
 ### 4.2 Breakpoints
 
-- **Desktop layout ≥ 1024px**: 1340px max content width, centered; master–detail grid `468px + 1fr`, 28px gap; body padding 40px top / 44px sides.
+- **Desktop layout ≥ 1024px**: **1180px** max content width (the live site's `.page` container [v3.3]; supersedes 1340px), centered; master–detail grid `468px + 1fr`, 28px gap; 16px side gutters within the container; body padding 40px top.
 - **Mobile layout < 1024px**: single column, 22px side padding, docked CTA bar. (The design frames are 1340 and 392; everything between scales fluidly — list column may shrink to 400px minimum before collapsing to mobile.) 🔶 FILL-IN #20: confirm the 1024px collapse point and whether a distinct tablet treatment is wanted (default: no, mobile layout).
 
 ### 4.3 Data contract
@@ -258,7 +260,7 @@ Published figure for the specific product/term. If unavailable: render `—` wit
 
 ### 7.1 Header (C1)
 
-- 70px tall, white, 1px `--line-soft` bottom border, content padding 0 38px.
+- 64px tall (live-site `min-h-16` [v3.3]), white, sticky, 1px `--line` bottom border; content inside the shared 1180px container, 16px gutters.
 - Left: wordmark "fundora" 20px/700 (the Paper frames show a plain bold wordmark, no logo mark — drop the v2 forest logo square).
 - Right: **Save & exit** — ghost button, 14.5px/400 `--muted`; hover: `--field` bg, `--ink` text; radius 10px, padding 8px 12px.
 - **Save & exit behaviour [ADOPTED A10]:** opens a small modal — "Save your results" / email input / "Email me a link" primary / "Just exit" text — issuing a resume token. **Prototype [#19, owner 2026-07-06]:** no durable persistence — the modal renders and validates but "Email me a link" resolves to a stubbed confirmation ("Prototype: nothing was sent"); state lives in sessionStorage only. 🔶 FILL-IN #10: confirm production mechanism (email link vs account vs silent local save) and destination after exit (marketing home?).
@@ -447,13 +449,15 @@ Replaces the prototype's breakdown (which double-counted the deposit).
 
 *(v3.1 note: with the loan now a Group 2 source row [#25], Group 1 is the full purchase cost — price + costs — replacing the earlier cash-only "Deposit toward purchase" framing. The collapsed row's "About {$XXXk} needed to settle" still quotes the **cash** side only: `Funds required − loan`.)*
 
-*Group 2 — "Where it comes from" [#25 resolved, owner 2026-07-06: "it's either savings or the loan, and be clear if there's any savings left over (or a deficit)"]:*
+*Group 2 — **"Funding breakdown"** [renamed v3.3 per the owner-approved landing pattern; #25 resolved 2026-07-06: "it's either savings or the loan, and be clear if there's any savings left over (or a deficit)"]:*
 
 | Row | Value |
 | --- | --- |
-| Loan from {lender} | `maxLoan` (the selected lender's loan amount — same figure as the capacity pair) |
-| Your savings | `savings` (from the flow) |
-| **Total available** | sum — divider above, 14.5px/700 |
+| Loan from {lender} ({XX}% LVR) | `maxLoan` — LVR belongs to the loan row, in parentheses, no middle dot (owner, landing round 2026-07-10) |
+| Deposit | `savings` allocated (renamed from "Your savings" per the same direction) |
+| **Total available** | sum — 14.5px/700 |
+
+**Presentation [v3.3 — proven on the landing]:** each group renders as a **segmented horizontal bar** (10px, 2px white gaps between segments, rounded outer ends) with a **colour-dot legend** beneath (dot · label · right-aligned value) — the realestate.com.au equity-card pattern the owner picked. Groups are separated by spacing/background, **no hairlines** between the cost group and "Funding breakdown" or above the savings row. The landing's `FundsCard` in `src/pages/LandingBRangePage.jsx` is the reference implementation to lift.
 
 No gift/FHOG/sale-proceeds rows in v1 (not captured in the flow). Because the loan is now a source row, Group 1's "what you'll need" total is the **full purchase cost (price + costs)**, not just the cash side — the two groups reconcile: `price + costs = loan + savings − remaining`. Rows in the two groups share a baseline grid so the totals align horizontally on desktop. The leftover-savings figure (or the unlikely deficit) is the verdict strip's job and must always be visible when the breakdown is open.
 
@@ -466,7 +470,7 @@ No gift/FHOG/sale-proceeds rows in v1 (not captured in the flow). Because the lo
 | **Remaining cash** | `Available funds − Funds required`, 13.5px label / 20px/700 value + inline `%` of available funds (matches `4WM-0`'s "$290K \| 8%" treatment) |
 
 **Verdict states:**
-- Remaining ≥ 0: value in `--ink`, sub-note "savings left over after settlement" — the owner explicitly wants leftover savings unmistakable [#25].
+- Remaining ≥ 0: row label **"Savings left over"** [v3.3, landing-approved phrasing], value in green-dark `#0b6b4a` — the owner explicitly wants leftover savings unmistakable [#25].
 - Shortfall (< 0): value `--err`, row label "Shortfall", plus a compact notice band under the block (r10, `--err` at 8% tint bg): "Your savings don't cover the costs at this price. Lower the price range or talk to a broker about options." with "Update details" link. *(With the usable-deposit model a shortfall shouldn't occur by construction — this state guards engine edge cases and future buffer settings.)*
 
 Mobile: identical block inside the lender card, bg `--field`, link label "View"/"Hide".
@@ -519,6 +523,7 @@ Results recalculate on open (rates may have moved). If any figure changed vs the
 - View-all identical to §7.5 (page grows on mobile instead of internal scroll — the page is the scroll container; expanded list simply lengthens).
 
 ### 10.4 Lender detail bottom sheet [A4]
+*(Implementation note [v3.3]: the repo now has a shared `src/components/ResponsiveDialog.jsx` — centered modal on desktop, bottom sheet on mobile, focus trap + Esc/scrim close — built for the landing. Every sheet/modal in this spec (this one, §7.7's Update details surfaces, §13 broker capture, "How we estimate") should reuse it rather than re-implementing the chrome.)*
 - Scrim `rgba(0,0,0,.34)`, tap closes. Sheet: white, r16 top corners (Paper "05 Sort sheet" shows large top radius + centered grab bar), shadow §3.3, max-height 90%.
 - Structure: grab handle (40×5px pill `--line`, 12px padding zone) · **close ✕** 34px circular `--field` button top-right (required) · body (scrollable): eyebrow "Selected lender" + lender card (§10.5) · footer (fixed): primary "Connect with a broker" + secondary "Update details", top border `--line-soft`.
 - **Snap points:** opens at 65% viewport height; drag up → full (90%); drag down past 110px or velocity flick → dismiss; between snaps, settle to nearest (spring 300ms).
@@ -584,8 +589,8 @@ Numbers are announced to AT once, at final value (render final value into the ac
 | funds.title / funds.note | Funds to complete / About {x} needed to settle |
 | funds.sub | Deposit, purchase costs and remaining cash buffer. |
 | funds.view | View |
-| funds.groups | What you'll need / Where it comes from |
-| funds.rows | Property price / Stamp duty ({state}, est.) / Transfer & legal fees / Lender fees ({lender}) / LMI / Funds required / Loan from {lender} / Your savings / Total available / Remaining cash · savings left over after settlement |
+| funds.groups | What you'll need / Funding breakdown |
+| funds.rows | Property price / Stamp duty ({state}, est.) / Transfer & legal fees / Lender fees ({lender}) / LMI / Funds required / Loan from {lender} ({XX}% LVR) / Deposit / Total available / Savings left over |
 | update.financial.deadend | Edited in the main application flow (not part of this prototype) |
 | funds.shortfall | Your savings don't cover the costs at this price. Lower the price range or talk to a broker about options. |
 | cta.primary / cta.secondary | Connect with a broker / Update details |
@@ -676,9 +681,12 @@ Under submit, 12px centered `--muted-2`: "No credit check. We'll only use these 
 | 25 | ~~Funding sources~~ **RESOLVED 2026-07-06**: sources are the loan + savings only; make leftover savings (or unlikely deficit) unmistakable in the verdict (§8 rewritten) | §8 | Resolved |
 | 26 | Compliance: ~~placement~~ **26a RESOLVED 2026-07-06: single footnote in the disclaimer block, superscript-linked from each comparison rate**. Still owed: exact warning wording; scope for broker comms/emails | §12a | Yes — before launch |
 | 27 | ~~Visual verification of §7.6 banner and §8 breakdown against Paper frames~~ **RESOLVED 2026-07-04** — both frames fetched and inspected directly (JSX + computed styles + screenshots). §7.6/§10.5/§8 rewritten to match the actual built patterns ("Capacity pair" tiles, verified rate/comparison equality, funds-required/available/remaining verdict strip). No longer blocking. | §7.6, §8 | Resolved |
-| 28 | Desktop frames: the Paper artboard is mobile-only (393px); desktop type/layout values in §3.2/§7 are extrapolated. Design desktop frames in Paper or sign off the extrapolation | §3.2, §7 | No (extrapolation stated) |
+| 28 | Desktop frames: the Paper artboard is mobile-only (393px); desktop type/layout values in §3.2/§7 are extrapolated — owner approved extrapolate-and-review (2026-07-06). [v3.3] Desktop CHROME is no longer extrapolated: header/footer/container/buttons are transcribed from the live site (§4.2, §7.1); the master–detail layout and desktop type steps remain extrapolations to be judged in the running prototype | §3.2, §7 | No (extrapolation stated) |
 | 29 | "Policy fit" sort option: what metric backs it? Cut from the sort sheet if no engine eligibility-strength score exists in v1 | §7.3a | No (default: cut if undefined) |
 | 30 | "Property price in mind" (optional field, Property sheet): engine behaviour when set — cap displayed results at the target, show a gap indicator, or informational only? | §7.7 | No (default: informational only) |
+
+| 31 | [v3.3] **Wordmark:** the live casual-client site's wordmark is "Ask Fundora"; this spec and the prototype use "Fundora"/"fundora". Owner to confirm which brand string the product header carries | §7.1, §10.1 | No (Fundora stands until overruled) |
+| 32 | [v3.3] **Illustration canon:** two systems exist — the muted inked-risograph set (Paper input-flow assets, `docs/illustration-style.md`, referenced by §7.7's chooser rows) vs casual-client's bright candy-cartoon `assets/` (per the independent style review, 2026-07-10). The Update details chooser illustrations follow whichever wins. Owner decision | §7.7 | No for prototype (current Paper assets stand) |
 
 **Definition of ready — prototype (owner Q&A completed 2026-07-06): READY.** Every open item is either resolved above or has a stated prototype behaviour (stub/placeholder/fixture). Nothing blocks the codex build.
 **Definition of ready — production:** #4 (calc reconciliation), #5/#5b (engine support), #2 (integration choice), #12 (broker lead API + consent), #13 (privacy URL), #26 (comparison-rate warning wording), #17c (empty-state copy), #6–#8 (stamp duty / LMI / fees data), #10, #11, #19, #21 remain owed before real users see this page.
