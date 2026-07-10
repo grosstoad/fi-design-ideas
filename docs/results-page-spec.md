@@ -18,6 +18,8 @@
 
 **v3.3 changes (learnings folded back from the landing-page build, 2026-07-10):** tokens reconciled against the LIVE casual-client site (white page, stone greys, teal-400 `#2DD4BF` primary fills, 12px radius, 1180px container, 38px buttons) — §3.1/§3.3/§4.2/§7.1; §8's expanded funds view adopts the owner-approved landing "funds breakdown" pattern (segmented bars + colour-dot legends, "Funding breakdown" group name, "Loan from {lender} (XX% LVR)", "Deposit", "Savings left over"); sheets/modals note the shared `ResponsiveDialog` component now in the repo; wordmark question flagged (live site wordmark is "Ask Fundora").
 
+**v3.4 changes (desktop architecture rework, owner decisions 2026-07-11):** desktop drops the master–detail split for a **full-width comparison table + slide-over detail peek** — no lender auto-selected on entry, table gains loan amount / interest rate / comparison rate / monthly repayment columns, rows fill toward the viewport (whole rows only, internal scroll, "View all" removed), clicking a row slides a ~480px detail peek over the right edge without reflowing the table, the funds breakdown **replaces the peek's content** (drill-in with back) rather than expanding inline, and the broker/Update-details actions move to a **standalone band below the table**. Mobile is unchanged (bottom sheet per A4). See §7.0.
+
 **How to review this doc:** read top to bottom, correct any [ADOPTED] decision you disagree with, and answer the numbered FILL-INs (many are one-liners). Once §14 is answered, this spec is intended to be handed to an engineer or a coding agent verbatim.
 
 **Companion docs:** `docs/results-page-spec-review.md` (rationale for every decision), `docs/design.md` (legacy system — superseded for this page per review §0/§9.1), `docs/results-page-codex-goal-prompt.md` (build task prompt).
@@ -159,7 +161,7 @@ Every interactive element: `outline: 2px solid var(--accent); outline-offset: 2p
 
 ### 4.2 Breakpoints
 
-- **Desktop layout ≥ 1024px**: **1180px** max content width (the live site's `.page` container [v3.3]; supersedes 1340px), centered; master–detail grid `468px + 1fr`, 28px gap; 16px side gutters within the container; body padding 40px top.
+- **Desktop layout ≥ 1024px** [v3.4]: **1180px** max content width, centered, 16px gutters, 40px top padding. Layout is **full-width table + slide-over peek** (§7.0) — the former `468px + 1fr` master–detail grid is retired.
 - **Mobile layout < 1024px**: single column, 22px side padding, docked CTA bar. (The design frames are 1340 and 392; everything between scales fluidly — list column may shrink to 400px minimum before collapsing to mobile.) 🔶 FILL-IN #20: confirm the 1024px collapse point and whether a distinct tablet treatment is wanted (default: no, mobile layout).
 
 ### 4.3 Data contract
@@ -268,6 +270,22 @@ Published figure for the specific product/term. If unavailable: render `—` wit
 
 States: default · hover · focus-visible (§3.4) · modal open.
 
+### 7.0 Desktop architecture [v3.4 — table + slide-over peek; supersedes the master–detail split]
+
+**On entry, nothing is selected.** Below the hero sits one full-width **comparison table**:
+
+- Columns: `rank · lender · max property price (bar + value) · loan amount · interest rate · comparison rate · monthly repayment` — headers aligned over right-aligned tabular numerals; the bar column keeps ≥40% of row width; interest and comparison rate are **visually identical** in size/weight/colour (§12a, legal). Repayment format `$X,XXX/mth`.
+- **Row count:** as many WHOLE rows as fit the viewport between hero and the action band (no partial rows, no "View all" — §7.5 is retired); remaining lenders behind a quiet internal scroll (hidden scrollbar, bottom fade); scroll chains naturally to the page at the ends (no trap).
+- Rows are buttons: click/Enter opens the **detail peek**; chevron affordance at row end; no inline expansion.
+
+**Detail peek:** a ~480px panel slides over the table's right edge (280–360ms `--ease-out`), no scrim, table never reflows; ✕ and Esc close; focus moves in and returns on close; URL syncs `?lender=<id>` (close = history back). Content = the full detail-card anatomy of §7.6 (identity band, capacity pair, rate pair, statement rows, compare footer §7.8a, funds row §8). Selecting another table row while open swaps content in place. Mobile keeps the bottom sheet [A4]; the peek and the sheet share the anatomy and the `ResponsiveDialog` family.
+
+**Funds breakdown from the peek:** tapping the funds row's "View" **replaces the peek's content** with the §8 breakdown plus a "‹ Back to {lender}" link (drill-in, owner 2026-07-11) — never a second stacked overlay. On mobile the same swap happens inside the sheet.
+
+**Action band:** a standalone full-width band directly below the table (outside any card): primary "Connect with a broker" + "Update details" text link. Broker prefill = the selected (or last-selected) lender, else the current leader.
+
+§7.1–§7.9 below remain normative for component anatomy; where they assume the old side-by-side grid, §7.0 wins.
+
 ### 7.2 Hero (C2) — answer-first [ADOPTED A5, copy revised per Paper]
 
 Anatomy (left-aligned, max-width 760px, 26px bottom margin):
@@ -329,7 +347,7 @@ Grid `22px | 1fr | 120px | max-content | 18px`, gap 14px, padding 15px 12px, rad
 - Selecting updates the detail card (§7.6) — announce via `aria-live="polite"` region: "Showing {lender} {product}".
 - Selection resets the detail card's open disclosures to closed.
 
-### 7.5 View all / show fewer
+### 7.5 View all / show fewer — RETIRED on desktop [v3.4]; mobile shows the same fill-and-scroll pattern (no button). Historical text:
 
 - Default shows top 6. Button full-width below list: `View all lenders ({n})` ⇄ `Show fewer lenders`; white, 1px `--line`, r10, 14px padding, 15px/700; hover `--field`. (Paper shows the plain "View all lenders" label on the default screen and a teal "View all lenders" text link in the selected-lender state — both map to this control.)
 - Expanded: list region gets `max-height: 7 rows` + internal scroll (page doesn't grow) with top/bottom fade masks. **Bars render on all rows at every rank** [#22 resolved, owner 2026-07-06 — condensed treatment rejected].
