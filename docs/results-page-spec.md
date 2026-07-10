@@ -261,7 +261,7 @@ Published figure for the specific product/term. If unavailable: render `—` wit
 ### 7.1 Header (C1)
 
 - 64px tall (live-site `min-h-16` [v3.3]), white, sticky, 1px `--line` bottom border; content inside the shared 1180px container, 16px gutters.
-- Left: wordmark "fundora" 20px/700 (the Paper frames show a plain bold wordmark, no logo mark — drop the v2 forest logo square).
+- Left: wordmark "Ask Fundora" 20px/700 (the Paper frames show a plain bold wordmark, no logo mark — drop the v2 forest logo square).
 - Right: **Save & exit** — ghost button, 14.5px/400 `--muted`; hover: `--field` bg, `--ink` text; radius 10px, padding 8px 12px.
 - **Save & exit behaviour [ADOPTED A10]:** opens a small modal — "Save your results" / email input / "Email me a link" primary / "Just exit" text — issuing a resume token. **Prototype [#19, owner 2026-07-06]:** no durable persistence — the modal renders and validates but "Email me a link" resolves to a stubbed confirmation ("Prototype: nothing was sent"); state lives in sessionStorage only. 🔶 FILL-IN #10: confirm production mechanism (email link vs account vs silent local save) and destination after exit (marketing home?).
 - No other nav. Logo click = same as Save & exit prompt if unsaved 🔶 FILL-IN #10b: or straight to home?
@@ -362,7 +362,7 @@ White card, r10, flat (§3.3), padding 28px 30px 30px. Contents update **in plac
 
 **Entry:** the page-level secondary CTA "Update details" (§7.9 / mobile dock §10.6). Desktop presents the same surfaces as centered modals; mobile as bottom sheets.
 
-**Chooser sheet** — title "Update details" 25px/700 · sub 14px `--muted`: "Choose what changes the calculation." · three rows (leading **inked-sticker illustration ~40px anchored directly in the row — no chip, no thumbnail box**, per the Paper frame's own note and `docs/illustration-style.md`; title 15px/700; description 13px `--muted`; trailing chevron). Illustrations: house-with-contract (Property), clipboard-with-% (Loan), wallet-with-coins (Financial) — reuse the existing Paper assets, do not regenerate:
+**Chooser sheet** — title "Update details" 25px/700 · sub 14px `--muted`: "Choose what changes the calculation." · three rows (leading **illustration ~40px anchored directly in the row — no chip, no thumbnail box**; title 15px/700; description 13px `--muted`; trailing chevron). Illustrations [#32, owner 2026-07-10]: **casual-client candy-cartoon assets** — `house.png` (Property), `calculator.png` (Loan), `piggy-bank.png` (Financial; `coins.png` fallback) from casual-client `assets/`:
 
 | Row | Description (verbatim from Paper) | Destination |
 | --- | --- | --- |
@@ -507,7 +507,7 @@ Results recalculate on open (rates may have moved). If any figure changed vs the
 ## 10. Mobile components
 
 ### 10.1 Header — per Paper frames
-- Row: circular back button 28px (`--field` bg, chevron-left) · centered wordmark "fundora" 17px/700 · right: **"Save & exit"** text button (the Paper frames show a placeholder "Menu"; the A10 decision to replace it stands) — same flow as §7.1.
+- Row: circular back button 28px (`--field` bg, chevron-left) · centered wordmark "Ask Fundora" 17px/700 · right: **"Save & exit"** text button (the Paper frames show a placeholder "Menu"; the A10 decision to replace it stands) — same flow as §7.1.
 - Back from results → the flow's review step 🔶 FILL-IN #11b: confirm; alternative is Save & exit prompt.
 - **Progress bar stays** [A10 revised — every Paper frame shows it]: 7 segments, 4px tall, all filled `--control` (results = flow complete), full-width row under the header.
 
@@ -685,8 +685,8 @@ Under submit, 12px centered `--muted-2`: "No credit check. We'll only use these 
 | 29 | "Policy fit" sort option: what metric backs it? Cut from the sort sheet if no engine eligibility-strength score exists in v1 | §7.3a | No (default: cut if undefined) |
 | 30 | "Property price in mind" (optional field, Property sheet): engine behaviour when set — cap displayed results at the target, show a gap indicator, or informational only? | §7.7 | No (default: informational only) |
 
-| 31 | [v3.3] **Wordmark:** the live casual-client site's wordmark is "Ask Fundora"; this spec and the prototype use "Fundora"/"fundora". Owner to confirm which brand string the product header carries | §7.1, §10.1 | No (Fundora stands until overruled) |
-| 32 | [v3.3] **Illustration canon:** two systems exist — the muted inked-risograph set (Paper input-flow assets, `docs/illustration-style.md`, referenced by §7.7's chooser rows) vs casual-client's bright candy-cartoon `assets/` (per the independent style review, 2026-07-10). The Update details chooser illustrations follow whichever wins. Owner decision | §7.7 | No for prototype (current Paper assets stand) |
+| 31 | ~~Wordmark~~ **RESOLVED 2026-07-10: "Ask Fundora"** — spec strings updated (§7.1, §10.1); prototype retrofit carries it | §7.1, §10.1 | Resolved |
+| 32 | ~~Illustration canon~~ **RESOLVED 2026-07-10: casual-client's candy-cartoon standard wins.** The muted inked set is deprecated (`illustration-style.md` carries the superseding note); §7.7's chooser rows map to casual-client `assets/`: Property → house.png, Loan → calculator.png, Financial inputs → piggy-bank.png (coins.png fallback). Paper-flow assets to be regenerated in the standard eventually | §7.7 | Resolved |
 
 **Definition of ready — prototype (owner Q&A completed 2026-07-06): READY.** Every open item is either resolved above or has a stated prototype behaviour (stub/placeholder/fixture). Nothing blocks the codex build.
 **Definition of ready — production:** #4 (calc reconciliation), #5/#5b (engine support), #2 (integration choice), #12 (broker lead API + consent), #13 (privacy URL), #26 (comparison-rate warning wording), #17c (empty-state copy), #6–#8 (stamp duty / LMI / fees data), #10, #11, #19, #21 remain owed before real users see this page.
