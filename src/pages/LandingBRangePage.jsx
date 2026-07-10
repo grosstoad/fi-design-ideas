@@ -409,20 +409,20 @@ export function FundsCard({ compact = false, purpose = WORKED_EXAMPLE.purpose, p
           <span style={{ flexGrow: WORKED_EXAMPLE.legalAndOtherCosts, background: "#d5002b" }} />
         </div>
         <ul className="lpb-funds-list">
-          <li><span>Property price</span><strong className="lpb-num">{fmtMoney(WORKED_EXAMPLE.propertyPrice)}</strong></li>
-          <li><span>Stamp duty (NSW)</span><strong className="lpb-num">{fmtMoney(WORKED_EXAMPLE.stampDuty)}</strong></li>
-          <li><span>Legal and other costs</span><strong className="lpb-num">{fmtMoney(WORKED_EXAMPLE.legalAndOtherCosts)}</strong></li>
+          <li><span className="lpb-funds-legend"><i style={{ background: "#0072ac" }} aria-hidden="true" />Property price</span><strong className="lpb-num">{fmtMoney(WORKED_EXAMPLE.propertyPrice)}</strong></li>
+          <li><span className="lpb-funds-legend"><i style={{ background: "#f2bd00" }} aria-hidden="true" />Stamp duty</span><strong className="lpb-num">{fmtMoney(WORKED_EXAMPLE.stampDuty)}</strong></li>
+          <li><span className="lpb-funds-legend"><i style={{ background: "#d5002b" }} aria-hidden="true" />Legal and other costs</span><strong className="lpb-num">{fmtMoney(WORKED_EXAMPLE.legalAndOtherCosts)}</strong></li>
         </ul>
       </div>
       <div className="lpb-funds-zone lpb-funds-funding">
-        <h4>Where the funds are sourced from</h4>
+        <h4>Funding breakdown</h4>
         <div className="lpb-segmented-bar" aria-hidden="true">
           <span style={{ flexGrow: WORKED_EXAMPLE.loan, background: "#005eb8" }} />
           <span style={{ flexGrow: summary.savingsUsed, background: "#4fc5b8" }} />
         </div>
         <ul className="lpb-funds-list">
-          <li><span>Loan from {WORKED_EXAMPLE.lender} · {Math.round(summary.lvr)}% LVR</span><strong className="lpb-num">{fmtMoney(WORKED_EXAMPLE.loan)}</strong></li>
-          <li><span>Your savings used (deposit + costs)</span><strong className="lpb-num">{fmtMoney(summary.savingsUsed)}</strong></li>
+          <li><span>Loan from {WORKED_EXAMPLE.lender} ({Math.round(summary.lvr)}% LVR)</span><strong className="lpb-num">{fmtMoney(WORKED_EXAMPLE.loan)}</strong></li>
+          <li><span>Deposit</span><strong className="lpb-num">{fmtMoney(summary.savingsUsed)}</strong></li>
         </ul>
       </div>
       <div className="lpb-funds-verdict">

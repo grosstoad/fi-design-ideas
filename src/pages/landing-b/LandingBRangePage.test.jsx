@@ -94,7 +94,10 @@ describe("Landing B range experience", () => {
     expect(within(howItWorks).queryByRole("button")).toBeNull();
     expect(within(howItWorks).getByText("Annual income")).toBeTruthy();
     expect(within(howItWorks).getByText("Purchase power range")).toBeTruthy();
-    expect(screen.getAllByText("Where the funds are sourced from").length).toBeGreaterThan(0);
+    expect(within(howItWorks).getByText("Funding breakdown")).toBeTruthy();
+    expect(within(howItWorks).getByText("Loan from CBA (79% LVR)")).toBeTruthy();
+    expect(within(howItWorks).getByText("Deposit")).toBeTruthy();
+    expect(within(howItWorks).getByText("Savings left over")).toBeTruthy();
   });
 
   it("has no automated accessibility violations in its default state", async () => {

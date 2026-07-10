@@ -88,7 +88,7 @@ export function barRatio(maxPropertyPrice) {
 
 export const WORKED_EXAMPLE = {
   purpose: "owner-occupier",
-  lender: "CommBank",
+  lender: "CBA",
   propertyPrice: 760000,
   stampDuty: 30000,
   legalAndOtherCosts: 5400,

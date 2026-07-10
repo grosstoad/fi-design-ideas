@@ -1240,7 +1240,12 @@
 
 .lpb-funds-zone {
   padding: 24px;
-  border-bottom: 1px solid var(--lpb-line-soft);
+}
+
+.lpb-funds-funding {
+  margin: 0 8px 8px;
+  border-radius: 10px;
+  background: #f5f5f4;
 }
 
 .lpb-funds-zone h3 {
@@ -1298,8 +1303,23 @@
   white-space: nowrap;
 }
 
+.lpb-funds-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.lpb-funds-legend i {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+  border-radius: 50%;
+}
+
 .lpb-funds-verdict {
+  margin: 0 8px 8px;
   padding: 15px 24px;
+  border-radius: 10px;
   background: #f4faf8;
   color: var(--lpb-ink);
   font-weight: 700;
