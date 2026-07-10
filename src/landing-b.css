@@ -1353,30 +1353,38 @@
 
 /* Proposition accents */
 
-.lpb-propositions {
-  border-top: 1px solid var(--lpb-line-soft);
+.lpb-propositions .lpb-section-intro {
+  max-width: 760px;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.lpb-propositions .lpb-section-intro > p {
+  max-width: 680px;
+  margin: 12px auto 0 !important;
+  color: var(--lpb-muted);
+  font-size: 18px;
+  line-height: 1.6;
 }
 
 .lpb-proposition-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
-  margin-top: 46px;
+  gap: 40px;
+  margin-top: 42px;
 }
 
 .lpb-proposition-card {
-  overflow: hidden;
-  border: 1px solid var(--lpb-line);
-  border-radius: var(--lpb-radius);
-  background: #ffffff;
+  min-width: 0;
+  text-align: center;
 }
 
 .lpb-proposition-art {
   display: grid;
-  aspect-ratio: 4 / 3;
+  width: 168px;
+  height: 132px;
+  margin-inline: auto;
   place-items: center;
-  padding: 18px 28px 0;
-  background: #ffffff;
 }
 
 .lpb-proposition-art img {
@@ -1387,11 +1395,10 @@
 }
 
 .lpb-proposition-copy {
-  padding: 24px;
+  margin-top: 18px;
 }
 
 .lpb-proposition-copy h3 {
-  margin-top: 9px !important;
   font-size: 19px;
   line-height: 1.25;
   text-wrap: balance;
@@ -1685,12 +1692,19 @@
 
   .lpb-proposition-card {
     display: grid;
-    grid-template-columns: minmax(180px, 0.8fr) minmax(0, 1fr);
+    grid-template-columns: 132px minmax(0, 1fr);
+    gap: 24px;
+    align-items: center;
+    text-align: left;
   }
 
   .lpb-proposition-art {
-    aspect-ratio: 1;
-    padding: 16px;
+    width: 132px;
+    height: 108px;
+  }
+
+  .lpb-proposition-copy {
+    margin-top: 0;
   }
 
   .lpb-closing-card {
@@ -1935,16 +1949,22 @@
   }
 
   .lpb-proposition-grid {
-    margin-top: 32px;
+    gap: 28px;
+    margin-top: 34px;
   }
 
   .lpb-proposition-card {
-    display: block;
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: 16px;
   }
 
   .lpb-proposition-art {
-    aspect-ratio: 4 / 3;
-    padding: 14px 38px 0;
+    width: 92px;
+    height: 78px;
+  }
+
+  .lpb-propositions .lpb-section-intro > p {
+    font-size: 16px;
   }
 
   .lpb-closing {

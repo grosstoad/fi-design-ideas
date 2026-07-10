@@ -100,6 +100,16 @@ describe("Landing B range experience", () => {
     expect(within(howItWorks).getByText("Savings left over")).toBeTruthy();
   });
 
+  it("renders three borderless proposition columns with the approved copy", () => {
+    renderPage();
+    const section = screen.getByRole("heading", { name: "A borrowing number you can trust." }).closest("section");
+    expect(within(section).getAllByRole("article")).toHaveLength(3);
+    expect(within(section).getByRole("heading", { name: "Compare every lender side by side" })).toBeTruthy();
+    expect(within(section).getByRole("heading", { name: "Built on real lender calculations" })).toBeTruthy();
+    expect(within(section).getByRole("heading", { name: "Test changes before you make them" })).toBeTruthy();
+    expect(section.querySelector(".lpb-flow-number")).toBeNull();
+  });
+
   it("has no automated accessibility violations in its default state", async () => {
     const { container } = renderPage();
     const result = await axe(container);

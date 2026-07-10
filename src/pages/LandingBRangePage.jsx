@@ -527,25 +527,22 @@ function HowItWorks() {
 
 const PROPOSITIONS = [
   {
-    number: "01",
     image: "/landing-b/proposition-lenders-casual-v2.webp",
     alt: "A chalk-textured illustration of four lender folders",
-    title: "Every lender, side by side.",
-    body: "See who gives you the most room, and open the detail behind their number.",
+    title: "Compare every lender side by side",
+    body: "Compare borrowing calculations across 14+ lenders and counting.",
   },
   {
-    number: "02",
     image: "/landing-b/proposition-suburbs-casual-v2.webp",
     alt: "A chalk-textured map illustration with three house location pins",
-    title: "Suburbs and listings within reach.",
-    body: "Know where you can realistically buy before you build a shortlist.",
+    title: "Built on real lender calculations",
+    body: "See estimates informed by lender policies, rates and the costs of purchasing a home.",
   },
   {
-    number: "03",
     image: "/landing-b/proposition-scenarios-casual-v2.webp",
     alt: "A chalk-textured control board illustration with four sliders",
-    title: "Stress test any scenario.",
-    body: "Model a rate rise or life change and see how your range responds.",
+    title: "Test changes before you make them",
+    body: "Adjust your income, deposit or plans and see how your borrowing range responds.",
   },
 ];
 
@@ -554,15 +551,14 @@ function PropositionGrid() {
     <section className="lpb-section lpb-propositions" aria-labelledby="lpb-propositions-title">
       <div className="lpb-wrap">
         <div className="lpb-section-intro lpb-section-intro--compact">
-          <p className="lpb-section-index">More than one number</p>
-          <h2 className="lpb-h2" id="lpb-propositions-title">A clearer view of what comes next.</h2>
+          <h2 className="lpb-h2" id="lpb-propositions-title">A borrowing number you can trust.</h2>
+          <p>Fundora brings lender calculations, real purchase costs and scenario modelling into one clear view.</p>
         </div>
         <div className="lpb-proposition-grid">
           {PROPOSITIONS.map((item) => (
-            <article className="lpb-proposition-card" key={item.number}>
+            <article className="lpb-proposition-card" key={item.title}>
               <div className="lpb-proposition-art"><img src={item.image} alt={item.alt} width="768" height="768" loading="lazy" decoding="async" /></div>
               <div className="lpb-proposition-copy">
-                <span className="lpb-flow-number lpb-num">{item.number}</span>
                 <h3>{item.title}</h3>
                 <p>{item.body}</p>
               </div>
