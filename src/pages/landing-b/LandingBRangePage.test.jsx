@@ -85,19 +85,15 @@ describe("Landing B range experience", () => {
     expect(screen.getAllByText(/\/mth$/).length).toBeGreaterThan(0);
   });
 
-  it("switches between interactive walkthrough components", async () => {
-    const user = userEvent.setup();
+  it("shows all three walkthrough states without tab interactions", () => {
     renderPage();
-
-    const incomeInput = screen.getByRole("textbox", { name: /Household income/i });
-    await user.clear(incomeInput);
-    await user.type(incomeInput, "180000");
-    expect(incomeInput.value).toBe("180,000");
-
-    await user.click(screen.getByRole("button", { name: /See how the lenders stack up/i }));
-    expect(screen.getByText("Selected lender")).toBeTruthy();
-
-    await user.click(screen.getByRole("button", { name: /See your total costs/i }));
+    const howItWorks = screen.getByRole("heading", { name: "From your details to a number you can use." }).closest("section");
+    expect(within(howItWorks).getByRole("heading", { name: "Add your details" })).toBeTruthy();
+    expect(within(howItWorks).getByRole("heading", { name: "Compare lender results" })).toBeTruthy();
+    expect(within(howItWorks).getByRole("heading", { name: "Understand your costs" })).toBeTruthy();
+    expect(within(howItWorks).queryByRole("button")).toBeNull();
+    expect(within(howItWorks).getByText("Annual income")).toBeTruthy();
+    expect(within(howItWorks).getByText("Purchase power range")).toBeTruthy();
     expect(screen.getAllByText("Where the funds are sourced from").length).toBeGreaterThan(0);
   });
 

@@ -927,6 +927,308 @@
   text-align: right;
 }
 
+/* Connected three-step walkthrough */
+
+.lpb-how .lpb-section-intro {
+  max-width: 760px;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.lpb-how .lpb-section-intro > p {
+  max-width: 680px;
+  margin: 12px auto 0 !important;
+  color: var(--lpb-muted);
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.lpb-connected-steps {
+  --lpb-step-progress: 0;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  margin-top: 48px !important;
+  list-style: none;
+}
+
+.lpb-connected-steps::before,
+.lpb-connected-steps::after {
+  position: absolute;
+  top: 19px;
+  right: 16.666%;
+  left: 16.666%;
+  height: 2px;
+  content: "";
+}
+
+.lpb-connected-steps::before {
+  background: #d6d3d1;
+}
+
+.lpb-connected-steps::after {
+  background: var(--lpb-teal);
+  transform: scaleX(var(--lpb-step-progress));
+  transform-origin: left center;
+  transition: transform 700ms var(--ease-in-out);
+}
+
+.lpb-connected-steps > li {
+  position: relative;
+  min-width: 0;
+}
+
+.lpb-step-marker {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 40px;
+  height: 40px;
+  margin-inline: auto;
+  border: 1px solid #d6d3d1;
+  border-radius: 50%;
+  place-items: center;
+  background: #ffffff;
+  color: var(--lpb-muted);
+  font-size: 13px;
+  font-weight: 700;
+  transition: background-color 220ms var(--ease-out), border-color 220ms var(--ease-out), color 220ms var(--ease-out);
+}
+
+.lpb-connected-steps > li.is-active .lpb-step-marker {
+  border-color: var(--lpb-teal);
+  background: var(--lpb-teal);
+  color: var(--lpb-ink);
+}
+
+.lpb-connected-steps > li.is-complete .lpb-step-marker {
+  border-color: #99e5dc;
+  background: var(--lpb-teal-light);
+  color: var(--lpb-teal-dark);
+}
+
+.lpb-step-column {
+  margin-top: 22px;
+}
+
+.lpb-step-copy {
+  min-height: 112px;
+  text-align: left;
+}
+
+.lpb-step-copy h3 {
+  font-size: 20px;
+  line-height: 1.25;
+}
+
+.lpb-step-copy p {
+  margin-top: 8px !important;
+  color: var(--lpb-muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.lpb-step-visual {
+  min-height: 350px;
+}
+
+.lpb-input-preview {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--lpb-line);
+  border-radius: var(--lpb-radius);
+  background: #ffffff;
+}
+
+.lpb-preview-field {
+  position: relative;
+  display: grid;
+  min-height: 82px;
+  align-content: center;
+  gap: 7px;
+  padding: 13px;
+  border: 1px solid var(--lpb-line);
+  border-radius: 10px;
+  background: #ffffff;
+  transition: border-color 180ms var(--ease-out), box-shadow 180ms var(--ease-out), background-color 180ms var(--ease-out);
+}
+
+.lpb-preview-field--wide {
+  grid-column: 1 / -1;
+}
+
+.lpb-preview-field > span:first-child {
+  color: var(--lpb-muted);
+  font-size: 11px;
+}
+
+.lpb-preview-field strong {
+  overflow: hidden;
+  font-size: 15px;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lpb-preview-field small {
+  position: absolute;
+  right: 13px;
+  bottom: 15px;
+  color: var(--lpb-muted);
+  font-size: 10px;
+}
+
+.lpb-preview-field.is-focused {
+  border-color: var(--lpb-teal);
+  box-shadow: 0 0 0 3px var(--lpb-teal-light);
+}
+
+.lpb-preview-field.is-updated {
+  background: #f4faf8;
+}
+
+.lpb-preview-chevron {
+  position: absolute;
+  right: 13px;
+  bottom: 16px;
+  color: var(--lpb-muted);
+}
+
+.lpb-preview-option {
+  position: absolute;
+  z-index: 3;
+  top: calc(100% + 5px);
+  right: -1px;
+  left: -1px;
+  padding: 12px 13px;
+  border: 1px solid var(--lpb-line);
+  border-radius: 10px;
+  background: #ffffff;
+  color: var(--lpb-ink) !important;
+  font-size: 13px !important;
+  font-weight: 650;
+  box-shadow: 0 10px 24px rgb(17 17 17 / 8%);
+  animation: lpb-preview-option 200ms var(--ease-out) both;
+}
+
+@keyframes lpb-preview-option {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.lpb-mini-comparison {
+  display: block;
+  overflow: hidden;
+  padding: 14px;
+  border: 1px solid var(--lpb-line);
+  border-radius: var(--lpb-radius);
+  background: #ffffff;
+  opacity: 0.42;
+  transition: opacity 320ms var(--ease-out);
+}
+
+.lpb-mini-comparison.is-revealed {
+  opacity: 1;
+}
+
+.lpb-mini-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 12px;
+}
+
+.lpb-mini-head > span {
+  color: var(--lpb-muted);
+  font-size: 11px;
+}
+
+.lpb-mini-head strong {
+  font-size: 18px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.lpb-mini-head i {
+  margin-inline: 3px;
+  color: var(--lpb-teal-dark);
+  font-style: normal;
+  font-weight: 500;
+}
+
+.lpb-mini-list {
+  transition: transform 360ms var(--ease-in-out);
+}
+
+.lpb-mini-list.is-scrolling {
+  transform: translateY(-7px);
+}
+
+.lpb-mini-row {
+  display: grid;
+  grid-template-columns: 70px minmax(38px, 1fr) 78px;
+  gap: 7px;
+  min-height: 48px;
+  align-items: center;
+  border-top: 1px solid var(--lpb-line-soft);
+  font-size: 11px;
+}
+
+.lpb-mini-row > strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lpb-mini-row > span:last-child {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.lpb-mini-bar {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #ecece8;
+}
+
+.lpb-mini-bar i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--lpb-teal);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 520ms var(--ease-out);
+}
+
+.lpb-mini-comparison.is-revealed .lpb-mini-bar i {
+  transform: scaleX(var(--lpb-mini-ratio));
+}
+
+[class*="lpb-funds-card--phase-"] .lpb-funds-costs,
+[class*="lpb-funds-card--phase-"] .lpb-funds-funding,
+[class*="lpb-funds-card--phase-"] .lpb-funds-verdict {
+  opacity: 0.22;
+  transform: translateY(5px);
+  transition: opacity 420ms var(--ease-out), transform 420ms var(--ease-out);
+}
+
+.lpb-funds-card--phase-6 .lpb-funds-costs,
+.lpb-funds-card--phase-7 .lpb-funds-costs,
+.lpb-funds-card--phase-8 .lpb-funds-costs,
+.lpb-funds-card--phase-7 .lpb-funds-funding,
+.lpb-funds-card--phase-8 .lpb-funds-funding,
+.lpb-funds-card--phase-8 .lpb-funds-verdict {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 /* Funds */
 
 .lpb-funds-card {
@@ -1288,6 +1590,51 @@
     grid-template-columns: minmax(70px, 1fr) 62px;
   }
 
+  .lpb-connected-steps {
+    grid-template-columns: 1fr;
+    gap: 38px;
+    margin-top: 38px !important;
+  }
+
+  .lpb-connected-steps::before,
+  .lpb-connected-steps::after {
+    top: 20px;
+    right: auto;
+    bottom: 20px;
+    left: 19px;
+    width: 2px;
+    height: auto;
+  }
+
+  .lpb-connected-steps::after {
+    transform: scaleY(var(--lpb-step-progress));
+    transform-origin: center top;
+  }
+
+  .lpb-connected-steps > li {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+  }
+
+  .lpb-step-marker {
+    margin-inline: 0;
+  }
+
+  .lpb-step-column {
+    margin-top: 3px;
+  }
+
+  .lpb-step-copy {
+    min-height: 0;
+    margin-bottom: 18px;
+  }
+
+  .lpb-step-visual {
+    min-height: 0;
+  }
+
   .lpb-flow {
     grid-template-columns: 1fr;
     gap: 24px;
@@ -1396,6 +1743,22 @@
   .lpb-trust {
     margin-top: 12px !important;
     text-align: center;
+  }
+
+  .lpb-how .lpb-section-intro > p {
+    font-size: 16px;
+  }
+
+  .lpb-connected-steps {
+    gap: 34px;
+  }
+
+  .lpb-input-preview {
+    grid-template-columns: 1fr;
+  }
+
+  .lpb-preview-field--wide {
+    grid-column: auto;
   }
 
   .lpb-footer {

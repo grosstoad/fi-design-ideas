@@ -92,44 +92,6 @@ function fmtRate(value) {
   return `${value.toFixed(2)}%`;
 }
 
-function ResultStat({ label, value, note }) {
-  return (
-    <div className="lpb-detail-stat">
-      <span>{label}</span>
-      <strong className="lpb-num">{value}</strong>
-      {note ? <small>{note}</small> : null}
-    </div>
-  );
-}
-
-function LenderDetail({ result }) {
-  if (!result) return null;
-  return (
-    <div className="lpb-detail-content">
-      <div className="lpb-detail-product">
-        <span className="lpb-lender-dot" style={{ background: result.color }} aria-hidden="true" />
-        <div>
-          <strong>{result.name}</strong>
-          <span>Illustrative variable home loan · Owner-occupier · P&amp;I</span>
-        </div>
-      </div>
-      <div className="lpb-detail-grid">
-        <ResultStat label="Maximum property price" value={fmtMoney(result.maxPropertyPrice)} />
-        <ResultStat label="Loan amount" value={fmtMoney(result.maxLoan)} note={`${Math.round(result.lvr)}% LVR`} />
-        <ResultStat label="Interest rate" value={fmtRate(result.rate)} note="Illustrative" />
-        <ResultStat label="Comparison rate" value={fmtRate(result.comparisonRate)} note="Illustrative" />
-        <ResultStat label="Estimated repayment" value={`${fmtMoney(result.monthlyRepayment)} /mo`} />
-      </div>
-      <p className="lpb-dialog-note">
-        This example does not use your complete financial position or live lender policy.
-      </p>
-      <Link to="/assessment" className="lpb-btn lpb-btn--primary lpb-dialog-cta">
-        Calculate with my details
-      </Link>
-    </div>
-  );
-}
-
 export function RangeModule() {
   const [income, setIncome] = useState(INCOME_DEFAULT);
   const [order, setOrder] = useState(() =>
@@ -375,87 +337,70 @@ function LenderProof() {
   );
 }
 
-function InputPreview() {
-  const [income, setIncome] = useState("145000");
-  const [purpose, setPurpose] = useState("owner");
-  const [state, setState] = useState("NSW");
-  const [savings, setSavings] = useState("210000");
-  const formatInputAmount = (value) => value ? Number(value).toLocaleString("en-AU") : "";
-  const digitsOnly = (value) => value.replace(/\D/g, "");
+function InputPreview({ phase }) {
+  const incomeUpdated = phase >= 2;
+  const purposeOpen = phase === 2;
+  const settled = phase >= 3;
 
   return (
-    <form className="lpb-flow-form" aria-label="Try the example financial and property inputs" onSubmit={(event) => event.preventDefault()}>
-      <label>
-        <span>Household income</span>
-        <span className="lpb-flow-input-affix">
-          <span aria-hidden="true">$</span>
-          <input type="text" inputMode="numeric" pattern="[0-9,]*" value={formatInputAmount(income)} onChange={(event) => setIncome(digitsOnly(event.target.value))} />
-          <small>a year</small>
-        </span>
-      </label>
-      <label>
+    <div className="lpb-input-preview" aria-hidden="true">
+      <div className={`lpb-preview-field lpb-preview-field--wide ${phase === 1 || phase === 2 ? "is-focused" : ""}`}>
+        <span>Annual income</span>
+        <strong className="lpb-num">{incomeUpdated ? "$185,000" : "$145,000"}</strong>
+        <small>a year</small>
+      </div>
+      <div className={`lpb-preview-field lpb-preview-field--wide ${purposeOpen ? "is-open" : ""}`}>
         <span>Buying purpose</span>
-        <select value={purpose} onChange={(event) => setPurpose(event.target.value)}>
-          <option value="owner">Home to live in</option>
-          <option value="investor">Investment property</option>
-        </select>
-      </label>
-      <div className="lpb-flow-field--split">
-        <label>
-          <span>Property location</span>
-          <select value={state} onChange={(event) => setState(event.target.value)}>
-            <option value="NSW">New South Wales</option>
-            <option value="VIC">Victoria</option>
-            <option value="QLD">Queensland</option>
-          </select>
-        </label>
-        <label>
-          <span>Savings</span>
-          <span className="lpb-flow-input-affix">
-            <span aria-hidden="true">$</span>
-            <input type="text" inputMode="numeric" pattern="[0-9,]*" value={formatInputAmount(savings)} onChange={(event) => setSavings(digitsOnly(event.target.value))} />
-          </span>
-        </label>
+        <strong>{settled ? "Home to live in" : "Choose a purpose"}</strong>
+        <span className="lpb-preview-chevron" aria-hidden="true">⌄</span>
+        {purposeOpen ? <span className="lpb-preview-option">Home to live in</span> : null}
       </div>
-    </form>
-  );
-}
-
-function MiniComparison() {
-  const rows = rankResults(resultsForIncome(INCOME_DEFAULT)).slice(0, 4);
-  const [selectedId, setSelectedId] = useState(rows[0].id);
-  const selected = rows.find((row) => row.id === selectedId) ?? rows[0];
-
-  return (
-    <div className="lpb-mini-comparison">
-      <div className="lpb-mini-list" aria-label="Example lender results">
-        {rows.map((row) => (
-          <button key={row.id} type="button" className={row.id === selectedId ? "is-selected" : ""} onClick={() => setSelectedId(row.id)}>
-            <span><span className="lpb-lender-dot" style={{ background: row.color }} aria-hidden="true" />{row.name}</span>
-            <strong className="lpb-num">{fmtPrice(row.maxPropertyPrice)}</strong>
-          </button>
-        ))}
+      <div className="lpb-preview-field">
+        <span>Property location</span>
+        <strong>New South Wales</strong>
       </div>
-      <div className="lpb-mini-detail" aria-live="polite">
-        <span>Selected lender</span>
-        <h4>{selected.name}</h4>
-        <dl>
-          <div><dt>Loan amount</dt><dd className="lpb-num">{fmtPrice(selected.maxLoan)}</dd></div>
-          <div><dt>Rate / comparison</dt><dd className="lpb-num">{fmtRate(selected.rate)} / {fmtRate(selected.comparisonRate)}</dd></div>
-          <div><dt>Estimated monthly</dt><dd className="lpb-num">{fmtMoney(selected.monthlyRepayment)}</dd></div>
-        </dl>
+      <div className={`lpb-preview-field ${settled ? "is-updated" : ""}`}>
+        <span>Savings</span>
+        <strong className="lpb-num">{settled ? "$210,000" : "$180,000"}</strong>
       </div>
     </div>
   );
 }
 
-export function FundsCard({ compact = false, purpose = WORKED_EXAMPLE.purpose }) {
+function MiniComparison({ phase }) {
+  const updated = phase >= 5;
+  const rows = rankResults(resultsForIncome(updated ? 185000 : INCOME_DEFAULT)).slice(0, 4);
+  const values = rows.map((row) => row.maxPropertyPrice);
+  const minimum = Math.min(...values);
+  const maximum = Math.max(...values);
+
+  return (
+    <div className={`lpb-mini-comparison ${phase >= 4 ? "is-revealed" : ""} ${updated ? "is-updated" : ""}`}>
+      <div className="lpb-mini-head">
+        <span>Purchase power range</span>
+        <strong className="lpb-num">{fmtPrice(minimum)}<i>–</i>{fmtPrice(maximum)}</strong>
+      </div>
+      <div className={`lpb-mini-list ${phase === 5 ? "is-scrolling" : ""}`} aria-hidden="true">
+        {rows.map((row) => (
+          <div className="lpb-mini-row" key={row.id}>
+            <strong>{row.name}</strong>
+            <span className="lpb-mini-bar"><i style={{ "--lpb-mini-ratio": barRatio(row.maxPropertyPrice) }} /></span>
+            <span className="lpb-num">{formatMonthlyRepayment(row.monthlyRepayment)}</span>
+          </div>
+        ))}
+      </div>
+      <p className="lpb-sr">Example lender comparison across CommBank, Macquarie, ING and HSBC, including purchase power bars and monthly repayments.</p>
+    </div>
+  );
+}
+
+export function FundsCard({ compact = false, purpose = WORKED_EXAMPLE.purpose, phase = 8 }) {
   const summary = workedExampleSummary();
   const homeLabel = purpose === "investor" ? "investment property" : "home";
 
   return (
-    <div className={`lpb-funds-card ${compact ? "is-compact" : ""}`}>
-      <div className="lpb-funds-zone">
+    <div className={`lpb-funds-card lpb-funds-card--phase-${phase} ${compact ? "is-compact" : ""}`}>
+      <div className="lpb-funds-zone lpb-funds-costs">
         <h3>You could afford a {fmtMoney(WORKED_EXAMPLE.propertyPrice)} {homeLabel}</h3>
         <p className="lpb-funds-total"><strong className="lpb-num">{fmtMoney(summary.totalPropertyCosts)}</strong> in total property costs</p>
         <div className="lpb-segmented-bar" aria-hidden="true">
@@ -469,7 +414,7 @@ export function FundsCard({ compact = false, purpose = WORKED_EXAMPLE.purpose })
           <li><span>Legal and other costs</span><strong className="lpb-num">{fmtMoney(WORKED_EXAMPLE.legalAndOtherCosts)}</strong></li>
         </ul>
       </div>
-      <div className="lpb-funds-zone">
+      <div className="lpb-funds-zone lpb-funds-funding">
         <h4>Where the funds are sourced from</h4>
         <div className="lpb-segmented-bar" aria-hidden="true">
           <span style={{ flexGrow: WORKED_EXAMPLE.loan, background: "#005eb8" }} />
@@ -490,58 +435,91 @@ export function FundsCard({ compact = false, purpose = WORKED_EXAMPLE.purpose })
 
 const FLOW_STEPS = [
   {
-    title: "Share your details.",
-    body: "Your financials, the property you’re after and your savings.",
+    title: "Add your details",
+    body: "Tell us about your income, savings and the property you are planning to buy.",
   },
   {
-    title: "See how the lenders stack up.",
-    body: "Compare every answer, then open a lender to understand the difference.",
+    title: "Compare lender results",
+    body: "Compare borrowing calculations across 14+ lenders and counting.",
   },
   {
-    title: "See your total costs.",
-    body: "Understand what buying costs and exactly where the funds come from.",
+    title: "Understand your costs",
+    body: "See the property costs, how the purchase is funded and what remains after settlement.",
   },
 ];
 
+function useHowItWorksSequence(sectionRef) {
+  const [phase, setPhase] = useState(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return 8;
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 8 : 0;
+  });
+  const hasPlayed = useRef(false);
+
+  useEffect(() => {
+    const node = sectionRef.current;
+    if (!node || phase === 8 || typeof IntersectionObserver === "undefined") return undefined;
+    const timers = [];
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting || hasPlayed.current) return;
+        hasPlayed.current = true;
+        observer.disconnect();
+        [200, 850, 1500, 2350, 3350, 4250, 5100, 6100].forEach((delay, index) => {
+          timers.push(window.setTimeout(() => setPhase(index + 1), delay));
+        });
+      },
+      { threshold: 0.2, rootMargin: "0px 0px -10%" }
+    );
+    observer.observe(node);
+    return () => {
+      observer.disconnect();
+      timers.forEach((timer) => window.clearTimeout(timer));
+    };
+  }, [sectionRef]);
+
+  return phase;
+}
+
+function ConnectedStepLine({ phase, children }) {
+  const progress = phase >= 6 ? 1 : phase >= 4 ? 0.5 : 0;
+  return <ol className="lpb-connected-steps" style={{ "--lpb-step-progress": progress }}>{children}</ol>;
+}
+
 function HowItWorks() {
-  const [activeStep, setActiveStep] = useState(0);
+  const sectionRef = useRef(null);
+  const phase = useHowItWorksSequence(sectionRef);
+  const starts = [1, 4, 6];
+  const completes = [4, 6, 8];
 
   return (
-    <section className="lpb-section lpb-how" id="how-it-works" aria-labelledby="lpb-how-title">
+    <section ref={sectionRef} className={`lpb-section lpb-how lpb-how--phase-${phase}`} id="how-it-works" aria-labelledby="lpb-how-title">
       <div className="lpb-wrap">
         <div className="lpb-section-intro lpb-section-intro--compact">
-          <p className="lpb-section-index">How Fundora works</p>
           <h2 className="lpb-h2" id="lpb-how-title">From your details to a number you can use.</h2>
+          <p>See what you could borrow, compare lender results and understand the full cost of buying.</p>
         </div>
-        <div className="lpb-flow">
-          <ol className="lpb-flow-nav">
-            {FLOW_STEPS.map((step, index) => (
-              <li key={step.title}>
-                <button
-                  type="button"
-                  className={activeStep === index ? "is-active" : ""}
-                  aria-pressed={activeStep === index}
-                  aria-controls="lpb-flow-stage"
-                  onClick={() => setActiveStep(index)}
-                >
-                  <span className="lpb-flow-number lpb-num">0{index + 1}</span>
-                  <span><strong>{step.title}</strong><small>{step.body}</small></span>
-                </button>
+        <ConnectedStepLine phase={phase}>
+          {FLOW_STEPS.map((step, index) => {
+            const active = phase >= starts[index] && phase < completes[index];
+            const completed = phase >= completes[index];
+            return (
+              <li className={`${active ? "is-active" : ""} ${completed ? "is-complete" : ""}`} key={step.title}>
+                <span className="lpb-step-marker lpb-num">{index + 1}</span>
+                <article className="lpb-step-column">
+                  <div className="lpb-step-copy">
+                    <h3>{step.title}</h3>
+                    <p>{step.body}</p>
+                  </div>
+                  <div className="lpb-step-visual">
+                    {index === 0 ? <InputPreview phase={phase} /> : null}
+                    {index === 1 ? <MiniComparison phase={phase} /> : null}
+                    {index === 2 ? <FundsCard compact phase={phase} /> : null}
+                  </div>
+                </article>
               </li>
-            ))}
-          </ol>
-          <div className="lpb-flow-stage" id="lpb-flow-stage" aria-live="polite">
-            <div className="lpb-flow-stage-head">
-              <span className="lpb-num">0{activeStep + 1}</span>
-              <strong>{FLOW_STEPS[activeStep].title}</strong>
-            </div>
-            <div className="lpb-flow-stage-content" key={activeStep}>
-              {activeStep === 0 ? <InputPreview /> : null}
-              {activeStep === 1 ? <MiniComparison /> : null}
-              {activeStep === 2 ? <FundsCard compact /> : null}
-            </div>
-          </div>
-        </div>
+            );
+          })}
+        </ConnectedStepLine>
       </div>
     </section>
   );

@@ -197,8 +197,8 @@ At 1440px, 1280px, 768px (tablet), 375px (mobile): alignment to the shared grid 
 | 3. Hero compaction and motion | done | `c9ebc32` | Exact support copy, 32–44px H1 and staged 360/400ms entrance verified. At 1440×900 and 1280×800 the second row ends at 577px and 574px respectively. Build and 30 unit tests pass. |
 | 4. RangeModule corrections | done | `625580e` | Only the slider and assumptions disclosure remain interactive. Rows are inert, labels/copy/repayments match the spec, the fixed bar domain is monotonic for all 14 lenders, and wheel handoff moved page scroll 440→1140. Build and 31 unit tests pass; desktop/mobile captures are in `tmp/landing-b-final/task-04/`. |
 | 5. LenderProof | done | `383dd4a` | 14 sourced marks use consistent 28px optical height and symbol-name lockups; the watermarked NAB tile is replaced by official vector artwork. The contained 112s loop stays running on hover, both rails measure 2424px, and reduced motion renders a static wrap. Build and 31 unit tests pass. |
-| 6. Remove standalone price ceiling | done | | The duplicate section, legacy `#ceiling` target and dead layout rules are removed. “See how it works” targets `#how-it-works`; FundsCard is reserved for step 3. Build and 31 unit tests pass; desktop/mobile transition captures are in `tmp/landing-b-final/task-06/`. |
-| 7. Rebuild HowItWorks | todo | | |
+| 6. Remove standalone price ceiling | done | `3b19647` | The duplicate section, legacy `#ceiling` target and dead layout rules are removed. “See how it works” targets `#how-it-works`; FundsCard is reserved for step 3. Build and 31 unit tests pass; desktop/mobile transition captures are in `tmp/landing-b-final/task-06/`. |
+| 7. Rebuild HowItWorks | done | | Three persistent columns and connected markers now run once through phases 1→4→6→8 over 6.1s and persist. Rows are inert, mobile uses one 351px column with a vertical line, and reduced motion starts at phase 8. Build and the 31 in-scope unit tests pass; captures are in `tmp/landing-b-final/task-07/`. |
 | 8. FundsCard revisions | todo | | |
 | 9. PropositionGrid rework | todo | | |
 | 10. FinalCTA | todo | | |
@@ -210,6 +210,7 @@ At 1440px, 1280px, 768px (tablet), 375px (mobile): alignment to the shared grid 
 
 - A Git commit cannot contain its own final hash. Each tracker row records the task commit's short hash in the immediately following task commit; task 13's hash will be recorded in the final status-only commit.
 - Task 1 consolidates the pre-existing uncommitted landing-B implementation and its required local dependencies so that its commit is independently buildable. Unrelated working-tree changes remain uncommitted.
+- During task 7, concurrent results-page work added an out-of-scope token test that currently reports four failures while reading its stylesheet as empty. The landing-B build and all 31 pre-existing/in-scope unit tests remain green; the full suite will be rechecked at the final gate without modifying results-page files.
 
 ### Acceptance criteria results (§7)
 
