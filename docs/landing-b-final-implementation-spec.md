@@ -187,3 +187,30 @@ At 1440px, 1280px, 768px (tablet), 375px (mobile): alignment to the shared grid 
 
 ---
 **Status: ALL SECTIONS 1–9 COMPLETE.** Continuing agents: implementation may begin at §5 task 1; update the tracker line at the top if you amend this spec.
+
+## 10. Implementation status (maintained by the implementation agent)
+
+| §5 task | Status | Commit | Notes |
+| --- | --- | --- | --- |
+| 1. Header/footer parity | done | | Build and 30 unit tests pass. Live/local captures verified at 1440×900 and 375×812 in `tmp/landing-b-final/task-01/`. |
+| 2. Page grid/typography/background | todo | | |
+| 3. Hero compaction and motion | todo | | |
+| 4. RangeModule corrections | todo | | |
+| 5. LenderProof | todo | | |
+| 6. Remove standalone price ceiling | todo | | |
+| 7. Rebuild HowItWorks | todo | | |
+| 8. FundsCard revisions | todo | | |
+| 9. PropositionGrid rework | todo | | |
+| 10. FinalCTA | todo | | |
+| 11. Motion polish | todo | | |
+| 12. Reduced-motion audit | todo | | |
+| 13. Tests and visual QA | todo | | |
+
+### Deviations and blockers
+
+- A Git commit cannot contain its own final hash. Each tracker row records the task commit's short hash in the immediately following task commit; task 13's hash will be recorded in the final status-only commit.
+- Task 1 consolidates the pre-existing uncommitted landing-B implementation and its required local dependencies so that its commit is independently buildable. Unrelated working-tree changes remain uncommitted.
+
+### Acceptance criteria results (§7)
+
+To be filled at the final gate.

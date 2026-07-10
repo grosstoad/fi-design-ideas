@@ -1,468 +1,765 @@
-// Landing Concept B — "The Range" (docs/landing-b-proposal.md).
-// The hero is the product: a live lender-range module with one income slider.
-// Drag = direct manipulation with rank frozen; release = FLIP re-rank.
-// Entrance, wit line and thumb invite each run once per page load.
-// Illustration slots read from public/landing-b/ and show placeholders
-// until the generated assets land (docs/landing-b-goal-prompt.md part 2).
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { ResponsiveDialog } from "../components/ResponsiveDialog";
+import anzLogo from "../assets/buying-range/lenders/anz.png";
+import ampLogo from "../assets/buying-range/lenders/amp.svg";
+import athenaLogo from "../assets/buying-range/lenders/athena.png";
+import bankwestLogo from "../assets/buying-range/lenders/bankwest.svg";
+import bendigoBankLogo from "../assets/buying-range/lenders/bendigo-bank.png";
+import boqLogo from "../assets/buying-range/lenders/boq.svg";
+import cbaLogo from "../assets/buying-range/lenders/commbank.svg";
+import hsbcLogo from "../assets/buying-range/lenders/hsbc.svg";
+import ingLogo from "../assets/buying-range/lenders/ing.png";
+import macquarieLogo from "../assets/buying-range/lenders/macquarie.png";
+import nabLogo from "../assets/buying-range/lenders/nab.png";
+import suncorpBankLogo from "../assets/buying-range/lenders/suncorp-bank.png";
+import ubankLogo from "../assets/buying-range/lenders/ubank.svg";
+import westpacLogo from "../assets/buying-range/lenders/westpac.png";
+import {
+  BAR_DOMAIN_MAX,
+  INCOME_DEFAULT,
+  INCOME_MAX,
+  INCOME_MIN,
+  INCOME_STEP,
+  LENDERS,
+  WORKED_EXAMPLE,
+  barRatio,
+  incomeStepFor,
+  rankResults,
+  resultsForIncome,
+  snapIncome,
+  workedExampleSummary,
+} from "./landing-b/model";
 import "../landing-b.css";
 
-/* ---------------- illustrative model ---------------- */
+const PAGE_TITLE = "Fundora | Find the home you can really afford";
+const PAGE_DESCRIPTION =
+  "Calculate and compare your property purchase power across 14 Australian lenders without affecting your credit score.";
 
-// Per-lender coefficient curves: income × multiplier with a soft cap, so
-// different incomes crown different lenders. Colours come from the inked
-// illustration palette (docs/illustration-style.md), not lender brands.
-// Directionally real, precision-free; the assumptions disclosure carries the caveat.
-const LENDERS = [
-  { id: "macquarie", name: "Macquarie", color: "#5B7285", m: 6.7, cap: 1750000 },
-  { id: "cba", name: "CBA", color: "#E4B54A", m: 6.9, cap: 1150000 },
-  { id: "nab", name: "NAB", color: "#C0604A", m: 6.3, cap: 1400000 },
-  { id: "westpac", name: "Westpac", color: "#5E8778", m: 6.0, cap: 1500000 },
-  { id: "anz", name: "ANZ", color: "#4F6B7E", m: 5.8, cap: 1300000 },
-  { id: "ing", name: "ING", color: "#8B5E3C", m: 6.5, cap: 1000000 },
-  { id: "bankwest", name: "Bankwest", color: "#6E86A0", m: 6.2, cap: 1200000 },
-  { id: "suncorp", name: "Suncorp", color: "#B98A3A", m: 5.9, cap: 1250000 },
-  { id: "bendigo", name: "Bendigo", color: "#7FA08F", m: 5.7, cap: 1100000 },
-  { id: "boq", name: "BOQ", color: "#A85C48", m: 6.1, cap: 1050000 },
-  { id: "amp", name: "AMP", color: "#9C8B74", m: 5.6, cap: 1350000 },
-  { id: "hsbc", name: "HSBC", color: "#6B7F5E", m: 6.4, cap: 950000 },
-  { id: "ubank", name: "Ubank", color: "#C98A6B", m: 6.6, cap: 900000 },
-  { id: "adelaide", name: "Adelaide Bank", color: "#857B8F", m: 5.5, cap: 1150000 },
-];
+const LENDER_LOGOS = {
+  amp: ampLogo,
+  anz: anzLogo,
+  athena: athenaLogo,
+  bankwest: bankwestLogo,
+  bendigo: bendigoBankLogo,
+  boq: boqLogo,
+  cba: cbaLogo,
+  hsbc: hsbcLogo,
+  ing: ingLogo,
+  macquarie: macquarieLogo,
+  nab: nabLogo,
+  suncorp: suncorpBankLogo,
+  ubank: ubankLogo,
+  westpac: westpacLogo,
+};
 
-export function estimate(income, lender) {
-  const raw = income * lender.m;
-  const soft = raw <= lender.cap ? raw : lender.cap + (raw - lender.cap) * 0.15;
-  return Math.round(soft / 1000) * 1000;
+const LENDER_MARKS = [
+  ["cba", "CommBank"],
+  ["nab", "NAB"],
+  ["westpac", "Westpac"],
+  ["anz", "ANZ"],
+  ["macquarie", "Macquarie"],
+  ["ing", "ING"],
+  ["athena", "Athena"],
+  ["bankwest", "Bankwest"],
+  ["suncorp", "Suncorp"],
+  ["bendigo", "Bendigo Bank"],
+  ["boq", "BOQ"],
+  ["amp", "AMP"],
+  ["hsbc", "HSBC"],
+  ["ubank", "ubank"],
+].map(([id, name]) => ({ id, name, logo: LENDER_LOGOS[id] }));
+
+export function fmtPrice(value) {
+  if (value >= 1000000) {
+    const precision = value >= 10000000 ? 1 : 2;
+    return `$${(value / 1000000).toFixed(precision)}M`;
+  }
+  return `$${Math.round(value / 1000)}k`;
 }
 
-function fmtPrice(v) {
-  if (v >= 995000) return `$${(v / 1000000).toFixed(2)}M`;
-  return `$${Math.round(v / 1000)}k`;
+function fmtMoney(value) {
+  return `$${Math.round(value).toLocaleString("en-AU")}`;
 }
 
-function fmtIncome(v) {
-  return `$${v.toLocaleString("en-AU")}`;
+function fmtIncome(value) {
+  return `$${value.toLocaleString("en-AU")}`;
 }
 
-const INCOME_MIN = 60000;
-const INCOME_MAX = 300000;
-const INCOME_STEP = 5000;
-const INCOME_DEFAULT = 145000;
+function fmtRate(value) {
+  return `${value.toFixed(2)}%`;
+}
 
-const rankOrder = (income) =>
-  [...LENDERS].sort((a, b) => estimate(income, b) - estimate(income, a)).map((l) => l.id);
+function useVisibility(ref, rootMargin = "100px") {
+  const [isVisible, setIsVisible] = useState(false);
 
-/* ---------------- hooks ---------------- */
-
-function useInView(ref, rootMargin = "-80px") {
-  const [inView, setInView] = useState(false);
   useEffect(() => {
     const node = ref.current;
-    if (!node) return undefined;
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setInView(true);
-          io.disconnect();
-        }
-      },
+    if (!node || typeof IntersectionObserver === "undefined") return undefined;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVisible(entry.isIntersecting),
       { rootMargin }
     );
-    io.observe(node);
-    return () => io.disconnect();
+    observer.observe(node);
+    return () => observer.disconnect();
   }, [ref, rootMargin]);
-  return inView;
+
+  return isVisible;
 }
 
-function useMediaQuery(query) {
-  const [matches, setMatches] = useState(
-    () => typeof window !== "undefined" && window.matchMedia(query).matches
-  );
-  useEffect(() => {
-    const mq = window.matchMedia(query);
-    const onChange = () => setMatches(mq.matches);
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, [query]);
-  return matches;
-}
-
-/* ---------------- illustration slot ---------------- */
-
-function Art({ src, boilSrc, alt, className = "" }) {
-  const ref = useRef(null);
-  const inView = useInView(ref);
-  const [failed, setFailed] = useState(false);
-  const [frame, setFrame] = useState(src);
-  const reduced = useMediaQuery("(prefers-reduced-motion: reduce)");
-
-  // One line boil after the sticker-place settles: main → boil → main → boil → main.
-  useEffect(() => {
-    if (!inView || failed || !boilSrc || reduced) return undefined;
-    const timers = [];
-    const boil = new Image();
-    boil.onload = () => {
-      [400, 520, 640, 760].forEach((t, i) =>
-        timers.push(setTimeout(() => setFrame(i % 2 === 0 ? boilSrc : src), t))
-      );
-    };
-    boil.src = boilSrc;
-    return () => timers.forEach(clearTimeout);
-  }, [inView, failed, boilSrc, src, reduced]);
-
+function ResultStat({ label, value, note }) {
   return (
-    <div ref={ref} className={`lpb-art is-placed ${inView ? "is-in" : ""} ${className}`}>
-      {failed ? (
-        <div className="lpb-art-placeholder">
-          Illustration slot: {src.split("/").pop()}
-          <br />
-          (drop the generated PNG in public/landing-b/)
-        </div>
-      ) : (
-        <img src={frame} alt={alt} onError={() => setFailed(true)} />
-      )}
+    <div className="lpb-detail-stat">
+      <span>{label}</span>
+      <strong className="lpb-num">{value}</strong>
+      {note ? <small>{note}</small> : null}
     </div>
   );
 }
 
-/* ---------------- range module ---------------- */
+function LenderDetail({ result }) {
+  if (!result) return null;
+  return (
+    <div className="lpb-detail-content">
+      <div className="lpb-detail-product">
+        <span className="lpb-lender-dot" style={{ background: result.color }} aria-hidden="true" />
+        <div>
+          <strong>{result.name}</strong>
+          <span>Illustrative variable home loan · Owner-occupier · P&amp;I</span>
+        </div>
+      </div>
+      <div className="lpb-detail-grid">
+        <ResultStat label="Maximum property price" value={fmtMoney(result.maxPropertyPrice)} />
+        <ResultStat label="Loan amount" value={fmtMoney(result.maxLoan)} note={`${Math.round(result.lvr)}% LVR`} />
+        <ResultStat label="Interest rate" value={fmtRate(result.rate)} note="Illustrative" />
+        <ResultStat label="Comparison rate" value={fmtRate(result.comparisonRate)} note="Illustrative" />
+        <ResultStat label="Estimated repayment" value={`${fmtMoney(result.monthlyRepayment)} /mo`} />
+      </div>
+      <p className="lpb-dialog-note">
+        This example does not use your complete financial position or live lender policy.
+      </p>
+      <Link to="/assessment" className="lpb-btn lpb-btn--primary lpb-dialog-cta">
+        Calculate with my details
+      </Link>
+    </div>
+  );
+}
 
-function RangeModule() {
-  const moduleRef = useRef(null);
-  const inView = useInView(moduleRef, "-40px");
-  const reduced = useMediaQuery("(prefers-reduced-motion: reduce)");
-  const isMobile = useMediaQuery("(max-width: 720px)");
-
+export function RangeModule() {
   const [income, setIncome] = useState(INCOME_DEFAULT);
-  const [order, setOrder] = useState(() => rankOrder(INCOME_DEFAULT));
+  const [order, setOrder] = useState(() =>
+    rankResults(resultsForIncome(INCOME_DEFAULT)).map((result) => result.id)
+  );
   const [dragging, setDragging] = useState(false);
-  const [progress, setProgress] = useState(0); // entrance 0→1
-  const [settled, setSettled] = useState(false); // entrance done: wit + invite
-  const [announce, setAnnounce] = useState("");
+  const [selectedLenderId, setSelectedLenderId] = useState(null);
   const [assumptionsOpen, setAssumptionsOpen] = useState(false);
+  const [showAllLenders, setShowAllLenders] = useState(false);
+  const [announcement, setAnnouncement] = useState("");
+  const draggingRef = useRef(false);
+  const incomeRef = useRef(INCOME_DEFAULT);
+  const comparisonListRef = useRef(null);
   const settleTimer = useRef(null);
 
-  const rowH = isMobile ? 32 : 38;
-  // A half-cut row is the scroll affordance: all 14 live in a quiet scroll.
-  const scrollH = Math.round(rowH * (isMobile ? 4.7 : 5.55));
+  const results = useMemo(() => resultsForIncome(income), [income]);
+  const resultById = useMemo(
+    () => Object.fromEntries(results.map((result) => [result.id, result])),
+    [results]
+  );
+  const orderedResults = order.map((id) => resultById[id]).filter(Boolean);
+  const selectedResult = selectedLenderId ? resultById[selectedLenderId] : null;
+  const values = results.map((result) => result.maxPropertyPrice);
+  const minimum = Math.min(...values);
+  const maximum = Math.max(...values);
+  const sliderRatio = (income - INCOME_MIN) / (INCOME_MAX - INCOME_MIN);
 
-  // Entrance: bars grow + prices count up, staggered, one run.
-  useEffect(() => {
-    if (!inView) return undefined;
-    if (reduced) {
-      setProgress(1);
-      setSettled(true);
-      return undefined;
-    }
-    const start = performance.now();
-    const total = 900 + 6 * 60; // stagger covers the rows above the scroll fold
-    let raf;
-    const tick = (now) => {
-      const p = Math.min((now - start) / total, 1);
-      setProgress(p);
-      if (p < 1) raf = requestAnimationFrame(tick);
-      else setSettled(true);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [inView, reduced]);
+  function commitOrder(nextIncome) {
+    const nextResults = rankResults(resultsForIncome(nextIncome));
+    setOrder(nextResults.map((result) => result.id));
+    setAnnouncement(
+      `Purchase power range ${fmtPrice(nextResults.at(-1).maxPropertyPrice)} to ${fmtPrice(
+        nextResults[0].maxPropertyPrice
+      )}`
+    );
+  }
 
-  const prices = useMemo(() => {
-    const map = {};
-    LENDERS.forEach((l) => {
-      map[l.id] = estimate(income, l);
-    });
-    return map;
-  }, [income]);
+  function scheduleCommit(nextIncome) {
+    window.clearTimeout(settleTimer.current);
+    settleTimer.current = window.setTimeout(() => commitOrder(nextIncome), 180);
+  }
 
-  const max = Math.max(...Object.values(prices));
-  const min = Math.min(...Object.values(prices));
-  const scale = max * 1.08;
+  function updateIncome(rawValue) {
+    const nextIncome = snapIncome(rawValue);
+    incomeRef.current = nextIncome;
+    setIncome(nextIncome);
+    if (!draggingRef.current) scheduleCommit(nextIncome);
+  }
 
-  // Rank is frozen while values change; it settles shortly after the last input.
-  const onIncome = (v) => {
-    setIncome(v);
-    if (settleTimer.current) clearTimeout(settleTimer.current);
-    settleTimer.current = setTimeout(() => {
-      setDragging(false);
-      setOrder(rankOrder(v));
-      const m = {};
-      LENDERS.forEach((l) => {
-        m[l.id] = estimate(v, l);
-      });
-      const vals = Object.values(m);
-      setAnnounce(`Range ${fmtPrice(Math.min(...vals))} to ${fmtPrice(Math.max(...vals))}`);
-    }, 180);
-  };
+  function endPointerAdjustment() {
+    draggingRef.current = false;
+    setDragging(false);
+    window.clearTimeout(settleTimer.current);
+    commitOrder(incomeRef.current);
+  }
 
-  useEffect(() => () => clearTimeout(settleTimer.current), []);
-
-  const totalMs = 900 + 6 * 60;
-  const easedFor = (rankIdx) => {
-    if (progress >= 1) return 1;
-    // Stagger the visible rows; everything below the scroll fold shares the last beat.
-    const beat = Math.min(rankIdx, 6);
-    const local = Math.min(Math.max((progress * totalMs - beat * 60) / 900, 0), 1);
-    return 1 - (1 - local) ** 3;
-  };
-
-  const sliderPct = ((income - INCOME_MIN) / (INCOME_MAX - INCOME_MIN)) * 100;
+  useEffect(() => () => window.clearTimeout(settleTimer.current), []);
 
   return (
-    <div
-      ref={moduleRef}
-      className={`lpb-module ${settled ? "is-invite" : ""}`}
-      data-asset="range-module"
-    >
-      <div className="lpb-module-head">
-        <p className="lpb-module-label" id="lpb-module-label">
-          What each lender would offer you
-        </p>
-        <p className="lpb-module-range lpb-num">
-          {fmtPrice(min)} – {fmtPrice(max)}
-        </p>
-      </div>
+    <>
+      <section className="lpb-module" aria-labelledby="lpb-module-title" data-asset="range-module">
+        <div className="lpb-module-head">
+          <div>
+            <p className="lpb-demo-label">Example comparison</p>
+            <h2 className="lpb-module-title" id="lpb-module-title">Your purchase power range</h2>
+          </div>
+          <p className="lpb-module-range lpb-num" aria-label={`From ${fmtMoney(minimum)} to ${fmtMoney(maximum)}`}>
+            {fmtPrice(minimum)}<span>–</span>{fmtPrice(maximum)}
+          </p>
+        </div>
 
-      <div
-        className="lpb-scroll"
-        style={{ height: scrollH }}
-        role="img"
-        aria-labelledby="lpb-module-label"
-        aria-description={LENDERS.map((l) => `${l.name} ${fmtPrice(prices[l.id])}`).join(", ")}
-      >
+        <div className="lpb-comparison-head" aria-hidden="true">
+          <span>Lender</span>
+          <span>Maximum property price</span>
+          <span>Loan amount</span>
+          <span>Interest rate</span>
+          <span>Comparison rate</span>
+          <span>Est. monthly</span>
+        </div>
+
         <div
-          className={`lpb-rows ${dragging ? "is-dragging" : ""}`}
-          style={{ height: LENDERS.length * rowH }}
+          ref={comparisonListRef}
+          className={`lpb-comparison-list ${dragging ? "is-adjusting" : ""} ${showAllLenders ? "is-expanded" : ""}`}
+          id="lpb-comparison-list"
+          aria-label="Illustrative lender comparison"
         >
-          {LENDERS.map((lender) => {
-            const rankIdx = order.indexOf(lender.id);
-            const eased = easedFor(rankIdx);
-            const price = prices[lender.id];
-            return (
-              <div
-                key={lender.id}
-                className={`lpb-row ${rankIdx === 0 ? "is-leader" : ""}`}
-                style={{
-                  transform: `translateY(${rankIdx * rowH}px)`,
-                  pointerEvents: "none",
-                }}
-                aria-hidden="true"
-              >
-                <span className="lpb-row-name">{lender.name}</span>
-                <span className="lpb-row-track">
+          {orderedResults.map((result) => (
+            <button
+              className="lpb-comparison-row"
+              key={result.id}
+              type="button"
+              onClick={() => setSelectedLenderId(result.id)}
+              aria-label={`${result.name}, maximum property price ${fmtMoney(result.maxPropertyPrice)}, loan ${fmtMoney(result.maxLoan)}, interest rate ${fmtRate(result.rate)}, comparison rate ${fmtRate(result.comparisonRate)}, estimated monthly repayment ${fmtMoney(result.monthlyRepayment)}. View details.`}
+            >
+              <span className="lpb-lender-cell">
+                <span className="lpb-lender-dot" style={{ background: result.color }} aria-hidden="true" />
+                <span>{result.name}</span>
+              </span>
+              <span className="lpb-property-cell">
+                <span className="lpb-row-track" aria-hidden="true">
                   <span
                     className="lpb-row-fill"
-                    style={{
-                      width: `${(price / scale) * 100 * eased}%`,
-                      background: lender.color,
-                    }}
+                    style={{ "--lpb-bar-ratio": barRatio(result.maxPropertyPrice), background: result.color }}
                   />
                 </span>
-                <span className="lpb-row-price lpb-num">{fmtPrice(price * eased)}</span>
-              </div>
-            );
-          })}
+                <strong className="lpb-num">{fmtPrice(result.maxPropertyPrice)}</strong>
+              </span>
+              <span className="lpb-num lpb-desktop-metric">{fmtPrice(result.maxLoan)}</span>
+              <span className="lpb-num lpb-desktop-metric">{fmtRate(result.rate)}</span>
+              <span className="lpb-num lpb-desktop-metric">{fmtRate(result.comparisonRate)}</span>
+              <span className="lpb-num lpb-desktop-metric">{fmtMoney(result.monthlyRepayment)}</span>
+              <span className="lpb-row-chevron" aria-hidden="true">›</span>
+            </button>
+          ))}
         </div>
-      </div>
 
-      <div className="lpb-slider">
-        <div className="lpb-slider-head">
-          <label htmlFor="lpb-income">Household income</label>
-          <span className="lpb-slider-value lpb-num">{fmtIncome(income)}</span>
+        <div className="lpb-module-controls">
+          <div className="lpb-slider-head">
+            <label htmlFor="lpb-income">Household income</label>
+            <output className="lpb-slider-value lpb-num" htmlFor="lpb-income">{fmtIncome(income)}</output>
+          </div>
+          <div className="lpb-slider-control" style={{ "--lpb-slider-ratio": sliderRatio }}>
+            <span className="lpb-slider-progress" aria-hidden="true" />
+            <input
+              id="lpb-income"
+              type="range"
+              min={INCOME_MIN}
+              max={INCOME_MAX}
+              step={INCOME_STEP}
+              value={income}
+              onChange={(event) => updateIncome(Number(event.target.value))}
+              onPointerDown={() => {
+                draggingRef.current = true;
+                setDragging(true);
+                window.clearTimeout(settleTimer.current);
+              }}
+              onPointerUp={endPointerAdjustment}
+              onPointerCancel={endPointerAdjustment}
+              onBlur={() => {
+                if (draggingRef.current) endPointerAdjustment();
+              }}
+              onKeyDown={(event) => {
+                const direction = event.key === "ArrowRight" || event.key === "ArrowUp" ? 1 : event.key === "ArrowLeft" || event.key === "ArrowDown" ? -1 : 0;
+                if (!direction) return;
+                event.preventDefault();
+                const multiplier = event.shiftKey ? 5 : 1;
+                updateIncome(income + direction * incomeStepFor(income) * multiplier);
+              }}
+              aria-valuetext={`${fmtIncome(income)} household income a year`}
+            />
+          </div>
+          <div className="lpb-slider-ends lpb-num" aria-hidden="true">
+            <span>{fmtIncome(INCOME_MIN)}</span>
+            <span>{fmtIncome(INCOME_MAX)}</span>
+          </div>
+          <div className="lpb-module-foot">
+            <button
+              type="button"
+              className="lpb-view-all"
+              aria-expanded={showAllLenders}
+              aria-controls="lpb-comparison-list"
+              onClick={() => {
+                if (showAllLenders) comparisonListRef.current?.scrollTo({ top: 0 });
+                setShowAllLenders((visible) => !visible);
+              }}
+            >
+              {showAllLenders ? "Show top 5 lenders" : "View all 14 lenders"}
+            </button>
+            <span className="lpb-domain-note">Bars use a fixed $0–{fmtPrice(BAR_DOMAIN_MAX)} scale</span>
+            <button type="button" className="lpb-text-button" aria-haspopup="dialog" onClick={() => setAssumptionsOpen(true)}>
+              How we worked this out
+            </button>
+          </div>
         </div>
-        <input
-          id="lpb-income"
-          type="range"
-          min={INCOME_MIN}
-          max={INCOME_MAX}
-          step={INCOME_STEP}
-          value={income}
-          style={{ "--lpb-slider-pct": `${sliderPct}%` }}
-          onChange={(e) => onIncome(Number(e.target.value))}
-          onPointerDown={() => setDragging(true)}
-          onKeyDown={(e) => {
-            if (e.shiftKey && (e.key === "ArrowLeft" || e.key === "ArrowDown")) {
-              e.preventDefault();
-              onIncome(Math.max(INCOME_MIN, income - 25000));
-            } else if (e.shiftKey && (e.key === "ArrowRight" || e.key === "ArrowUp")) {
-              e.preventDefault();
-              onIncome(Math.min(INCOME_MAX, income + 25000));
-            }
-          }}
-          aria-valuetext={`${fmtIncome(income)} a year`}
-        />
-        <button
-          type="button"
-          className="lpb-assumptions-btn"
-          aria-expanded={assumptionsOpen}
-          onClick={() => setAssumptionsOpen((v) => !v)}
-        >
-          Assumptions, and how we worked this out
+        <span className="lpb-sr" aria-live="polite">{announcement}</span>
+      </section>
+
+      <ResponsiveDialog
+        isOpen={assumptionsOpen}
+        onClose={() => setAssumptionsOpen(false)}
+        title="How this example was worked out"
+        description="A transparent demonstration of the comparison interface—not a personalised credit assessment."
+      >
+        <div className="lpb-assumptions-content">
+          <div>
+            <h3>Example profile</h3>
+            <ul>
+              <li>Household income selected with the slider</li>
+              <li>$180,000 available toward the purchase</li>
+              <li>Owner-occupier, principal and interest over 30 years</li>
+              <li>No dependants, liabilities or other debts included</li>
+            </ul>
+          </div>
+          <div>
+            <h3>What this demonstration does not do</h3>
+            <p>
+              The values use illustrative curves and example rates. They are not connected to live lender policy, do not represent loan offers and should not be used to make a purchase decision.
+            </p>
+          </div>
+          <Link to="/assessment" className="lpb-btn lpb-btn--primary">Use my details</Link>
+        </div>
+      </ResponsiveDialog>
+
+      <ResponsiveDialog
+        isOpen={Boolean(selectedResult)}
+        onClose={() => setSelectedLenderId(null)}
+        title={selectedResult ? `${selectedResult.name} example` : "Lender example"}
+        description="The complete row details, including both interest and comparison rates."
+      >
+        <LenderDetail result={selectedResult} />
+      </ResponsiveDialog>
+    </>
+  );
+}
+
+function LenderProof() {
+  const marqueeRef = useRef(null);
+  const marqueeIsVisible = useVisibility(marqueeRef);
+  const [paused, setPaused] = useState(false);
+
+  function lenderMarks(duplicate = false) {
+    return LENDER_MARKS.map((lender) => (
+      <li key={`${duplicate ? "duplicate-" : ""}${lender.id}`} className="lpb-lender-mark" data-lender={lender.id}>
+        <img src={lender.logo} alt="" width="120" height="36" loading="lazy" decoding="async" />
+        <span className="lpb-sr">{lender.name}</span>
+      </li>
+    ));
+  }
+
+  return (
+    <section className="lpb-lender-proof" aria-labelledby="lpb-lender-proof-title">
+      <div className="lpb-lender-proof-head">
+        <p className="lpb-lender-proof-caption" id="lpb-lender-proof-title">
+          Compare how much you can borrow across 14 lenders
+        </p>
+        <button type="button" className="lpb-marquee-toggle" aria-pressed={paused} onClick={() => setPaused((value) => !value)}>
+          {paused ? "Play logos" : "Pause logos"}
         </button>
-        {assumptionsOpen && (
-          <ul className="lpb-assumptions">
-            <li>Single applicant, no other debts</li>
-            <li>20% deposit saved, costs paid from it</li>
-            <li>30-year loan, principal and interest</li>
-            <li>Current advertised rates, updated with lender policy</li>
-            <li>Your details replace all of this when you start</li>
-          </ul>
-        )}
       </div>
+      <div
+        ref={marqueeRef}
+        className={`lpb-lender-marquee ${marqueeIsVisible ? "is-active" : ""} ${paused ? "is-paused" : ""}`}
+        aria-label="All 14 lenders included in the comparison"
+      >
+        <div className="lpb-lender-track">
+          <ul className="lpb-lender-rail" aria-label="Lenders included in the comparison">{lenderMarks()}</ul>
+          <ul className="lpb-lender-rail" aria-hidden="true">{lenderMarks(true)}</ul>
+        </div>
+      </div>
+    </section>
+  );
+}
 
-      <p className={`lpb-wit ${settled ? "is-in" : ""}`} aria-hidden="true">
-        Somewhere in here is a comfortable yes.
-      </p>
+function InputPreview() {
+  const [income, setIncome] = useState("145000");
+  const [purpose, setPurpose] = useState("owner");
+  const [state, setState] = useState("NSW");
+  const [savings, setSavings] = useState("210000");
+  const formatInputAmount = (value) => value ? Number(value).toLocaleString("en-AU") : "";
+  const digitsOnly = (value) => value.replace(/\D/g, "");
 
-      <span className="lpb-sr" aria-live="polite">
-        {announce}
-      </span>
+  return (
+    <form className="lpb-flow-form" aria-label="Try the example financial and property inputs" onSubmit={(event) => event.preventDefault()}>
+      <label>
+        <span>Household income</span>
+        <span className="lpb-flow-input-affix">
+          <span aria-hidden="true">$</span>
+          <input type="text" inputMode="numeric" pattern="[0-9,]*" value={formatInputAmount(income)} onChange={(event) => setIncome(digitsOnly(event.target.value))} />
+          <small>a year</small>
+        </span>
+      </label>
+      <label>
+        <span>Buying purpose</span>
+        <select value={purpose} onChange={(event) => setPurpose(event.target.value)}>
+          <option value="owner">Home to live in</option>
+          <option value="investor">Investment property</option>
+        </select>
+      </label>
+      <div className="lpb-flow-field--split">
+        <label>
+          <span>Property location</span>
+          <select value={state} onChange={(event) => setState(event.target.value)}>
+            <option value="NSW">New South Wales</option>
+            <option value="VIC">Victoria</option>
+            <option value="QLD">Queensland</option>
+          </select>
+        </label>
+        <label>
+          <span>Savings</span>
+          <span className="lpb-flow-input-affix">
+            <span aria-hidden="true">$</span>
+            <input type="text" inputMode="numeric" pattern="[0-9,]*" value={formatInputAmount(savings)} onChange={(event) => setSavings(digitsOnly(event.target.value))} />
+          </span>
+        </label>
+      </div>
+    </form>
+  );
+}
+
+function MiniComparison() {
+  const rows = rankResults(resultsForIncome(INCOME_DEFAULT)).slice(0, 4);
+  const [selectedId, setSelectedId] = useState(rows[0].id);
+  const selected = rows.find((row) => row.id === selectedId) ?? rows[0];
+
+  return (
+    <div className="lpb-mini-comparison">
+      <div className="lpb-mini-list" aria-label="Example lender results">
+        {rows.map((row) => (
+          <button key={row.id} type="button" className={row.id === selectedId ? "is-selected" : ""} onClick={() => setSelectedId(row.id)}>
+            <span><span className="lpb-lender-dot" style={{ background: row.color }} aria-hidden="true" />{row.name}</span>
+            <strong className="lpb-num">{fmtPrice(row.maxPropertyPrice)}</strong>
+          </button>
+        ))}
+      </div>
+      <div className="lpb-mini-detail" aria-live="polite">
+        <span>Selected lender</span>
+        <h4>{selected.name}</h4>
+        <dl>
+          <div><dt>Loan amount</dt><dd className="lpb-num">{fmtPrice(selected.maxLoan)}</dd></div>
+          <div><dt>Rate / comparison</dt><dd className="lpb-num">{fmtRate(selected.rate)} / {fmtRate(selected.comparisonRate)}</dd></div>
+          <div><dt>Estimated monthly</dt><dd className="lpb-num">{fmtMoney(selected.monthlyRepayment)}</dd></div>
+        </dl>
+      </div>
     </div>
   );
 }
 
-/* ---------------- sections ---------------- */
+export function FundsCard({ compact = false, purpose = WORKED_EXAMPLE.purpose }) {
+  const summary = workedExampleSummary();
+  const homeLabel = purpose === "investor" ? "investment property" : "home";
 
-function Reveal({ children, className = "" }) {
-  const ref = useRef(null);
-  const inView = useInView(ref);
   return (
-    <div ref={ref} className={`lpb-reveal ${inView ? "is-in" : ""} ${className}`}>
-      {children}
+    <div className={`lpb-funds-card ${compact ? "is-compact" : ""}`}>
+      <div className="lpb-funds-zone">
+        <h3>You could afford a {fmtMoney(WORKED_EXAMPLE.propertyPrice)} {homeLabel}</h3>
+        <p className="lpb-funds-total"><strong className="lpb-num">{fmtMoney(summary.totalPropertyCosts)}</strong> in total property costs</p>
+        <div className="lpb-segmented-bar" aria-hidden="true">
+          <span style={{ flexGrow: WORKED_EXAMPLE.propertyPrice, background: "#0072ac" }} />
+          <span style={{ flexGrow: WORKED_EXAMPLE.stampDuty, background: "#f2bd00" }} />
+          <span style={{ flexGrow: WORKED_EXAMPLE.legalAndOtherCosts, background: "#d5002b" }} />
+        </div>
+        <ul className="lpb-funds-list">
+          <li><span>Property price</span><strong className="lpb-num">{fmtMoney(WORKED_EXAMPLE.propertyPrice)}</strong></li>
+          <li><span>Stamp duty (NSW)</span><strong className="lpb-num">{fmtMoney(WORKED_EXAMPLE.stampDuty)}</strong></li>
+          <li><span>Legal and other costs</span><strong className="lpb-num">{fmtMoney(WORKED_EXAMPLE.legalAndOtherCosts)}</strong></li>
+        </ul>
+      </div>
+      <div className="lpb-funds-zone">
+        <h4>Where the funds are sourced from</h4>
+        <div className="lpb-segmented-bar" aria-hidden="true">
+          <span style={{ flexGrow: WORKED_EXAMPLE.loan, background: "#005eb8" }} />
+          <span style={{ flexGrow: summary.savingsUsed, background: "#4fc5b8" }} />
+        </div>
+        <ul className="lpb-funds-list">
+          <li><span>Loan from {WORKED_EXAMPLE.lender} · {Math.round(summary.lvr)}% LVR</span><strong className="lpb-num">{fmtMoney(WORKED_EXAMPLE.loan)}</strong></li>
+          <li><span>Your savings used (deposit + costs)</span><strong className="lpb-num">{fmtMoney(summary.savingsUsed)}</strong></li>
+        </ul>
+      </div>
+      <div className="lpb-funds-verdict">
+        <span>Savings left over</span>
+        <strong className="lpb-num">{fmtMoney(summary.savingsRemaining)}</strong>
+      </div>
     </div>
   );
+}
+
+const FLOW_STEPS = [
+  {
+    title: "Share your details.",
+    body: "Your financials, the property you’re after and your savings.",
+  },
+  {
+    title: "See how the lenders stack up.",
+    body: "Compare every answer, then open a lender to understand the difference.",
+  },
+  {
+    title: "See your total costs.",
+    body: "Understand what buying costs and exactly where the funds come from.",
+  },
+];
+
+function HowItWorks() {
+  const [activeStep, setActiveStep] = useState(0);
+
+  return (
+    <section className="lpb-section lpb-how" id="how-it-works" aria-labelledby="lpb-how-title">
+      <div className="lpb-wrap">
+        <div className="lpb-section-intro lpb-section-intro--compact">
+          <p className="lpb-section-index">How Fundora works</p>
+          <h2 className="lpb-h2" id="lpb-how-title">From your details to a number you can use.</h2>
+        </div>
+        <div className="lpb-flow">
+          <ol className="lpb-flow-nav">
+            {FLOW_STEPS.map((step, index) => (
+              <li key={step.title}>
+                <button
+                  type="button"
+                  className={activeStep === index ? "is-active" : ""}
+                  aria-pressed={activeStep === index}
+                  aria-controls="lpb-flow-stage"
+                  onClick={() => setActiveStep(index)}
+                >
+                  <span className="lpb-flow-number lpb-num">0{index + 1}</span>
+                  <span><strong>{step.title}</strong><small>{step.body}</small></span>
+                </button>
+              </li>
+            ))}
+          </ol>
+          <div className="lpb-flow-stage" id="lpb-flow-stage" aria-live="polite">
+            <div className="lpb-flow-stage-head">
+              <span className="lpb-num">0{activeStep + 1}</span>
+              <strong>{FLOW_STEPS[activeStep].title}</strong>
+            </div>
+            <div className="lpb-flow-stage-content" key={activeStep}>
+              {activeStep === 0 ? <InputPreview /> : null}
+              {activeStep === 1 ? <MiniComparison /> : null}
+              {activeStep === 2 ? <FundsCard compact /> : null}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const PROPOSITIONS = [
+  {
+    number: "01",
+    image: "/landing-b/proposition-lenders-casual-v2.webp",
+    alt: "A chalk-textured illustration of four lender folders",
+    title: "Every lender, side by side.",
+    body: "See who gives you the most room, and open the detail behind their number.",
+  },
+  {
+    number: "02",
+    image: "/landing-b/proposition-suburbs-casual-v2.webp",
+    alt: "A chalk-textured map illustration with three house location pins",
+    title: "Suburbs and listings within reach.",
+    body: "Know where you can realistically buy before you build a shortlist.",
+  },
+  {
+    number: "03",
+    image: "/landing-b/proposition-scenarios-casual-v2.webp",
+    alt: "A chalk-textured control board illustration with four sliders",
+    title: "Stress test any scenario.",
+    body: "Model a rate rise or life change and see how your range responds.",
+  },
+];
+
+function PropositionGrid() {
+  return (
+    <section className="lpb-section lpb-propositions" aria-labelledby="lpb-propositions-title">
+      <div className="lpb-wrap">
+        <div className="lpb-section-intro lpb-section-intro--compact">
+          <p className="lpb-section-index">More than one number</p>
+          <h2 className="lpb-h2" id="lpb-propositions-title">A clearer view of what comes next.</h2>
+        </div>
+        <div className="lpb-proposition-grid">
+          {PROPOSITIONS.map((item) => (
+            <article className="lpb-proposition-card" key={item.number}>
+              <div className="lpb-proposition-art"><img src={item.image} alt={item.alt} width="768" height="768" loading="lazy" decoding="async" /></div>
+              <div className="lpb-proposition-copy">
+                <span className="lpb-flow-number lpb-num">{item.number}</span>
+                <h3>{item.title}</h3>
+                <p>{item.body}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function usePageMetadata() {
+  useEffect(() => {
+    const previousTitle = document.title;
+    const pageUrl = new URL("/landing-b", window.location.origin).toString();
+    const shareImageUrl = new URL("/landing-b/og-share-v2.png", window.location.origin).toString();
+    const metadata = [
+      ["name", "description", PAGE_DESCRIPTION],
+      ["property", "og:type", "website"],
+      ["property", "og:title", PAGE_TITLE],
+      ["property", "og:description", PAGE_DESCRIPTION],
+      ["property", "og:url", pageUrl],
+      ["property", "og:image", shareImageUrl],
+      ["property", "og:image:width", "1200"],
+      ["property", "og:image:height", "630"],
+      ["name", "twitter:card", "summary_large_image"],
+      ["name", "twitter:title", PAGE_TITLE],
+      ["name", "twitter:description", PAGE_DESCRIPTION],
+      ["name", "twitter:image", shareImageUrl],
+    ];
+    const restore = [];
+    document.title = PAGE_TITLE;
+
+    metadata.forEach(([attribute, key, content]) => {
+      let element = document.head.querySelector(`meta[${attribute}="${key}"]`);
+      const created = !element;
+      const previousContent = element?.getAttribute("content");
+      if (!element) {
+        element = document.createElement("meta");
+        element.setAttribute(attribute, key);
+        document.head.appendChild(element);
+      }
+      element.setAttribute("content", content);
+      restore.push(() => {
+        if (created) element.remove();
+        else if (previousContent === null) element.removeAttribute("content");
+        else element.setAttribute("content", previousContent);
+      });
+    });
+
+    let canonical = document.head.querySelector('link[rel="canonical"]');
+    const createdCanonical = !canonical;
+    const previousCanonical = canonical?.getAttribute("href");
+    if (!canonical) {
+      canonical = document.createElement("link");
+      canonical.setAttribute("rel", "canonical");
+      document.head.appendChild(canonical);
+    }
+    canonical.setAttribute("href", pageUrl);
+
+    return () => {
+      document.title = previousTitle;
+      restore.forEach((restoreMetadata) => restoreMetadata());
+      if (createdCanonical) canonical.remove();
+      else if (previousCanonical === null) canonical.removeAttribute("href");
+      else canonical.setAttribute("href", previousCanonical);
+    };
+  }, []);
 }
 
 export default function LandingBRangePage() {
-  useEffect(() => {
-    document.title = "Fundora — Find the home you can really afford";
-  }, []);
+  usePageMetadata();
 
   return (
-    <div className="lpb-page">
+    <div className="lpb-page" id="top">
       <header className="lpb-topbar">
-        <div className="lpb-wrap lpb-topbar-row">
-          <Link to="/landing-b" className="lpb-wordmark">
-            Fundora
+        <nav className="lpb-wrap lpb-topbar-row" aria-label="Main">
+          <Link to="/landing-b" className="lpb-wordmark">Ask Fundora</Link>
+          <div className="lpb-topnav">
+            <a href="#why-fundora" className="lpb-topnav-link">About</a>
+            <a href="#how-it-works" className="lpb-topnav-link">Learn</a>
+          </div>
+          <Link to="/assessment" className="lpb-btn lpb-btn--primary lpb-header-cta">
+            <span className="lpb-header-cta-long">Run your scenario</span>
+            <span className="lpb-header-cta-short">Start</span>
           </Link>
-          <Link to="/assessment" className="lpb-btn lpb-btn--primary lpb-btn--small">
-            Find my range
-          </Link>
-        </div>
+        </nav>
       </header>
 
       <main>
-        <div className="lpb-paper">
-        <section className="lpb-wrap lpb-hero" aria-label="Fundora">
-          <div className="lpb-hero-head">
-            <p className="lpb-eyebrow">For Australian property buyers</p>
-            <h1 className="lpb-h1">Find the home you can really afford.</h1>
-            <p className="lpb-subhead">
-              Your borrowing power changes lender to lender. See all 14 numbers and search
-              with a price range you trust.
-            </p>
-          </div>
-
-          <div className="lpb-hero-module">
+        <section className="lpb-hero" aria-labelledby="lpb-hero-title">
+          <div className="lpb-wrap">
+            <div className="lpb-hero-head">
+              <h1 className="lpb-h1" id="lpb-hero-title">Find the home you can really afford.</h1>
+              <p className="lpb-subhead">
+                The property price you can afford changes lender to lender. Use Fundora to calculate and compare what each lender will let you borrow.
+              </p>
+              <div className="lpb-hero-actions">
+                <div className="lpb-cta-row">
+                  <Link to="/assessment" className="lpb-btn lpb-btn--primary">Run your scenario</Link>
+                  <a href="#how-it-works" className="lpb-btn lpb-btn--secondary">See how it works</a>
+                </div>
+                <p className="lpb-trust">Free. No impact on your credit score.</p>
+              </div>
+            </div>
             <RangeModule />
           </div>
+        </section>
 
-          <div className="lpb-hero-cta">
-            <div className="lpb-cta-row">
-              <Link to="/assessment" className="lpb-btn lpb-btn--primary">
-                Find my range
-              </Link>
-              <a href="#ceiling" className="lpb-btn lpb-btn--paper">
-                See how it works
-              </a>
+        <LenderProof />
+        <HowItWorks />
+
+        <section className="lpb-section lpb-costs" id="why-fundora" aria-labelledby="lpb-costs-title">
+          <div className="lpb-wrap lpb-costs-layout">
+            <span className="lpb-anchor-target" id="ceiling" aria-hidden="true" />
+            <div className="lpb-costs-copy">
+              <p className="lpb-section-index">Your real price ceiling</p>
+              <h2 className="lpb-h2" id="lpb-costs-title">The number you actually shop with.</h2>
+              <p>
+                Your savings have to cover more than the deposit. Fundora brings the property price, buying costs, lender loan and remaining cash into one reconciled view.
+              </p>
             </div>
-            <p className="lpb-trust">Free. No impact on your credit score.</p>
+            <FundsCard />
           </div>
         </section>
 
-        <div className="lpb-wrap lpb-proof">The 14 lenders most Australians borrow from.</div>
-        </div>
+        <PropositionGrid />
 
-        <section id="ceiling" className="lpb-section" aria-label="What you get">
+        <section className="lpb-section lpb-closing" aria-label="Get started with Fundora">
           <div className="lpb-wrap">
-            <Reveal>
-              <p className="lpb-eyebrow">What you get</p>
-              <h2 className="lpb-h2">The number you actually shop with.</h2>
-            </Reveal>
-            <div className="lpb-feature">
-              <Reveal>
-                <h3 className="lpb-feature-title">Your real price ceiling.</h3>
-                <p className="lpb-feature-body">
-                  The property price within reach, with your deposit, stamp duty, LMI and
-                  each lender&rsquo;s policy already in it. The figure you type into the
-                  price filter and trust.
-                </p>
-              </Reveal>
-              <Art
-                src="/landing-b/ceiling-scene.png"
-                boilSrc="/landing-b/ceiling-scene-boil-1.png"
-                alt="Illustration of a house with a price tag on its door"
-              />
-            </div>
-          </div>
-        </section>
-
-        <section className="lpb-section" aria-label="Also included">
-          <div className="lpb-wrap lpb-supports">
-            <Reveal>
-              <h3 className="lpb-support-title">Every lender, side by side.</h3>
-              <p className="lpb-support-body">
-                See who gives you the most room, and why they differ.
-              </p>
-            </Reveal>
-            <Reveal>
-              <h3 className="lpb-support-title">Suburbs and listings within reach.</h3>
-              <p className="lpb-support-body">
-                Know where you can actually buy before you fall for somewhere you
-                can&rsquo;t.
-              </p>
-            </Reveal>
-            <Reveal>
-              <h3 className="lpb-support-title">Stress test any scenario.</h3>
-              <p className="lpb-support-body">
-                Model a rate rise, a new baby, a career change. Watch your range move.
-              </p>
-            </Reveal>
-          </div>
-        </section>
-
-        <section className="lpb-section lpb-closing" aria-label="Get started">
-          <div className="lpb-wrap">
-            <Art
-              src="/landing-b/closing-keys.png"
-              alt="Illustration of a house key with a paper tag"
-            />
-            <Reveal>
-              <h2 className="lpb-h2">Find the home you can really afford.</h2>
-              <p className="lpb-closing-sub">Your range is three minutes away.</p>
-              <div className="lpb-cta-row">
-                <Link to="/assessment" className="lpb-btn lpb-btn--primary">
-                  Find my range
-                </Link>
+            <div className="lpb-closing-card">
+              <img src="/landing-b/affordable-price-casual.webp" alt="A chalk-textured illustration of a house, price tag and ruler" width="768" height="768" loading="lazy" decoding="async" />
+              <div>
+                <p className="lpb-section-index">Ready when you are</p>
+                <h2 className="lpb-h2" id="lpb-closing-title">Find the home you can really afford.</h2>
+                <p className="lpb-closing-sub">Your personalised range is three minutes away.</p>
+                <Link to="/assessment" className="lpb-btn lpb-btn--primary">Run your scenario</Link>
+                <p className="lpb-closing-trust">Free to check. No impact on your credit score.</p>
               </div>
-            </Reveal>
+            </div>
           </div>
         </section>
       </main>
 
-      <footer className="lpb-footer">
-        <div className="lpb-wrap">
-          <p>
-            Fundora provides estimates based on the information you enter and current
-            lender policy. Estimates are indicative only. They are not loan offers,
-            pre-approval, or credit assistance. Lending criteria, fees and charges apply
-            and are subject to change. Fundora Pty Ltd, Australian Credit Licence
-            (placeholder, compliance to supply). <a href="#top">Privacy policy</a> ·{" "}
-            <a href="#top">Credit guide</a>
-          </p>
-        </div>
+      <div className="lpb-disclaimer">
+        <p className="lpb-wrap">
+          This illustrative comparison is not connected to live lender policy. Personalised estimates are general information, not loan offers, pre-approval or personal credit advice.
+        </p>
+      </div>
+      <footer className="lpb-wrap lpb-footer">
+        <p>© 2026 Ask Fundora</p>
+        <p>Not financial advice</p>
       </footer>
     </div>
   );
