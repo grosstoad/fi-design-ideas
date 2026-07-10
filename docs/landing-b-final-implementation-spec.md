@@ -201,8 +201,8 @@ At 1440px, 1280px, 768px (tablet), 375px (mobile): alignment to the shared grid 
 | 7. Rebuild HowItWorks | done | `5a51791` | Three persistent columns and connected markers now run once through phases 1→4→6→8 over 6.1s and persist. Rows are inert, mobile uses one 351px column with a vertical line, and reduced motion starts at phase 8. Build and the 31 in-scope unit tests pass; captures are in `tmp/landing-b-final/task-07/`. |
 | 8. FundsCard revisions | done | `9bfdee3` | Exact cost and funding labels render with matching colour keys; the card reconciles $795,400 = $600,000 + $195,400 and leaves $14,600. Both group borders and the verdict border compute to 0px. Build and 31 in-scope unit tests pass; captures are in `tmp/landing-b-final/task-08/`. |
 | 9. PropositionGrid rework | done | `38c34e2` | Exact trust-led heading/support and three proposition pairs render without numbers, borders, pointer cursors or transforms. All three 768px assets load at a 168px desktop width and compact to 92px mobile accents. Build and 32 in-scope unit tests pass. |
-| 10. FinalCTA | done | | Exact copy renders in a transparent, borderless 820px layout with a 150px illustration; mobile compacts to 351px with an 88px illustration. The page background remains white and the CTA reuses the shared button. Build and 33 in-scope unit tests pass. |
-| 11. Motion polish | todo | | |
+| 10. FinalCTA | done | `d7f0a5f` | Exact copy renders in a transparent, borderless 820px layout with a 150px illustration; mobile compacts to 351px with an 88px illustration. The page background remains white and the CTA reuses the shared button. Build and 33 in-scope unit tests pass. |
+| 11. Motion polish | done | | Computed timings: CTA 0.16s/0.14s with matrix(0.97) press, range bar 0.26s, number 0.22s, row reorder 360ms, product state 0.42s and cost assembly 0.56s. No `transition: all`; obsolete walkthrough/detail CSS is removed. Build and 33 in-scope unit tests pass. |
 | 12. Reduced-motion audit | todo | | |
 | 13. Tests and visual QA | todo | | |
 
