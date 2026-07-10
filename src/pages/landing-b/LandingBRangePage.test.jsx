@@ -36,7 +36,7 @@ describe("Landing B range experience", () => {
     );
     expect(
       screen.getByText(
-        "The property price you can afford changes lender to lender. Use Fundora to calculate and compare what each lender will let you borrow."
+        "Compare what you could borrow across 14+ lenders, based on real lender rules, rates and purchase costs."
       )
     ).toBeTruthy();
     expect(screen.getByText("Your purchase power range")).toBeTruthy();

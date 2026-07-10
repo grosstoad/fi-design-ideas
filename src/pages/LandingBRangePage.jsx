@@ -703,7 +703,7 @@ export default function LandingBRangePage() {
             <div className="lpb-hero-head">
               <h1 className="lpb-h1" id="lpb-hero-title">Find the home you can really afford.</h1>
               <p className="lpb-subhead">
-                The property price you can afford changes lender to lender. Use Fundora to calculate and compare what each lender will let you borrow.
+                Compare what you could borrow across 14+ lenders, based on real lender rules, rates and purchase costs.
               </p>
               <div className="lpb-hero-actions">
                 <div className="lpb-cta-row">

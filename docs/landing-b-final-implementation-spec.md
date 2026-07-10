@@ -193,8 +193,8 @@ At 1440px, 1280px, 768px (tablet), 375px (mobile): alignment to the shared grid 
 | §5 task | Status | Commit | Notes |
 | --- | --- | --- | --- |
 | 1. Header/footer parity | done | `98c1af1` | Build and 30 unit tests pass. Live/local captures verified at 1440×900 and 375×812 in `tmp/landing-b-final/task-01/`. |
-| 2. Page grid/typography/background | done | | Shared 1180px grid, 16px/12px gutters, white background, 30px section headings and 12px card radius verified at 1440×900 and 375×812. Build and 30 unit tests pass. |
-| 3. Hero compaction and motion | todo | | |
+| 2. Page grid/typography/background | done | `9fd882d` | Shared 1180px grid, 16px/12px gutters, white background, 30px section headings and 12px card radius verified at 1440×900 and 375×812. Build and 30 unit tests pass. |
+| 3. Hero compaction and motion | done | | Exact support copy, 32–44px H1 and staged 360/400ms entrance verified. At 1440×900 and 1280×800 the second row ends at 577px and 574px respectively. Build and 30 unit tests pass. |
 | 4. RangeModule corrections | todo | | |
 | 5. LenderProof | todo | | |
 | 6. Remove standalone price ceiling | todo | | |

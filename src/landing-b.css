@@ -1,4 +1,5 @@
 .lpb-page {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --lpb-bg: #ffffff;
   --lpb-card: #ffffff;
   --lpb-ink: #111111;
@@ -174,7 +175,7 @@
 /* Hero */
 
 .lpb-hero {
-  padding: 68px 0 54px;
+  padding: 34px 0 28px;
   background: #ffffff;
 }
 
@@ -186,23 +187,23 @@
 
 .lpb-h1 {
   color: var(--lpb-ink);
-  font-size: clamp(46px, 5.7vw, 76px);
+  font-size: clamp(32px, 3.2vw, 44px);
   font-weight: 780;
-  line-height: 0.98;
+  line-height: 1.02;
   text-wrap: balance;
 }
 
 .lpb-subhead {
   max-width: 760px;
-  margin: 22px auto 0 !important;
+  margin: 14px auto 0 !important;
   color: var(--lpb-muted);
-  font-size: clamp(17px, 1.6vw, 20px);
-  line-height: 1.55;
+  font-size: 18px;
+  line-height: 1.6;
   text-wrap: pretty;
 }
 
 .lpb-hero-actions {
-  margin-top: 30px;
+  margin-top: 18px;
 }
 
 .lpb-cta-row {
@@ -213,7 +214,7 @@
 }
 
 .lpb-trust {
-  margin-top: 20px !important;
+  margin-top: 12px !important;
   color: var(--lpb-muted);
   font-size: 13px;
   line-height: 1.5;
@@ -223,11 +224,36 @@
 
 .lpb-module {
   max-width: 1176px;
-  margin: 48px auto 0;
+  margin: 26px auto 0;
   overflow: hidden;
   border: 1px solid var(--lpb-line);
   border-radius: var(--lpb-radius);
   background: var(--lpb-card);
+}
+
+.lpb-h1,
+.lpb-subhead {
+  animation: lpb-hero-enter 360ms var(--ease-out) both;
+}
+
+.lpb-hero-actions {
+  animation: lpb-hero-enter 360ms var(--ease-out) 80ms both;
+}
+
+.lpb-hero .lpb-module {
+  animation: lpb-hero-enter 400ms var(--ease-out) 160ms both;
+}
+
+@keyframes lpb-hero-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .lpb-module-head {
@@ -1247,11 +1273,11 @@
   }
 
   .lpb-hero {
-    padding-top: 48px;
+    padding-top: 32px;
   }
 
   .lpb-module {
-    margin-top: 38px;
+    margin-top: 26px;
   }
 
   .lpb-comparison-head {
@@ -1370,7 +1396,7 @@
   }
 
   .lpb-hero {
-    padding: 34px 0 38px;
+    padding: 28px 0 30px;
   }
 
   .lpb-hero-head {
@@ -1378,16 +1404,16 @@
   }
 
   .lpb-h1 {
-    font-size: clamp(38px, 12vw, 50px);
+    font-size: 32px;
   }
 
   .lpb-subhead {
-    margin-top: 18px !important;
+    margin-top: 14px !important;
     font-size: 16px;
   }
 
   .lpb-hero-actions {
-    margin-top: 24px;
+    margin-top: 18px;
   }
 
   .lpb-cta-row {
@@ -1399,7 +1425,7 @@
   }
 
   .lpb-trust {
-    margin-top: 18px !important;
+    margin-top: 12px !important;
     text-align: center;
   }
 
@@ -1413,7 +1439,7 @@
   }
 
   .lpb-module {
-    margin-top: 30px;
+    margin-top: 24px;
   }
 
   .lpb-module-head {
