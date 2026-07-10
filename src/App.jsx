@@ -11,6 +11,7 @@ const RechartsDashboardPage = lazy(() => import("./pages/recharts-dashboard"));
 const PolarisVizDashboardPage = lazy(() => import("./pages/polaris-viz-dashboard"));
 const FundIqChartsComparisonPage = lazy(() => import("./pages/FundIqChartsComparisonPage"));
 const LandingANumberPage = lazy(() => import("./pages/LandingANumberPage"));
+const LandingBRangePage = lazy(() => import("./pages/LandingBRangePage"));
 const ResultsPage = lazy(() => import("./pages/results/ResultsPage"));
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
         <Route path="/" element={<FundIqPage />} />
         <Route path="/buying-range" element={<BuyingRangePage />} />
         <Route path="/landing-a" element={<LandingANumberPage />} />
+        <Route path="/landing-b" element={<LandingBRangePage />} />
         <Route path="/insights" element={<InsightsPage />} />
         <Route path="/assessment" element={<AssessmentPage />} />
         <Route path="/results/*" element={<ResultsPage />} />

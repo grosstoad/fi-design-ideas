@@ -1,0 +1,597 @@
+/* Landing Concept B — "The Range". Scoped: every rule lives under .lpb-page.
+   Tokens are the v3.2 Fundora system (docs/results-page-spec.md §3). */
+
+.lpb-page {
+  --lpb-bg: #fafafa;
+  --lpb-card: #ffffff;
+  --lpb-field: #f3f3f0;
+  --lpb-ink: #111111;
+  --lpb-muted: #5f5e58;
+  --lpb-muted-2: #8b8982;
+  --lpb-line: #d8d8d4;
+  --lpb-teal-light: #ccf3ef;
+  --lpb-teal: #14b8a6;
+  --lpb-teal-dark: #0f766e;
+  --lpb-r: 10px;
+
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  background: var(--lpb-bg);
+  color: var(--lpb-ink);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+.lpb-page *,
+.lpb-page *::before,
+.lpb-page *::after {
+  box-sizing: border-box;
+}
+
+.lpb-page h1,
+.lpb-page h2,
+.lpb-page h3,
+.lpb-page p,
+.lpb-page ul {
+  margin: 0;
+}
+
+.lpb-page :focus-visible {
+  outline: 2px solid var(--lpb-teal-dark);
+  outline-offset: 2px;
+}
+
+.lpb-wrap {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.lpb-num {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------------- topbar ---------------- */
+
+.lpb-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--lpb-card);
+  border-bottom: 1px solid var(--lpb-line);
+}
+
+.lpb-topbar-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+}
+
+.lpb-wordmark {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--lpb-ink);
+  text-decoration: none;
+}
+
+/* ---------------- buttons ---------------- */
+
+.lpb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: var(--lpb-r);
+  font: 600 15px/1 "Inter", ui-sans-serif, system-ui, sans-serif;
+  color: var(--lpb-ink);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 300ms ease;
+}
+
+.lpb-btn--primary {
+  background: var(--lpb-teal);
+}
+
+.lpb-btn--primary:hover {
+  background: #10a294;
+}
+
+.lpb-btn--quiet {
+  background: var(--lpb-field);
+}
+
+.lpb-btn--quiet:hover {
+  background: #eaeae5;
+}
+
+.lpb-btn--small {
+  height: 40px;
+  padding: 0 18px;
+  font-size: 14px;
+}
+
+/* ---------------- hero ---------------- */
+
+.lpb-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 460px;
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    "head module"
+    "cta module";
+  column-gap: 56px;
+  align-content: start;
+  padding: 72px 0 40px;
+}
+
+.lpb-hero-cta {
+  padding-top: 28px;
+}
+
+.lpb-hero-head {
+  grid-area: head;
+}
+
+.lpb-hero-cta {
+  grid-area: cta;
+  align-self: start;
+}
+
+.lpb-hero-module {
+  grid-area: module;
+}
+
+.lpb-eyebrow {
+  font-size: 14px;
+  color: var(--lpb-muted);
+}
+
+.lpb-h1 {
+  margin-top: 12px;
+  font-size: 48px;
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.lpb-subhead {
+  margin-top: 16px;
+  max-width: 26em;
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--lpb-muted);
+}
+
+.lpb-cta-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.lpb-trust {
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--lpb-muted-2);
+}
+
+.lpb-proof {
+  padding: 14px 0 56px;
+  font-size: 14px;
+  color: var(--lpb-muted);
+}
+
+/* ---------------- range module ---------------- */
+
+.lpb-module {
+  background: var(--lpb-card);
+  border: 1px solid var(--lpb-line);
+  border-radius: var(--lpb-r);
+  padding: 20px;
+}
+
+.lpb-module-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.lpb-module-label {
+  font-size: 13px;
+  color: var(--lpb-muted);
+}
+
+.lpb-module-range {
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.lpb-rows {
+  position: relative;
+  margin-top: 14px;
+}
+
+.lpb-row {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr) max-content;
+  align-items: center;
+  gap: 10px;
+  height: 32px;
+  transition: transform 250ms ease, opacity 200ms ease;
+}
+
+.lpb-rows.is-dragging .lpb-row {
+  transition: none;
+}
+
+.lpb-row-name {
+  font-size: 13px;
+  color: var(--lpb-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lpb-row.is-leader .lpb-row-name {
+  font-weight: 600;
+}
+
+.lpb-row-track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--lpb-field);
+  overflow: hidden;
+}
+
+.lpb-row-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+}
+
+.lpb-row-price {
+  font-size: 14px;
+  font-weight: 700;
+  text-align: right;
+  min-width: 52px;
+}
+
+.lpb-overflow {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--lpb-muted);
+}
+
+.lpb-wit {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--lpb-line);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--lpb-muted);
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+.lpb-wit.is-in {
+  opacity: 1;
+}
+
+/* slider */
+
+.lpb-slider {
+  margin-top: 16px;
+}
+
+.lpb-slider-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--lpb-muted);
+}
+
+.lpb-slider-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--lpb-ink);
+}
+
+.lpb-slider input[type="range"] {
+  width: 100%;
+  height: 44px;
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.lpb-slider input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--lpb-teal) 0%,
+    var(--lpb-teal) var(--lpb-slider-pct, 35%),
+    var(--lpb-field) var(--lpb-slider-pct, 35%),
+    var(--lpb-field) 100%
+  );
+}
+
+.lpb-slider input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 28px;
+  height: 28px;
+  margin-top: -11px;
+  border-radius: 50%;
+  background: var(--lpb-teal);
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 1px var(--lpb-line);
+}
+
+.lpb-slider input[type="range"]::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--lpb-field);
+}
+
+.lpb-slider input[type="range"]::-moz-range-progress {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--lpb-teal);
+}
+
+.lpb-slider input[type="range"]::-moz-range-thumb {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--lpb-teal);
+  border: 2px solid #ffffff;
+}
+
+.lpb-module.is-invite .lpb-slider input[type="range"]::-webkit-slider-thumb {
+  animation: lpb-pulse 600ms ease 400ms 1;
+}
+
+.lpb-module.is-invite .lpb-slider input[type="range"]::-moz-range-thumb {
+  animation: lpb-pulse 600ms ease 400ms 1;
+}
+
+@keyframes lpb-pulse {
+  50% {
+    transform: scale(1.18);
+  }
+}
+
+.lpb-fineprint {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--lpb-muted-2);
+}
+
+/* ---------------- sections ---------------- */
+
+.lpb-section {
+  padding: 56px 0;
+  border-top: 1px solid var(--lpb-line);
+}
+
+.lpb-reveal {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 450ms ease, transform 450ms ease;
+}
+
+.lpb-reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+.lpb-h2 {
+  margin-top: 10px;
+  font-size: 30px;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+/* ceiling feature */
+
+.lpb-feature {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 48px;
+  align-items: center;
+  margin-top: 36px;
+}
+
+.lpb-feature-title {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.lpb-feature-body {
+  margin-top: 10px;
+  max-width: 30em;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--lpb-muted);
+}
+
+/* illustrations */
+
+.lpb-art {
+  display: block;
+  width: 100%;
+  max-width: 380px;
+  margin: 0 auto;
+}
+
+.lpb-art img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.lpb-art.is-placed {
+  opacity: 0;
+  transform: scale(0.92) rotate(-1.5deg);
+}
+
+.lpb-art.is-placed.is-in {
+  opacity: 1;
+  transform: none;
+  transition: opacity 350ms ease-out,
+    transform 350ms cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+.lpb-art-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  border: 1.5px dashed var(--lpb-line);
+  border-radius: var(--lpb-r);
+  background: var(--lpb-card);
+  color: var(--lpb-muted-2);
+  font-size: 12px;
+  text-align: center;
+  padding: 16px;
+}
+
+/* supports */
+
+.lpb-supports {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 32px;
+  margin-top: 32px;
+}
+
+.lpb-support-title {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.lpb-support-body {
+  margin-top: 6px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--lpb-muted);
+}
+
+/* closing band */
+
+.lpb-closing {
+  text-align: center;
+}
+
+.lpb-closing .lpb-art {
+  max-width: 180px;
+  margin-bottom: 20px;
+}
+
+.lpb-closing-sub {
+  margin-top: 10px;
+  font-size: 16px;
+  color: var(--lpb-muted);
+}
+
+.lpb-closing .lpb-cta-row {
+  justify-content: center;
+  margin-top: 22px;
+}
+
+/* footer */
+
+.lpb-footer {
+  border-top: 1px solid var(--lpb-line);
+  padding: 28px 0 40px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--lpb-muted-2);
+}
+
+.lpb-footer a {
+  color: var(--lpb-teal-dark);
+}
+
+/* ---------------- visually hidden ---------------- */
+
+.lpb-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------------- mobile ---------------- */
+
+@media (max-width: 720px) {
+  .lpb-hero {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "head"
+      "module"
+      "cta";
+    row-gap: 24px;
+    padding-top: 40px;
+  }
+
+  .lpb-h1 {
+    font-size: 32px;
+  }
+
+  .lpb-hero-cta {
+    padding-top: 0;
+  }
+
+  .lpb-cta-row .lpb-btn {
+    flex: 1 1 100%;
+  }
+
+  .lpb-row {
+    height: 28px;
+    grid-template-columns: 76px minmax(0, 1fr) max-content;
+  }
+
+  .lpb-feature {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .lpb-supports {
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+}
+
+/* ---------------- reduced motion ---------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .lpb-row,
+  .lpb-wit,
+  .lpb-reveal,
+  .lpb-art.is-placed,
+  .lpb-btn {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .lpb-reveal,
+  .lpb-art.is-placed {
+    opacity: 1;
+    transform: none;
+  }
+}
