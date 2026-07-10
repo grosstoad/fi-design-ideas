@@ -204,7 +204,7 @@ At 1440px, 1280px, 768px (tablet), 375px (mobile): alignment to the shared grid 
 | 10. FinalCTA | done | `d7f0a5f` | Exact copy renders in a transparent, borderless 820px layout with a 150px illustration; mobile compacts to 351px with an 88px illustration. The page background remains white and the CTA reuses the shared button. Build and 33 in-scope unit tests pass. |
 | 11. Motion polish | done | `922b57f` | Computed timings: CTA 0.16s/0.14s with matrix(0.97) press, range bar 0.26s, number 0.22s, row reorder 360ms, product state 0.42s and cost assembly 0.56s. No `transition: all`; obsolete walkthrough/detail CSS is removed. Build and 33 in-scope unit tests pass. |
 | 12. Reduced-motion audit | done | `13716c4` | At 1440px and 375px the hero has no animation, HowItWorks starts at final phase 8 with three complete states, the carousel is a one-rail static wrap, and all transition probes return 0s. The slider remains functional and updates $798k–$1.00M to $1.06M–$1.79M. Build and 33 in-scope unit tests pass. |
-| 13. Tests and visual QA | done | | Final gate: clean build; 11 unit files / 39 tests pass; Playwright 11 pass / 1 intentional mobile-project skip; four-width QA has zero overflow, zero clipped lender names, zero unloaded images, zero pointer rows, 64px headers and CLS ≤0.0002. Captures are in `tmp/landing-b-final/task-13/`. |
+| 13. Tests and visual QA | done | `9a0698b` | Final gate: clean build; 11 unit files / 39 tests pass; Playwright 11 pass / 1 intentional mobile-project skip; four-width QA has zero overflow, zero clipped lender names, zero unloaded images, zero pointer rows, 64px headers and CLS ≤0.0002. Captures are in `tmp/landing-b-final/task-13/`. |
 
 ### Deviations and blockers
 
