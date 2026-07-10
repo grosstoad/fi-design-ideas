@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ResponsiveDialog } from "../components/ResponsiveDialog";
 import anzLogo from "../assets/buying-range/lenders/anz.png";
@@ -16,7 +16,6 @@ import suncorpBankLogo from "../assets/buying-range/lenders/suncorp-bank.png";
 import ubankLogo from "../assets/buying-range/lenders/ubank.svg";
 import westpacLogo from "../assets/buying-range/lenders/westpac.png";
 import {
-  BAR_DOMAIN_MAX,
   INCOME_DEFAULT,
   INCOME_MAX,
   INCOME_MIN,
@@ -24,6 +23,7 @@ import {
   LENDERS,
   WORKED_EXAMPLE,
   barRatio,
+  formatMonthlyRepayment,
   incomeStepFor,
   rankResults,
   resultsForIncome,
@@ -151,14 +151,13 @@ export function RangeModule() {
     rankResults(resultsForIncome(INCOME_DEFAULT)).map((result) => result.id)
   );
   const [dragging, setDragging] = useState(false);
-  const [selectedLenderId, setSelectedLenderId] = useState(null);
   const [assumptionsOpen, setAssumptionsOpen] = useState(false);
-  const [showAllLenders, setShowAllLenders] = useState(false);
   const [announcement, setAnnouncement] = useState("");
   const draggingRef = useRef(false);
   const incomeRef = useRef(INCOME_DEFAULT);
-  const comparisonListRef = useRef(null);
   const settleTimer = useRef(null);
+  const rowRefs = useRef(new Map());
+  const previousRowPositions = useRef(null);
 
   const results = useMemo(() => resultsForIncome(income), [income]);
   const resultById = useMemo(
@@ -166,7 +165,6 @@ export function RangeModule() {
     [results]
   );
   const orderedResults = order.map((id) => resultById[id]).filter(Boolean);
-  const selectedResult = selectedLenderId ? resultById[selectedLenderId] : null;
   const values = results.map((result) => result.maxPropertyPrice);
   const minimum = Math.min(...values);
   const maximum = Math.max(...values);
@@ -174,6 +172,9 @@ export function RangeModule() {
 
   function commitOrder(nextIncome) {
     const nextResults = rankResults(resultsForIncome(nextIncome));
+    previousRowPositions.current = new Map(
+      [...rowRefs.current].map(([id, node]) => [id, node.getBoundingClientRect().top])
+    );
     setOrder(nextResults.map((result) => result.id));
     setAnnouncement(
       `Purchase power range ${fmtPrice(nextResults.at(-1).maxPropertyPrice)} to ${fmtPrice(
@@ -203,63 +204,85 @@ export function RangeModule() {
 
   useEffect(() => () => window.clearTimeout(settleTimer.current), []);
 
+  useLayoutEffect(() => {
+    const previous = previousRowPositions.current;
+    if (!previous) return;
+
+    rowRefs.current.forEach((node, id) => {
+      const previousTop = previous.get(id);
+      if (previousTop === undefined) return;
+      const delta = previousTop - node.getBoundingClientRect().top;
+      if (!delta) return;
+      node.style.transition = "none";
+      node.style.transform = `translateY(${delta}px)`;
+      node.getBoundingClientRect();
+      node.style.transition = "transform 360ms var(--ease-in-out)";
+      node.style.transform = "translateY(0)";
+    });
+
+    previousRowPositions.current = null;
+  }, [order]);
+
   return (
     <>
       <section className="lpb-module" aria-labelledby="lpb-module-title" data-asset="range-module">
         <div className="lpb-module-head">
           <div>
-            <p className="lpb-demo-label">Example comparison</p>
             <h2 className="lpb-module-title" id="lpb-module-title">Your purchase power range</h2>
+            <p className="lpb-module-subtitle">The maximum property price you could afford.</p>
           </div>
-          <p className="lpb-module-range lpb-num" aria-label={`From ${fmtMoney(minimum)} to ${fmtMoney(maximum)}`}>
+          <p key={income} className="lpb-module-range lpb-num lpb-number-update" aria-label={`From ${fmtMoney(minimum)} to ${fmtMoney(maximum)}`}>
             {fmtPrice(minimum)}<span>–</span>{fmtPrice(maximum)}
           </p>
         </div>
 
         <div className="lpb-comparison-head" aria-hidden="true">
           <span>Lender</span>
-          <span>Maximum property price</span>
+          <span>Max property price</span>
           <span>Loan amount</span>
           <span>Interest rate</span>
           <span>Comparison rate</span>
-          <span>Est. monthly</span>
+          <span>Monthly repayment</span>
         </div>
 
         <div
-          ref={comparisonListRef}
-          className={`lpb-comparison-list ${dragging ? "is-adjusting" : ""} ${showAllLenders ? "is-expanded" : ""}`}
+          className={`lpb-comparison-list ${dragging ? "is-adjusting" : ""}`}
           id="lpb-comparison-list"
+          role="region"
           aria-label="Illustrative lender comparison"
         >
           {orderedResults.map((result) => (
-            <button
+            <div
               className="lpb-comparison-row"
               key={result.id}
-              type="button"
-              onClick={() => setSelectedLenderId(result.id)}
-              aria-label={`${result.name}, maximum property price ${fmtMoney(result.maxPropertyPrice)}, loan ${fmtMoney(result.maxLoan)}, interest rate ${fmtRate(result.rate)}, comparison rate ${fmtRate(result.comparisonRate)}, estimated monthly repayment ${fmtMoney(result.monthlyRepayment)}. View details.`}
+              aria-hidden="true"
+              ref={(node) => {
+                if (node) rowRefs.current.set(result.id, node);
+                else rowRefs.current.delete(result.id);
+              }}
             >
               <span className="lpb-lender-cell">
-                <span className="lpb-lender-dot" style={{ background: result.color }} aria-hidden="true" />
                 <span>{result.name}</span>
               </span>
               <span className="lpb-property-cell">
                 <span className="lpb-row-track" aria-hidden="true">
                   <span
                     className="lpb-row-fill"
-                    style={{ "--lpb-bar-ratio": barRatio(result.maxPropertyPrice), background: result.color }}
+                    style={{ "--lpb-bar-ratio": barRatio(result.maxPropertyPrice) }}
                   />
                 </span>
-                <strong className="lpb-num">{fmtPrice(result.maxPropertyPrice)}</strong>
+                <strong className="lpb-num"><span key={`${income}-price`} className="lpb-number-update">{fmtPrice(result.maxPropertyPrice)}</span></strong>
               </span>
-              <span className="lpb-num lpb-desktop-metric">{fmtPrice(result.maxLoan)}</span>
+              <span className="lpb-num lpb-desktop-metric"><span key={`${income}-loan`} className="lpb-number-update">{fmtPrice(result.maxLoan)}</span></span>
               <span className="lpb-num lpb-desktop-metric">{fmtRate(result.rate)}</span>
               <span className="lpb-num lpb-desktop-metric">{fmtRate(result.comparisonRate)}</span>
-              <span className="lpb-num lpb-desktop-metric">{fmtMoney(result.monthlyRepayment)}</span>
-              <span className="lpb-row-chevron" aria-hidden="true">›</span>
-            </button>
+              <span className="lpb-num lpb-desktop-metric"><span key={`${income}-repayment`} className="lpb-number-update">{formatMonthlyRepayment(result.monthlyRepayment)}</span></span>
+            </div>
           ))}
         </div>
+        <p className="lpb-sr">
+          {orderedResults.map((result) => `${result.name}: max property price ${fmtMoney(result.maxPropertyPrice)}, loan amount ${fmtMoney(result.maxLoan)}, interest rate ${fmtRate(result.rate)}, comparison rate ${fmtRate(result.comparisonRate)}, monthly repayment ${formatMonthlyRepayment(result.monthlyRepayment)}`).join(". ")}
+        </p>
 
         <div className="lpb-module-controls">
           <div className="lpb-slider-head">
@@ -296,24 +319,7 @@ export function RangeModule() {
               aria-valuetext={`${fmtIncome(income)} household income a year`}
             />
           </div>
-          <div className="lpb-slider-ends lpb-num" aria-hidden="true">
-            <span>{fmtIncome(INCOME_MIN)}</span>
-            <span>{fmtIncome(INCOME_MAX)}</span>
-          </div>
           <div className="lpb-module-foot">
-            <button
-              type="button"
-              className="lpb-view-all"
-              aria-expanded={showAllLenders}
-              aria-controls="lpb-comparison-list"
-              onClick={() => {
-                if (showAllLenders) comparisonListRef.current?.scrollTo({ top: 0 });
-                setShowAllLenders((visible) => !visible);
-              }}
-            >
-              {showAllLenders ? "Show top 5 lenders" : "View all 14 lenders"}
-            </button>
-            <span className="lpb-domain-note">Bars use a fixed $0–{fmtPrice(BAR_DOMAIN_MAX)} scale</span>
             <button type="button" className="lpb-text-button" aria-haspopup="dialog" onClick={() => setAssumptionsOpen(true)}>
               How we worked this out
             </button>
@@ -348,14 +354,6 @@ export function RangeModule() {
         </div>
       </ResponsiveDialog>
 
-      <ResponsiveDialog
-        isOpen={Boolean(selectedResult)}
-        onClose={() => setSelectedLenderId(null)}
-        title={selectedResult ? `${selectedResult.name} example` : "Lender example"}
-        description="The complete row details, including both interest and comparison rates."
-      >
-        <LenderDetail result={selectedResult} />
-      </ResponsiveDialog>
     </>
   );
 }

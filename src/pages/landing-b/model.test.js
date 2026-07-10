@@ -7,6 +7,7 @@ import {
   LENDERS,
   barRatio,
   estimatePurchasePower,
+  formatMonthlyRepayment,
   incomeStepFor,
   resultsForIncome,
   snapIncome,
@@ -59,6 +60,10 @@ describe("Landing B illustrative comparison model", () => {
   it("maps the same amount to the same bar ratio", () => {
     expect(barRatio(1000000)).toBeCloseTo(1000000 / BAR_DOMAIN_MAX, 8);
     expect(barRatio(500000)).toBeCloseTo(barRatio(1000000) / 2, 8);
+  });
+
+  it("formats monthly repayments with the approved suffix", () => {
+    expect(formatMonthlyRepayment(11323.4)).toBe("$11,323/mth");
   });
 
   it("reconciles the worked example costs and funding sources", () => {

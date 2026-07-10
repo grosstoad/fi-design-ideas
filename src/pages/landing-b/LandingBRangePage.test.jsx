@@ -42,9 +42,11 @@ describe("Landing B range experience", () => {
     expect(screen.getByText("Your purchase power range")).toBeTruthy();
 
     const comparison = screen.getByLabelText("Illustrative lender comparison");
-    const lenderButtons = within(comparison).getAllByRole("button");
-    expect(lenderButtons).toHaveLength(14);
-    expect(lenderButtons.some((button) => button.getAttribute("aria-label")?.startsWith("Athena,"))).toBe(true);
+    const lenderRows = comparison.querySelectorAll(".lpb-comparison-row");
+    expect(lenderRows).toHaveLength(14);
+    expect([...lenderRows].some((row) => row.textContent?.includes("Athena"))).toBe(true);
+    expect(screen.getByText("The maximum property price you could afford.")).toBeTruthy();
+    expect(screen.getByText("Monthly repayment")).toBeTruthy();
   });
 
   it("supports the one-million-dollar income endpoint", () => {
@@ -72,15 +74,12 @@ describe("Landing B range experience", () => {
     expect(document.body.style.overflow).toBe("hidden");
   });
 
-  it("opens a lender detail dialog containing both rate types", async () => {
-    const user = userEvent.setup();
+  it("keeps every lender row presentational and inert", () => {
     renderPage();
     const comparison = screen.getByLabelText("Illustrative lender comparison");
-    await user.click(within(comparison).getAllByRole("button")[0]);
-
-    const dialog = screen.getByRole("dialog", { name: /example$/i });
-    expect(within(dialog).getByText("Interest rate")).toBeTruthy();
-    expect(within(dialog).getByText("Comparison rate")).toBeTruthy();
+    expect(comparison.querySelectorAll("button")).toHaveLength(0);
+    expect(comparison.querySelectorAll("[aria-hidden='true'].lpb-comparison-row")).toHaveLength(14);
+    expect(screen.getAllByText(/\/mth$/).length).toBeGreaterThan(0);
   });
 
   it("switches between interactive walkthrough components", async () => {
@@ -102,6 +101,6 @@ describe("Landing B range experience", () => {
   it("has no automated accessibility violations in its default state", async () => {
     const { container } = renderPage();
     const result = await axe(container);
-    expect(result.violations).toHaveLength(0);
+    expect(result.violations.map(({ id, nodes }) => ({ id, targets: nodes.map((node) => node.target) }))).toEqual([]);
   });
 });

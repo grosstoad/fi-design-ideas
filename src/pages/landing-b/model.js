@@ -54,6 +54,10 @@ export function monthlyRepayment(principal, annualRate, years = 30) {
   );
 }
 
+export function formatMonthlyRepayment(value) {
+  return `$${Math.round(value).toLocaleString("en-AU")}/mth`;
+}
+
 export function resultsForIncome(income) {
   return LENDERS.map((lender) => {
     const maxPropertyPrice = estimatePurchasePower(income, lender);
