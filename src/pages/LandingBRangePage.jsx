@@ -678,11 +678,9 @@ export default function LandingBRangePage() {
             <div className="lpb-closing-card">
               <img src="/landing-b/affordable-price-casual.webp" alt="A chalk-textured illustration of a house, price tag and ruler" width="768" height="768" loading="lazy" decoding="async" />
               <div>
-                <p className="lpb-section-index">Ready when you are</p>
                 <h2 className="lpb-h2" id="lpb-closing-title">Find the home you can really afford.</h2>
-                <p className="lpb-closing-sub">Your personalised range is three minutes away.</p>
+                <p className="lpb-closing-sub">Your personalised borrowing range is only a few minutes away.</p>
                 <Link to="/assessment" className="lpb-btn lpb-btn--primary">Run your scenario</Link>
-                <p className="lpb-closing-trust">Free to check. No impact on your credit score.</p>
               </div>
             </div>
           </div>

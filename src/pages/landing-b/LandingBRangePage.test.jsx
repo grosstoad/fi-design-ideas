@@ -110,6 +110,15 @@ describe("Landing B range experience", () => {
     expect(section.querySelector(".lpb-flow-number")).toBeNull();
   });
 
+  it("uses the compact final call to action copy", () => {
+    renderPage();
+    const finalCta = screen.getByLabelText("Get started with Fundora");
+    expect(within(finalCta).getByRole("heading", { name: "Find the home you can really afford." })).toBeTruthy();
+    expect(within(finalCta).getByText("Your personalised borrowing range is only a few minutes away.")).toBeTruthy();
+    expect(within(finalCta).getByRole("link", { name: "Run your scenario" })).toBeTruthy();
+    expect(finalCta.querySelector(".lpb-section-index")).toBeNull();
+  });
+
   it("has no automated accessibility violations in its default state", async () => {
     const { container } = renderPage();
     const result = await axe(container);
