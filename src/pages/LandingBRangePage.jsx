@@ -11,15 +11,24 @@ import "../landing-b.css";
 /* ---------------- illustrative model ---------------- */
 
 // Per-lender coefficient curves: income × multiplier with a soft cap, so
-// different incomes crown different lenders (crossovers around $160–175k).
-// Directionally real, precision-free; the module's fine print carries the caveat.
+// different incomes crown different lenders. Colours come from the inked
+// illustration palette (docs/illustration-style.md), not lender brands.
+// Directionally real, precision-free; the assumptions disclosure carries the caveat.
 const LENDERS = [
-  { id: "macquarie", name: "Macquarie", color: "#6E9BC4", m: 6.7, cap: 1750000 },
-  { id: "cba", name: "CBA", color: "#D9C34A", m: 6.9, cap: 1150000 },
-  { id: "nab", name: "NAB", color: "#D98E7A", m: 6.3, cap: 1400000 },
-  { id: "westpac", name: "Westpac", color: "#C2462C", m: 6.0, cap: 1500000 },
-  { id: "anz", name: "ANZ", color: "#5E8FB5", m: 5.8, cap: 1300000 },
-  { id: "ing", name: "ING", color: "#E59A3B", m: 6.5, cap: 1000000 },
+  { id: "macquarie", name: "Macquarie", color: "#5B7285", m: 6.7, cap: 1750000 },
+  { id: "cba", name: "CBA", color: "#E4B54A", m: 6.9, cap: 1150000 },
+  { id: "nab", name: "NAB", color: "#C0604A", m: 6.3, cap: 1400000 },
+  { id: "westpac", name: "Westpac", color: "#5E8778", m: 6.0, cap: 1500000 },
+  { id: "anz", name: "ANZ", color: "#4F6B7E", m: 5.8, cap: 1300000 },
+  { id: "ing", name: "ING", color: "#8B5E3C", m: 6.5, cap: 1000000 },
+  { id: "bankwest", name: "Bankwest", color: "#6E86A0", m: 6.2, cap: 1200000 },
+  { id: "suncorp", name: "Suncorp", color: "#B98A3A", m: 5.9, cap: 1250000 },
+  { id: "bendigo", name: "Bendigo", color: "#7FA08F", m: 5.7, cap: 1100000 },
+  { id: "boq", name: "BOQ", color: "#A85C48", m: 6.1, cap: 1050000 },
+  { id: "amp", name: "AMP", color: "#9C8B74", m: 5.6, cap: 1350000 },
+  { id: "hsbc", name: "HSBC", color: "#6B7F5E", m: 6.4, cap: 950000 },
+  { id: "ubank", name: "Ubank", color: "#C98A6B", m: 6.6, cap: 900000 },
+  { id: "adelaide", name: "Adelaide Bank", color: "#857B8F", m: 5.5, cap: 1150000 },
 ];
 
 export function estimate(income, lender) {
@@ -132,10 +141,12 @@ function RangeModule() {
   const [progress, setProgress] = useState(0); // entrance 0→1
   const [settled, setSettled] = useState(false); // entrance done: wit + invite
   const [announce, setAnnounce] = useState("");
+  const [assumptionsOpen, setAssumptionsOpen] = useState(false);
   const settleTimer = useRef(null);
 
   const rowH = isMobile ? 32 : 38;
-  const visible = isMobile ? 5 : 6;
+  // A half-cut row is the scroll affordance: all 14 live in a quiet scroll.
+  const scrollH = Math.round(rowH * (isMobile ? 4.7 : 5.55));
 
   // Entrance: bars grow + prices count up, staggered, one run.
   useEffect(() => {
@@ -146,7 +157,7 @@ function RangeModule() {
       return undefined;
     }
     const start = performance.now();
-    const total = 900 + (LENDERS.length - 1) * 60;
+    const total = 900 + 6 * 60; // stagger covers the rows above the scroll fold
     let raf;
     const tick = (now) => {
       const p = Math.min((now - start) / total, 1);
@@ -188,10 +199,12 @@ function RangeModule() {
 
   useEffect(() => () => clearTimeout(settleTimer.current), []);
 
-  const totalMs = 900 + (LENDERS.length - 1) * 60;
+  const totalMs = 900 + 6 * 60;
   const easedFor = (rankIdx) => {
     if (progress >= 1) return 1;
-    const local = Math.min(Math.max((progress * totalMs - rankIdx * 60) / 900, 0), 1);
+    // Stagger the visible rows; everything below the scroll fold shares the last beat.
+    const beat = Math.min(rankIdx, 6);
+    const local = Math.min(Math.max((progress * totalMs - beat * 60) / 900, 0), 1);
     return 1 - (1 - local) ** 3;
   };
 
@@ -213,45 +226,46 @@ function RangeModule() {
       </div>
 
       <div
-        className={`lpb-rows ${dragging ? "is-dragging" : ""}`}
-        style={{ height: visible * rowH - 6 }}
+        className="lpb-scroll"
+        style={{ height: scrollH }}
         role="img"
         aria-labelledby="lpb-module-label"
         aria-description={LENDERS.map((l) => `${l.name} ${fmtPrice(prices[l.id])}`).join(", ")}
       >
-        {LENDERS.map((lender) => {
-          const rankIdx = order.indexOf(lender.id);
-          const eased = easedFor(rankIdx);
-          const price = prices[lender.id];
-          const hidden = rankIdx >= visible;
-          return (
-            <div
-              key={lender.id}
-              className={`lpb-row ${rankIdx === 0 ? "is-leader" : ""}`}
-              style={{
-                transform: `translateY(${rankIdx * rowH}px)`,
-                opacity: hidden ? 0 : 1,
-                pointerEvents: "none",
-              }}
-              aria-hidden="true"
-            >
-              <span className="lpb-row-name">{lender.name}</span>
-              <span className="lpb-row-track">
-                <span
-                  className="lpb-row-fill"
-                  style={{
-                    width: `${(price / scale) * 100 * eased}%`,
-                    background: lender.color,
-                  }}
-                />
-              </span>
-              <span className="lpb-row-price lpb-num">{fmtPrice(price * eased)}</span>
-            </div>
-          );
-        })}
+        <div
+          className={`lpb-rows ${dragging ? "is-dragging" : ""}`}
+          style={{ height: LENDERS.length * rowH }}
+        >
+          {LENDERS.map((lender) => {
+            const rankIdx = order.indexOf(lender.id);
+            const eased = easedFor(rankIdx);
+            const price = prices[lender.id];
+            return (
+              <div
+                key={lender.id}
+                className={`lpb-row ${rankIdx === 0 ? "is-leader" : ""}`}
+                style={{
+                  transform: `translateY(${rankIdx * rowH}px)`,
+                  pointerEvents: "none",
+                }}
+                aria-hidden="true"
+              >
+                <span className="lpb-row-name">{lender.name}</span>
+                <span className="lpb-row-track">
+                  <span
+                    className="lpb-row-fill"
+                    style={{
+                      width: `${(price / scale) * 100 * eased}%`,
+                      background: lender.color,
+                    }}
+                  />
+                </span>
+                <span className="lpb-row-price lpb-num">{fmtPrice(price * eased)}</span>
+              </div>
+            );
+          })}
+        </div>
       </div>
-
-      <p className="lpb-overflow">+ 8 more in your results</p>
 
       <div className="lpb-slider">
         <div className="lpb-slider-head">
@@ -279,11 +293,27 @@ function RangeModule() {
           }}
           aria-valuetext={`${fmtIncome(income)} a year`}
         />
-        <p className="lpb-fineprint">Example numbers. Yours come from your details.</p>
+        <button
+          type="button"
+          className="lpb-assumptions-btn"
+          aria-expanded={assumptionsOpen}
+          onClick={() => setAssumptionsOpen((v) => !v)}
+        >
+          Assumptions, and how we worked this out
+        </button>
+        {assumptionsOpen && (
+          <ul className="lpb-assumptions">
+            <li>Single applicant, no other debts</li>
+            <li>20% deposit saved, costs paid from it</li>
+            <li>30-year loan, principal and interest</li>
+            <li>Current advertised rates, updated with lender policy</li>
+            <li>Your details replace all of this when you start</li>
+          </ul>
+        )}
       </div>
 
       <p className={`lpb-wit ${settled ? "is-in" : ""}`} aria-hidden="true">
-        The biggest number isn&rsquo;t automatically the best one. We show you both.
+        Somewhere in here is a comfortable yes.
       </p>
 
       <span className="lpb-sr" aria-live="polite">
@@ -324,6 +354,7 @@ export default function LandingBRangePage() {
       </header>
 
       <main>
+        <div className="lpb-paper">
         <section className="lpb-wrap lpb-hero" aria-label="Fundora">
           <div className="lpb-hero-head">
             <p className="lpb-eyebrow">For Australian property buyers</p>
@@ -343,7 +374,7 @@ export default function LandingBRangePage() {
               <Link to="/assessment" className="lpb-btn lpb-btn--primary">
                 Find my range
               </Link>
-              <a href="#ceiling" className="lpb-btn lpb-btn--quiet">
+              <a href="#ceiling" className="lpb-btn lpb-btn--paper">
                 See how it works
               </a>
             </div>
@@ -352,6 +383,7 @@ export default function LandingBRangePage() {
         </section>
 
         <div className="lpb-wrap lpb-proof">The 14 lenders most Australians borrow from.</div>
+        </div>
 
         <section id="ceiling" className="lpb-section" aria-label="What you get">
           <div className="lpb-wrap">

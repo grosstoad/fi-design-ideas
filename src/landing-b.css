@@ -14,6 +14,14 @@
   --lpb-teal-dark: #0f766e;
   --lpb-r: 10px;
 
+  /* the paper world (hero zone) — inked illustration palette */
+  --lpb-paper: #f4e8cd;
+  --lpb-paper-card: #fffcf3;
+  --lpb-paper-line: #e3d5b2;
+  --lpb-paper-ink: #241f17;
+  --lpb-paper-muted: #6b6353;
+  --lpb-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='0.5'/></svg>");
+
   font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
   background: var(--lpb-bg);
   color: var(--lpb-ink);
@@ -56,8 +64,29 @@
   position: sticky;
   top: 0;
   z-index: 10;
-  background: var(--lpb-card);
-  border-bottom: 1px solid var(--lpb-line);
+  background: var(--lpb-paper);
+  border-bottom: 1px solid var(--lpb-paper-line);
+}
+
+/* the hero zone is the paper world: cream, grained, hand-inked bars */
+.lpb-paper {
+  background-color: var(--lpb-paper);
+  background-image: var(--lpb-noise);
+  background-blend-mode: multiply;
+  border-bottom: 1px solid var(--lpb-paper-line);
+}
+
+.lpb-paper .lpb-eyebrow,
+.lpb-paper .lpb-subhead {
+  color: var(--lpb-paper-muted);
+}
+
+.lpb-paper .lpb-h1 {
+  color: var(--lpb-paper-ink);
+}
+
+.lpb-paper .lpb-trust {
+  color: var(--lpb-paper-muted);
 }
 
 .lpb-topbar-row {
@@ -107,6 +136,16 @@
   background: #eaeae5;
 }
 
+.lpb-btn--paper {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--lpb-paper-ink);
+  color: var(--lpb-paper-ink);
+}
+
+.lpb-btn--paper:hover {
+  background: rgba(36, 31, 23, 0.06);
+}
+
 .lpb-btn--small {
   height: 40px;
   padding: 0 18px;
@@ -151,10 +190,10 @@
 
 .lpb-h1 {
   margin-top: 12px;
-  font-size: 48px;
-  line-height: 1.08;
+  font-size: 56px;
+  line-height: 1.05;
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.028em;
 }
 
 .lpb-subhead {
@@ -178,16 +217,16 @@
 }
 
 .lpb-proof {
-  padding: 14px 0 56px;
+  padding: 14px 0 48px;
   font-size: 14px;
-  color: var(--lpb-muted);
+  color: var(--lpb-paper-muted);
 }
 
 /* ---------------- range module ---------------- */
 
 .lpb-module {
-  background: var(--lpb-card);
-  border: 1px solid var(--lpb-line);
+  background: var(--lpb-paper-card);
+  border: 1.5px solid var(--lpb-paper-ink);
   border-radius: var(--lpb-r);
   padding: 20px;
 }
@@ -201,18 +240,43 @@
 
 .lpb-module-label {
   font-size: 13px;
-  color: var(--lpb-muted);
+  color: var(--lpb-paper-muted);
 }
 
 .lpb-module-range {
   font-size: 15px;
   font-weight: 700;
+  color: var(--lpb-paper-ink);
   white-space: nowrap;
+}
+
+/* all 14 lenders live in a quiet scroll; a half-cut row is the affordance */
+.lpb-scroll {
+  margin-top: 14px;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 6px,
+    #000 calc(100% - 12px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 6px,
+    #000 calc(100% - 12px),
+    transparent 100%
+  );
+}
+
+.lpb-scroll::-webkit-scrollbar {
+  display: none;
 }
 
 .lpb-rows {
   position: relative;
-  margin-top: 14px;
 }
 
 .lpb-row {
@@ -234,7 +298,7 @@
 
 .lpb-row-name {
   font-size: 13px;
-  color: var(--lpb-ink);
+  color: var(--lpb-paper-ink);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -244,39 +308,36 @@
   font-weight: 600;
 }
 
+/* no track: bars are hand-inked objects floating on the paper */
 .lpb-row-track {
-  height: 8px;
-  border-radius: 999px;
-  background: var(--lpb-field);
-  overflow: hidden;
+  height: 15px;
 }
 
 .lpb-row-fill {
   display: block;
   height: 100%;
+  min-width: 22px;
+  border: 1.6px solid var(--lpb-paper-ink);
   border-radius: 999px;
+  background-image: var(--lpb-noise);
+  background-blend-mode: multiply;
 }
 
 .lpb-row-price {
   font-size: 14px;
   font-weight: 700;
+  color: var(--lpb-paper-ink);
   text-align: right;
   min-width: 52px;
-}
-
-.lpb-overflow {
-  margin-top: 10px;
-  font-size: 12px;
-  color: var(--lpb-muted);
 }
 
 .lpb-wit {
   margin-top: 14px;
   padding-top: 14px;
-  border-top: 1px solid var(--lpb-line);
+  border-top: 1px solid var(--lpb-paper-line);
   font-size: 13px;
   line-height: 1.5;
-  color: var(--lpb-muted);
+  color: var(--lpb-paper-muted);
   opacity: 0;
   transition: opacity 300ms ease;
 }
@@ -296,13 +357,13 @@
   align-items: baseline;
   justify-content: space-between;
   font-size: 13px;
-  color: var(--lpb-muted);
+  color: var(--lpb-paper-muted);
 }
 
 .lpb-slider-value {
   font-size: 15px;
   font-weight: 700;
-  color: var(--lpb-ink);
+  color: var(--lpb-paper-ink);
 }
 
 .lpb-slider input[type="range"] {
@@ -322,8 +383,8 @@
     to right,
     var(--lpb-teal) 0%,
     var(--lpb-teal) var(--lpb-slider-pct, 35%),
-    var(--lpb-field) var(--lpb-slider-pct, 35%),
-    var(--lpb-field) 100%
+    #e8dbbb var(--lpb-slider-pct, 35%),
+    #e8dbbb 100%
   );
 }
 
@@ -335,13 +396,13 @@
   border-radius: 50%;
   background: var(--lpb-teal);
   border: 2px solid #ffffff;
-  box-shadow: 0 0 0 1px var(--lpb-line);
+  box-shadow: 0 0 0 1.5px var(--lpb-paper-ink);
 }
 
 .lpb-slider input[type="range"]::-moz-range-track {
   height: 6px;
   border-radius: 999px;
-  background: var(--lpb-field);
+  background: #e8dbbb;
 }
 
 .lpb-slider input[type="range"]::-moz-range-progress {
@@ -372,10 +433,27 @@
   }
 }
 
-.lpb-fineprint {
+.lpb-assumptions-btn {
+  margin-top: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: 600 12.5px/1.4 "Inter", ui-sans-serif, system-ui, sans-serif;
+  color: var(--lpb-teal-dark);
+  cursor: pointer;
+}
+
+.lpb-assumptions-btn:hover {
+  text-decoration: underline;
+}
+
+.lpb-page ul.lpb-assumptions {
   margin-top: 8px;
-  font-size: 11px;
-  color: var(--lpb-muted-2);
+  padding-left: 16px;
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: var(--lpb-paper-muted);
+  list-style: disc;
 }
 
 /* ---------------- sections ---------------- */
@@ -383,6 +461,10 @@
 .lpb-section {
   padding: 56px 0;
   border-top: 1px solid var(--lpb-line);
+}
+
+.lpb-paper + .lpb-section {
+  border-top: 0;
 }
 
 .lpb-reveal {
@@ -550,7 +632,7 @@
   }
 
   .lpb-h1 {
-    font-size: 32px;
+    font-size: 34px;
   }
 
   .lpb-hero-cta {
