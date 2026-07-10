@@ -3,6 +3,23 @@ export const INCOME_MAX = 1000000;
 export const INCOME_STEP = 5000;
 export const INCOME_DEFAULT = 145000;
 
+export const DEFAULT_SCENARIO = {
+  income: INCOME_DEFAULT,
+  savings: 180000,
+  purpose: "owner-occupier",
+  location: "NSW",
+};
+
+// These multipliers only animate the isolated marketing example. They are not
+// lender, credit-policy or statutory stamp-duty calculations.
+export const SCENARIO_LOCATIONS = [
+  { value: "NSW", label: "New South Wales", dutyMultiplier: 1 },
+  { value: "VIC", label: "Victoria", dutyMultiplier: 1.12 },
+  { value: "QLD", label: "Queensland", dutyMultiplier: 0.88 },
+  { value: "SA", label: "South Australia", dutyMultiplier: 0.94 },
+  { value: "WA", label: "Western Australia", dutyMultiplier: 0.9 },
+];
+
 export function incomeStepFor(value) {
   if (value < 200000) return 5000;
   if (value < 500000) return 10000;
@@ -104,4 +121,39 @@ export function workedExampleSummary(example = WORKED_EXAMPLE) {
   const lvr = (example.loan / example.propertyPrice) * 100;
   const savingsShare = (savingsUsed / example.propertyPrice) * 100;
   return { totalPropertyCosts, savingsUsed, savingsRemaining, lvr, savingsShare };
+}
+
+export function scenarioFundingSummary(scenario = DEFAULT_SCENARIO) {
+  const incomeRatio = scenario.income / INCOME_DEFAULT;
+  const propertyPrice = Math.min(
+    1800000,
+    Math.max(450000, Math.round((WORKED_EXAMPLE.propertyPrice * incomeRatio) / 1000) * 1000)
+  );
+  const priceRatio = propertyPrice / WORKED_EXAMPLE.propertyPrice;
+  const location = SCENARIO_LOCATIONS.find(({ value }) => value === scenario.location) ?? SCENARIO_LOCATIONS[0];
+  const purposeMultiplier = scenario.purpose === "investor" ? 1.08 : 1;
+  const stampDuty = Math.round(
+    (WORKED_EXAMPLE.stampDuty * priceRatio * location.dutyMultiplier * purposeMultiplier) / 100
+  ) * 100;
+  const legalAndOtherCosts = Math.round((WORKED_EXAMPLE.legalAndOtherCosts * priceRatio) / 100) * 100;
+  const totalPropertyCosts = propertyPrice + stampDuty + legalAndOtherCosts;
+  const targetBuffer = Math.round((14600 * scenario.savings) / DEFAULT_SCENARIO.savings / 100) * 100;
+  const savingsUsed = Math.min(totalPropertyCosts, Math.max(0, scenario.savings - targetBuffer));
+  const savingsRemaining = scenario.savings - savingsUsed;
+  const loan = totalPropertyCosts - savingsUsed;
+  const lvr = propertyPrice ? (loan / propertyPrice) * 100 : 0;
+  const lender = rankResults(resultsForIncome(scenario.income))[0];
+
+  return {
+    propertyPrice,
+    stampDuty,
+    legalAndOtherCosts,
+    totalPropertyCosts,
+    savingsUsed,
+    savingsRemaining,
+    loan,
+    lvr,
+    lender,
+    location,
+  };
 }

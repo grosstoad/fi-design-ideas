@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   BAR_DOMAIN_MAX,
+  DEFAULT_SCENARIO,
   INCOME_MAX,
   INCOME_MIN,
   INCOME_STEP,
@@ -10,6 +11,7 @@ import {
   formatMonthlyRepayment,
   incomeStepFor,
   resultsForIncome,
+  scenarioFundingSummary,
   snapIncome,
   workedExampleSummary,
 } from "./model";
@@ -74,5 +76,46 @@ describe("Landing B illustrative comparison model", () => {
       lvr: expect.closeTo(78.947368, 5),
       savingsShare: expect.closeTo(25.710526, 5),
     });
+  });
+
+  it("reconciles the shared default scenario and responds to scenario changes", () => {
+    const summary = scenarioFundingSummary();
+    expect(summary.totalPropertyCosts).toBe(
+      summary.propertyPrice + summary.stampDuty + summary.legalAndOtherCosts
+    );
+    expect(summary.totalPropertyCosts).toBe(summary.loan + summary.savingsUsed);
+    expect(summary.savingsRemaining).toBe(DEFAULT_SCENARIO.savings - summary.savingsUsed);
+    expect(summary.savingsRemaining).toBe(14600);
+    expect(summary.lender.name).toBe("CommBank");
+
+    const investor = scenarioFundingSummary({
+      ...DEFAULT_SCENARIO,
+      income: 300000,
+      savings: 250000,
+      purpose: "investor",
+      location: "VIC",
+    });
+    expect(investor.propertyPrice).toBeGreaterThan(summary.propertyPrice);
+    expect(investor.stampDuty).toBeGreaterThan(summary.stampDuty);
+    expect(investor.totalPropertyCosts).toBe(investor.loan + investor.savingsUsed);
+  });
+
+  it("keeps every supported scenario finite, non-negative and reconciled", () => {
+    for (const income of [INCOME_MIN, INCOME_MAX]) {
+      for (const savings of [50000, 1000000]) {
+        for (const purpose of ["owner-occupier", "investor"]) {
+          for (const location of ["NSW", "VIC", "QLD", "SA", "WA"]) {
+            const summary = scenarioFundingSummary({ income, savings, purpose, location });
+            expect(Object.values(summary).filter((value) => typeof value === "number").every(Number.isFinite)).toBe(true);
+            expect(summary.propertyPrice).toBeGreaterThan(0);
+            expect(summary.loan).toBeGreaterThanOrEqual(0);
+            expect(summary.savingsUsed).toBeGreaterThanOrEqual(0);
+            expect(summary.savingsRemaining).toBeGreaterThanOrEqual(0);
+            expect(summary.totalPropertyCosts).toBe(summary.loan + summary.savingsUsed);
+            expect(summary.savingsRemaining).toBe(savings - summary.savingsUsed);
+          }
+        }
+      }
+    }
   });
 });

@@ -49,6 +49,10 @@ test("landing B range rows stay inert and the slider updates every numeric outpu
   const before = await snapshot();
   const slider = page.locator("#lpb-income");
   await expect(slider).toHaveAttribute("max", "1000000");
+  await slider.dispatchEvent("pointerdown");
+  await slider.fill("1000000");
+  await expect(rows.locator(".lpb-lender-cell").first()).toHaveText("Macquarie");
+  await slider.dispatchEvent("pointerup");
   await slider.fill("300000");
   await page.waitForTimeout(450);
   const after = await snapshot();
@@ -60,7 +64,13 @@ test("landing B range rows stay inert and the slider updates every numeric outpu
     expect(result.metrics.at(-1), `${name} repayment format`).toMatch(/^\$[\d,]+\/mth$/);
   }
 
-  await expect(page.getByText("Example comparison")).toHaveCount(0);
+  const lenderColours = await rows.evaluateAll((nodes) => nodes.map((node) =>
+    getComputedStyle(node.querySelector(".lpb-row-fill")!).backgroundColor
+  ));
+  expect(new Set(lenderColours).size).toBeGreaterThan(8);
+  await expect(page.locator(".lpb-module-range > span")).toHaveCSS("color", "rgb(17, 17, 17)");
+
+  await expect(page.getByText("Example comparison", { exact: true })).toHaveCount(0);
   await expect(page.getByRole("button", { name: /view all 14 lenders/i })).toHaveCount(0);
 
   await comparison.evaluate((node) => { node.scrollTop = node.scrollHeight; });
@@ -111,7 +121,7 @@ test("landing B lender proof is contained, seamless and never pauses on hover", 
   )).toBe(0);
 });
 
-test("landing B walkthrough shows three persistent non-interactive product states", async ({ page }) => {
+test("landing B walkthrough shares live scenario controls across three equal product states", async ({ page }) => {
   await page.goto(PAGE);
   const how = page.locator("#how-it-works");
   await how.scrollIntoViewIfNeeded();
@@ -128,9 +138,25 @@ test("landing B walkthrough shows three persistent non-interactive product state
   await expect(how).toHaveClass(/lpb-how--phase-8/);
 
   await expect(how.getByText("Funding breakdown")).toBeVisible();
-  await expect(how.getByText("Loan from CBA (79% LVR)")).toBeVisible();
+  await expect(how.getByText("Loan from CommBank (83% LVR)")).toBeVisible();
   await expect(how.getByText("Deposit")).toBeVisible();
   await expect(how.getByText("Savings left over")).toBeVisible();
+
+  const sharedIncome = how.getByLabel("Household income");
+  await expect(sharedIncome).toHaveValue("145,000");
+  await page.locator("#lpb-income").fill("300000");
+  await expect(sharedIncome).toHaveValue("300,000");
+  await expect(how.locator(".lpb-mini-head")).toContainText("$1.06M–$1.79M");
+
+  await how.getByLabel("Buying purpose").selectOption("investor");
+  await how.getByLabel("Property location").selectOption("VIC");
+  await how.getByLabel("Savings").fill("250000");
+  await expect(how.getByText(/investment property$/)).toBeVisible();
+
+  const previewHeights = await how.locator(".lpb-step-visual > *").evaluateAll((elements) =>
+    elements.map((element) => Math.round(element.getBoundingClientRect().height))
+  );
+  expect(Math.max(...previewHeights) - Math.min(...previewHeights)).toBeLessThanOrEqual(1);
 
   if ((await page.viewportSize())!.width <= 820) {
     await expect(how.locator(".lpb-connected-steps")).toHaveCSS("grid-template-columns", /\d+px/);

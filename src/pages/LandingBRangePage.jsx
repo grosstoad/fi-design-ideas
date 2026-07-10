@@ -16,19 +16,19 @@ import suncorpBankLogo from "../assets/buying-range/lenders/suncorp-bank.png";
 import ubankLogo from "../assets/buying-range/lenders/ubank.svg";
 import westpacLogo from "../assets/buying-range/lenders/westpac.png";
 import {
-  INCOME_DEFAULT,
+  DEFAULT_SCENARIO,
   INCOME_MAX,
   INCOME_MIN,
   INCOME_STEP,
   LENDERS,
-  WORKED_EXAMPLE,
+  SCENARIO_LOCATIONS,
   barRatio,
   formatMonthlyRepayment,
   incomeStepFor,
   rankResults,
   resultsForIncome,
+  scenarioFundingSummary,
   snapIncome,
-  workedExampleSummary,
 } from "./landing-b/model";
 import "../landing-b.css";
 
@@ -92,83 +92,83 @@ function fmtRate(value) {
   return `${value.toFixed(2)}%`;
 }
 
-export function RangeModule() {
-  const [income, setIncome] = useState(INCOME_DEFAULT);
-  const [order, setOrder] = useState(() =>
-    rankResults(resultsForIncome(INCOME_DEFAULT)).map((result) => result.id)
-  );
-  const [dragging, setDragging] = useState(false);
+export function RangeModule({ income, onIncomeChange }) {
   const [assumptionsOpen, setAssumptionsOpen] = useState(false);
   const [announcement, setAnnouncement] = useState("");
-  const draggingRef = useRef(false);
-  const incomeRef = useRef(INCOME_DEFAULT);
   const settleTimer = useRef(null);
+  const animationFrame = useRef(null);
   const rowRefs = useRef(new Map());
   const previousRowPositions = useRef(null);
 
   const results = useMemo(() => resultsForIncome(income), [income]);
-  const resultById = useMemo(
-    () => Object.fromEntries(results.map((result) => [result.id, result])),
-    [results]
-  );
-  const orderedResults = order.map((id) => resultById[id]).filter(Boolean);
+  const orderedResults = useMemo(() => rankResults(results), [results]);
+  const orderKey = orderedResults.map(({ id }) => id).join("|");
   const values = results.map((result) => result.maxPropertyPrice);
   const minimum = Math.min(...values);
   const maximum = Math.max(...values);
   const sliderRatio = (income - INCOME_MIN) / (INCOME_MAX - INCOME_MIN);
 
-  function commitOrder(nextIncome) {
-    const nextResults = rankResults(resultsForIncome(nextIncome));
+  function captureRowPositions() {
     previousRowPositions.current = new Map(
       [...rowRefs.current].map(([id, node]) => [id, node.getBoundingClientRect().top])
     );
-    setOrder(nextResults.map((result) => result.id));
-    setAnnouncement(
-      `Purchase power range ${fmtPrice(nextResults.at(-1).maxPropertyPrice)} to ${fmtPrice(
-        nextResults[0].maxPropertyPrice
-      )}`
-    );
   }
 
-  function scheduleCommit(nextIncome) {
+  function scheduleAnnouncement(nextIncome) {
+    const nextResults = rankResults(resultsForIncome(nextIncome));
     window.clearTimeout(settleTimer.current);
-    settleTimer.current = window.setTimeout(() => commitOrder(nextIncome), 180);
+    settleTimer.current = window.setTimeout(() => {
+      setAnnouncement(
+        `Purchase power range ${fmtPrice(nextResults.at(-1).maxPropertyPrice)} to ${fmtPrice(
+          nextResults[0].maxPropertyPrice
+        )}`
+      );
+    }, 280);
   }
 
   function updateIncome(rawValue) {
     const nextIncome = snapIncome(rawValue);
-    incomeRef.current = nextIncome;
-    setIncome(nextIncome);
-    if (!draggingRef.current) scheduleCommit(nextIncome);
+    const nextOrder = rankResults(resultsForIncome(nextIncome)).map(({ id }) => id).join("|");
+    if (nextOrder !== orderKey) captureRowPositions();
+    onIncomeChange(nextIncome);
+    scheduleAnnouncement(nextIncome);
   }
 
-  function endPointerAdjustment() {
-    draggingRef.current = false;
-    setDragging(false);
+  useEffect(() => () => {
     window.clearTimeout(settleTimer.current);
-    commitOrder(incomeRef.current);
-  }
-
-  useEffect(() => () => window.clearTimeout(settleTimer.current), []);
+    window.cancelAnimationFrame(animationFrame.current);
+  }, []);
 
   useLayoutEffect(() => {
     const previous = previousRowPositions.current;
     if (!previous) return;
+
+    previousRowPositions.current = null;
+    if (typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const movedRows = [];
 
     rowRefs.current.forEach((node, id) => {
       const previousTop = previous.get(id);
       if (previousTop === undefined) return;
       const delta = previousTop - node.getBoundingClientRect().top;
       if (!delta) return;
-      node.style.transition = "none";
-      node.style.transform = `translateY(${delta}px)`;
-      node.getBoundingClientRect();
-      node.style.transition = "transform 360ms var(--ease-in-out)";
-      node.style.transform = "translateY(0)";
+      movedRows.push({ node, delta });
     });
 
-    previousRowPositions.current = null;
-  }, [order]);
+    movedRows.forEach(({ node, delta }) => {
+      node.style.transition = "none";
+      node.style.transform = `translateY(${delta}px)`;
+    });
+
+    if (movedRows.length) movedRows[0].node.getBoundingClientRect();
+    animationFrame.current = window.requestAnimationFrame(() => {
+      movedRows.forEach(({ node }) => {
+        node.style.transition = "transform 180ms var(--ease-out)";
+        node.style.transform = "translateY(0)";
+      });
+    });
+  }, [orderKey]);
 
   return (
     <>
@@ -178,7 +178,7 @@ export function RangeModule() {
             <h2 className="lpb-module-title" id="lpb-module-title">Your purchase power range</h2>
             <p className="lpb-module-subtitle">The maximum property price you could afford.</p>
           </div>
-          <p key={income} className="lpb-module-range lpb-num lpb-number-update" aria-label={`From ${fmtMoney(minimum)} to ${fmtMoney(maximum)}`}>
+          <p className="lpb-module-range lpb-num" aria-label={`From ${fmtMoney(minimum)} to ${fmtMoney(maximum)}`}>
             {fmtPrice(minimum)}<span>–</span>{fmtPrice(maximum)}
           </p>
         </div>
@@ -193,7 +193,7 @@ export function RangeModule() {
         </div>
 
         <div
-          className={`lpb-comparison-list ${dragging ? "is-adjusting" : ""}`}
+          className="lpb-comparison-list"
           id="lpb-comparison-list"
           role="region"
           aria-label="Illustrative lender comparison"
@@ -215,7 +215,10 @@ export function RangeModule() {
                 <span className="lpb-row-track" aria-hidden="true">
                   <span
                     className="lpb-row-fill"
-                    style={{ "--lpb-bar-ratio": barRatio(result.maxPropertyPrice) }}
+                    style={{
+                      "--lpb-bar-ratio": barRatio(result.maxPropertyPrice),
+                      "--lpb-lender-color": result.color,
+                    }}
                   />
                 </span>
                 <strong className="lpb-num"><span key={`${income}-price`} className="lpb-number-update">{fmtPrice(result.maxPropertyPrice)}</span></strong>
@@ -246,16 +249,6 @@ export function RangeModule() {
               step={INCOME_STEP}
               value={income}
               onChange={(event) => updateIncome(Number(event.target.value))}
-              onPointerDown={() => {
-                draggingRef.current = true;
-                setDragging(true);
-                window.clearTimeout(settleTimer.current);
-              }}
-              onPointerUp={endPointerAdjustment}
-              onPointerCancel={endPointerAdjustment}
-              onBlur={() => {
-                if (draggingRef.current) endPointerAdjustment();
-              }}
               onKeyDown={(event) => {
                 const direction = event.key === "ArrowRight" || event.key === "ArrowUp" ? 1 : event.key === "ArrowLeft" || event.key === "ArrowDown" ? -1 : 0;
                 if (!direction) return;
@@ -306,6 +299,19 @@ export function RangeModule() {
 }
 
 function LenderProof() {
+  const sectionRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section || typeof IntersectionObserver === "undefined") return undefined;
+    const observer = new IntersectionObserver(([entry]) => setIsVisible(entry.isIntersecting), {
+      rootMargin: "120px 0px",
+    });
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
+
   function lenderMarks(duplicate = false) {
     return LENDER_MARKS.map((lender) => (
       <li key={`${duplicate ? "duplicate-" : ""}${lender.id}`} className="lpb-lender-mark" data-lender={lender.id}>
@@ -319,7 +325,7 @@ function LenderProof() {
   }
 
   return (
-    <section className="lpb-lender-proof" aria-labelledby="lpb-lender-proof-title">
+    <section ref={sectionRef} className="lpb-lender-proof" aria-labelledby="lpb-lender-proof-title">
       <div className="lpb-wrap">
         <div className="lpb-lender-proof-head">
           <p className="lpb-lender-proof-caption" id="lpb-lender-proof-title">
@@ -327,7 +333,7 @@ function LenderProof() {
           </p>
         </div>
         <div className="lpb-lender-marquee" aria-label="All 14 lenders included in the comparison">
-          <div className="lpb-lender-track">
+          <div className="lpb-lender-track" style={{ animationPlayState: isVisible ? "running" : "paused" }}>
             <ul className="lpb-lender-rail" aria-label="Lenders included in the comparison">{lenderMarks()}</ul>
             <ul className="lpb-lender-rail" aria-hidden="true">{lenderMarks(true)}</ul>
           </div>
@@ -337,91 +343,158 @@ function LenderProof() {
   );
 }
 
-function InputPreview({ phase }) {
-  const incomeUpdated = phase >= 2;
-  const purposeOpen = phase === 2;
-  const settled = phase >= 3;
+function ScenarioMoneyInput({ id, describedBy, value, min, max, normalize = (nextValue) => nextValue, onValueChange }) {
+  const [draft, setDraft] = useState(String(value));
+  const [editing, setEditing] = useState(false);
+  const formattedValue = value.toLocaleString("en-AU");
+
+  function applyDraft(nextDraft) {
+    setDraft(nextDraft);
+    const parsedValue = Number(nextDraft.replace(/[^0-9]/g, ""));
+    if (!parsedValue) return;
+    onValueChange(normalize(Math.min(max, Math.max(min, parsedValue))));
+  }
 
   return (
-    <div className="lpb-input-preview" aria-hidden="true">
-      <div className={`lpb-preview-field lpb-preview-field--wide ${phase === 1 || phase === 2 ? "is-focused" : ""}`}>
-        <span>Annual income</span>
-        <strong className="lpb-num">{incomeUpdated ? "$185,000" : "$145,000"}</strong>
-        <small>a year</small>
-      </div>
-      <div className={`lpb-preview-field lpb-preview-field--wide ${purposeOpen ? "is-open" : ""}`}>
-        <span>Buying purpose</span>
-        <strong>{settled ? "Home to live in" : "Choose a purpose"}</strong>
-        <span className="lpb-preview-chevron" aria-hidden="true">⌄</span>
-        {purposeOpen ? <span className="lpb-preview-option">Home to live in</span> : null}
-      </div>
-      <div className="lpb-preview-field">
-        <span>Property location</span>
-        <strong>New South Wales</strong>
-      </div>
-      <div className={`lpb-preview-field ${settled ? "is-updated" : ""}`}>
-        <span>Savings</span>
-        <strong className="lpb-num">{settled ? "$210,000" : "$180,000"}</strong>
-      </div>
-    </div>
+    <input
+      id={id}
+      aria-describedby={describedBy}
+      className="lpb-num"
+      type="text"
+      inputMode="numeric"
+      pattern="[0-9,]*"
+      value={editing ? draft : formattedValue}
+      onFocus={(event) => {
+        setEditing(true);
+        setDraft(String(value));
+        event.currentTarget.select();
+      }}
+      onChange={(event) => applyDraft(event.target.value)}
+      onBlur={() => setEditing(false)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter") event.currentTarget.blur();
+        if (event.key === "Escape") {
+          setDraft(String(value));
+          event.currentTarget.blur();
+        }
+      }}
+    />
   );
 }
 
-function MiniComparison({ phase }) {
-  const updated = phase >= 5;
-  const rows = rankResults(resultsForIncome(updated ? 185000 : INCOME_DEFAULT)).slice(0, 4);
-  const values = rows.map((row) => row.maxPropertyPrice);
+function InputPreview({ phase, scenario, onScenarioChange }) {
+  function updateField(field, value) {
+    onScenarioChange({ ...scenario, [field]: value });
+  }
+
+  return (
+    <fieldset className={`lpb-input-preview ${phase >= 1 ? "is-revealed" : ""}`}>
+      <legend className="lpb-sr">Adjust the illustrative buying scenario</legend>
+      <div className="lpb-preview-field">
+        <label htmlFor="lpb-preview-income">Household income</label>
+        <span className="lpb-preview-number">
+          <span aria-hidden="true">$</span>
+          <ScenarioMoneyInput
+            id="lpb-preview-income"
+            describedBy="lpb-preview-income-help"
+            value={scenario.income}
+            min={INCOME_MIN}
+            max={INCOME_MAX}
+            normalize={snapIncome}
+            onValueChange={(income) => updateField("income", income)}
+          />
+          <span className="lpb-sr" id="lpb-preview-income-help">Australian dollars per year</span>
+        </span>
+      </div>
+      <div className="lpb-preview-field">
+        <label htmlFor="lpb-preview-purpose">Buying purpose</label>
+        <select id="lpb-preview-purpose" value={scenario.purpose} onChange={(event) => updateField("purpose", event.target.value)}>
+          <option value="owner-occupier">Home to live in</option>
+          <option value="investor">Investment property</option>
+        </select>
+      </div>
+      <div className="lpb-preview-field">
+        <label htmlFor="lpb-preview-location">Property location</label>
+        <select id="lpb-preview-location" value={scenario.location} onChange={(event) => updateField("location", event.target.value)}>
+          {SCENARIO_LOCATIONS.map((location) => (
+            <option value={location.value} key={location.value}>{location.label}</option>
+          ))}
+        </select>
+      </div>
+      <div className="lpb-preview-field">
+        <label htmlFor="lpb-preview-savings">Savings</label>
+        <span className="lpb-preview-number">
+          <span aria-hidden="true">$</span>
+          <ScenarioMoneyInput
+            id="lpb-preview-savings"
+            describedBy="lpb-preview-savings-help"
+            value={scenario.savings}
+            min={50000}
+            max={1000000}
+            onValueChange={(savings) => updateField("savings", savings)}
+          />
+          <span className="lpb-sr" id="lpb-preview-savings-help">Australian dollars available</span>
+        </span>
+      </div>
+    </fieldset>
+  );
+}
+
+function MiniComparison({ phase, income }) {
+  const allResults = rankResults(resultsForIncome(income));
+  const rows = allResults.slice(0, 6);
+  const values = allResults.map((row) => row.maxPropertyPrice);
   const minimum = Math.min(...values);
   const maximum = Math.max(...values);
 
   return (
-    <div className={`lpb-mini-comparison ${phase >= 4 ? "is-revealed" : ""} ${updated ? "is-updated" : ""}`}>
+    <div className={`lpb-mini-comparison ${phase >= 4 ? "is-revealed" : ""}`}>
       <div className="lpb-mini-head">
         <span>Purchase power range</span>
         <strong className="lpb-num">{fmtPrice(minimum)}<i>–</i>{fmtPrice(maximum)}</strong>
       </div>
-      <div className={`lpb-mini-list ${phase === 5 ? "is-scrolling" : ""}`} aria-hidden="true">
+      <div className="lpb-mini-list" aria-hidden="true">
         {rows.map((row) => (
           <div className="lpb-mini-row" key={row.id}>
             <strong>{row.name}</strong>
-            <span className="lpb-mini-bar"><i style={{ "--lpb-mini-ratio": barRatio(row.maxPropertyPrice) }} /></span>
+            <span className="lpb-mini-bar"><i style={{ "--lpb-mini-ratio": barRatio(row.maxPropertyPrice), "--lpb-lender-color": row.color }} /></span>
             <span className="lpb-num">{formatMonthlyRepayment(row.monthlyRepayment)}</span>
           </div>
         ))}
       </div>
-      <p className="lpb-sr">Example lender comparison across CommBank, Macquarie, ING and HSBC, including purchase power bars and monthly repayments.</p>
+      <p className="lpb-sr">Example comparison showing the six highest illustrative lender results, including purchase power bars and monthly repayments.</p>
     </div>
   );
 }
 
-export function FundsCard({ compact = false, purpose = WORKED_EXAMPLE.purpose, phase = 8 }) {
-  const summary = workedExampleSummary();
-  const homeLabel = purpose === "investor" ? "investment property" : "home";
+export function FundsCard({ compact = false, scenario = DEFAULT_SCENARIO, phase = 8 }) {
+  const summary = scenarioFundingSummary(scenario);
+  const homeLabel = scenario.purpose === "investor" ? "investment property" : "home";
 
   return (
     <div className={`lpb-funds-card lpb-funds-card--phase-${phase} ${compact ? "is-compact" : ""}`}>
       <div className="lpb-funds-zone lpb-funds-costs">
-        <h3>You could afford a {fmtMoney(WORKED_EXAMPLE.propertyPrice)} {homeLabel}</h3>
+        <h3>You could afford a {fmtMoney(summary.propertyPrice)} {homeLabel}</h3>
         <p className="lpb-funds-total"><strong className="lpb-num">{fmtMoney(summary.totalPropertyCosts)}</strong> in total property costs</p>
         <div className="lpb-segmented-bar" aria-hidden="true">
-          <span style={{ flexGrow: WORKED_EXAMPLE.propertyPrice, background: "#0072ac" }} />
-          <span style={{ flexGrow: WORKED_EXAMPLE.stampDuty, background: "#f2bd00" }} />
-          <span style={{ flexGrow: WORKED_EXAMPLE.legalAndOtherCosts, background: "#d5002b" }} />
+          <span style={{ flexGrow: summary.propertyPrice, background: "#0072ac" }} />
+          <span style={{ flexGrow: summary.stampDuty, background: "#f2bd00" }} />
+          <span style={{ flexGrow: summary.legalAndOtherCosts, background: "#d5002b" }} />
         </div>
         <ul className="lpb-funds-list">
-          <li><span className="lpb-funds-legend"><i style={{ background: "#0072ac" }} aria-hidden="true" />Property price</span><strong className="lpb-num">{fmtMoney(WORKED_EXAMPLE.propertyPrice)}</strong></li>
-          <li><span className="lpb-funds-legend"><i style={{ background: "#f2bd00" }} aria-hidden="true" />Stamp duty</span><strong className="lpb-num">{fmtMoney(WORKED_EXAMPLE.stampDuty)}</strong></li>
-          <li><span className="lpb-funds-legend"><i style={{ background: "#d5002b" }} aria-hidden="true" />Legal and other costs</span><strong className="lpb-num">{fmtMoney(WORKED_EXAMPLE.legalAndOtherCosts)}</strong></li>
+          <li><span className="lpb-funds-legend"><i style={{ background: "#0072ac" }} aria-hidden="true" />Property price</span><strong className="lpb-num">{fmtMoney(summary.propertyPrice)}</strong></li>
+          <li><span className="lpb-funds-legend"><i style={{ background: "#f2bd00" }} aria-hidden="true" />Estimated stamp duty</span><strong className="lpb-num">{fmtMoney(summary.stampDuty)}</strong></li>
+          <li><span className="lpb-funds-legend"><i style={{ background: "#d5002b" }} aria-hidden="true" />Legal and other costs</span><strong className="lpb-num">{fmtMoney(summary.legalAndOtherCosts)}</strong></li>
         </ul>
       </div>
       <div className="lpb-funds-zone lpb-funds-funding">
         <h4>Funding breakdown</h4>
         <div className="lpb-segmented-bar" aria-hidden="true">
-          <span style={{ flexGrow: WORKED_EXAMPLE.loan, background: "#005eb8" }} />
+          <span style={{ flexGrow: summary.loan, background: summary.lender.color }} />
           <span style={{ flexGrow: summary.savingsUsed, background: "#4fc5b8" }} />
         </div>
         <ul className="lpb-funds-list">
-          <li><span>Loan from {WORKED_EXAMPLE.lender} ({Math.round(summary.lvr)}% LVR)</span><strong className="lpb-num">{fmtMoney(WORKED_EXAMPLE.loan)}</strong></li>
+          <li><span>Loan from {summary.lender.name} ({Math.round(summary.lvr)}% LVR)</span><strong className="lpb-num">{fmtMoney(summary.loan)}</strong></li>
           <li><span>Deposit</span><strong className="lpb-num">{fmtMoney(summary.savingsUsed)}</strong></li>
         </ul>
       </div>
@@ -485,7 +558,7 @@ function ConnectedStepLine({ phase, children }) {
   return <ol className="lpb-connected-steps" style={{ "--lpb-step-progress": progress }}>{children}</ol>;
 }
 
-function HowItWorks() {
+function HowItWorks({ scenario, onScenarioChange }) {
   const sectionRef = useRef(null);
   const phase = useHowItWorksSequence(sectionRef);
   const starts = [1, 4, 6];
@@ -511,9 +584,9 @@ function HowItWorks() {
                     <p>{step.body}</p>
                   </div>
                   <div className="lpb-step-visual">
-                    {index === 0 ? <InputPreview phase={phase} /> : null}
-                    {index === 1 ? <MiniComparison phase={phase} /> : null}
-                    {index === 2 ? <FundsCard compact phase={phase} /> : null}
+                    {index === 0 ? <InputPreview phase={phase} scenario={scenario} onScenarioChange={onScenarioChange} /> : null}
+                    {index === 1 ? <MiniComparison phase={phase} income={scenario.income} /> : null}
+                    {index === 2 ? <FundsCard compact phase={phase} scenario={scenario} /> : null}
                   </div>
                 </article>
               </li>
@@ -631,6 +704,7 @@ function usePageMetadata() {
 
 export default function LandingBRangePage() {
   usePageMetadata();
+  const [scenario, setScenario] = useState(DEFAULT_SCENARIO);
 
   return (
     <div className="lpb-page" id="top">
@@ -652,7 +726,10 @@ export default function LandingBRangePage() {
         <section className="lpb-hero" aria-labelledby="lpb-hero-title">
           <div className="lpb-wrap">
             <div className="lpb-hero-head">
-              <h1 className="lpb-h1" id="lpb-hero-title">Find the home you can really afford.</h1>
+              <h1 className="lpb-h1" id="lpb-hero-title">
+                <span className="lpb-hero-line">Find the home you can</span>{" "}
+                <span className="lpb-hero-line">really afford.</span>
+              </h1>
               <p className="lpb-subhead">
                 Compare what you could borrow across 14+ lenders, based on real lender rules, rates and purchase costs.
               </p>
@@ -664,12 +741,15 @@ export default function LandingBRangePage() {
                 <p className="lpb-trust">Free. No impact on your credit score.</p>
               </div>
             </div>
-            <RangeModule />
+            <RangeModule
+              income={scenario.income}
+              onIncomeChange={(income) => setScenario((current) => ({ ...current, income }))}
+            />
           </div>
         </section>
 
         <LenderProof />
-        <HowItWorks />
+        <HowItWorks scenario={scenario} onScenarioChange={setScenario} />
 
         <PropositionGrid />
 

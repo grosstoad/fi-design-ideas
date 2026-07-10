@@ -85,19 +85,31 @@ describe("Landing B range experience", () => {
     expect(screen.getAllByText(/\/mth$/).length).toBeGreaterThan(0);
   });
 
-  it("shows all three walkthrough states without tab interactions", () => {
+  it("keeps the walkthrough controls and results on one shared scenario", () => {
     renderPage();
     const howItWorks = screen.getByRole("heading", { name: "From your details to a number you can use." }).closest("section");
     expect(within(howItWorks).getByRole("heading", { name: "Add your details" })).toBeTruthy();
     expect(within(howItWorks).getByRole("heading", { name: "Compare lender results" })).toBeTruthy();
     expect(within(howItWorks).getByRole("heading", { name: "Understand your costs" })).toBeTruthy();
     expect(within(howItWorks).queryByRole("button")).toBeNull();
-    expect(within(howItWorks).getByText("Annual income")).toBeTruthy();
+    expect(within(howItWorks).getByLabelText("Household income").value).toBe("145,000");
+    expect(within(howItWorks).getByLabelText("Buying purpose").value).toBe("owner-occupier");
+    expect(within(howItWorks).getByLabelText("Property location").value).toBe("NSW");
+    expect(within(howItWorks).getByLabelText("Savings").value).toBe("180,000");
     expect(within(howItWorks).getByText("Purchase power range")).toBeTruthy();
     expect(within(howItWorks).getByText("Funding breakdown")).toBeTruthy();
-    expect(within(howItWorks).getByText("Loan from CBA (79% LVR)")).toBeTruthy();
+    expect(within(howItWorks).getByText("Loan from CommBank (83% LVR)")).toBeTruthy();
     expect(within(howItWorks).getByText("Deposit")).toBeTruthy();
     expect(within(howItWorks).getByText("Savings left over")).toBeTruthy();
+
+    fireEvent.change(within(howItWorks).getByLabelText("Household income"), { target: { value: "300000" } });
+    expect(screen.getByRole("slider", { name: "Household income" }).value).toBe("300000");
+    expect(howItWorks.querySelector(".lpb-mini-head").textContent).toContain("$1.06M–$1.79M");
+
+    fireEvent.change(within(howItWorks).getByLabelText("Buying purpose"), { target: { value: "investor" } });
+    fireEvent.change(within(howItWorks).getByLabelText("Property location"), { target: { value: "VIC" } });
+    fireEvent.change(within(howItWorks).getByLabelText("Savings"), { target: { value: "250000" } });
+    expect(within(howItWorks).getByText(/investment property$/)).toBeTruthy();
   });
 
   it("renders three borderless proposition columns with the approved copy", () => {
