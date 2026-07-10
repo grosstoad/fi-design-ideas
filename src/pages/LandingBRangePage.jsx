@@ -664,7 +664,7 @@ export default function LandingBRangePage() {
         <nav className="lpb-wrap lpb-topbar-row" aria-label="Main">
           <Link to="/landing-b" className="lpb-wordmark">Ask Fundora</Link>
           <div className="lpb-topnav">
-            <a href="#why-fundora" className="lpb-topnav-link">About</a>
+            <a href="#" className="lpb-topnav-link">About</a>
             <a href="#how-it-works" className="lpb-topnav-link">Learn</a>
           </div>
           <Link to="/assessment" className="lpb-btn lpb-btn--primary lpb-header-cta">
@@ -696,20 +696,6 @@ export default function LandingBRangePage() {
 
         <LenderProof />
         <HowItWorks />
-
-        <section className="lpb-section lpb-costs" id="why-fundora" aria-labelledby="lpb-costs-title">
-          <div className="lpb-wrap lpb-costs-layout">
-            <span className="lpb-anchor-target" id="ceiling" aria-hidden="true" />
-            <div className="lpb-costs-copy">
-              <p className="lpb-section-index">Your real price ceiling</p>
-              <h2 className="lpb-h2" id="lpb-costs-title">The number you actually shop with.</h2>
-              <p>
-                Your savings have to cover more than the deposit. Fundora brings the property price, buying costs, lender loan and remaining cash into one reconciled view.
-              </p>
-            </div>
-            <FundsCard />
-          </div>
-        </section>
 
         <PropositionGrid />
 
