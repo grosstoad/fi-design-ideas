@@ -47,6 +47,9 @@ describe("Landing B range experience", () => {
     expect([...lenderRows].some((row) => row.textContent?.includes("Athena"))).toBe(true);
     expect(screen.getByText("The maximum property price you could afford.")).toBeTruthy();
     expect(screen.getByText("Monthly repayment")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /pause logos/i })).toBeNull();
+    const lenderProof = screen.getByLabelText("All 14 lenders included in the comparison");
+    expect(lenderProof.querySelectorAll(".lpb-lender-rail:not([aria-hidden]) .lpb-lender-mark")).toHaveLength(14);
   });
 
   it("supports the one-million-dollar income endpoint", () => {

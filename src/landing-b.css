@@ -531,68 +531,58 @@
   margin-top: 4px;
 }
 
-.lpb-marquee-toggle {
-  min-height: 44px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--lpb-teal-dark);
-  cursor: pointer;
-  font: 700 12px/1.4 Inter, ui-sans-serif, system-ui, sans-serif;
-  text-decoration: underline;
-  text-underline-offset: 4px;
-}
-
 /* Lender logo proof */
 
 .lpb-lender-proof {
-  padding-top: 22px;
-  overflow: hidden;
+  padding: 24px 0 32px;
   background: #ffffff;
 }
 
 .lpb-lender-proof-caption {
   color: var(--lpb-muted);
   font-size: 15px;
+  font-weight: 450;
   line-height: 1.45;
   text-align: center;
 }
 
 .lpb-lender-proof-head {
   display: flex;
-  min-height: 44px;
   align-items: center;
   justify-content: center;
-  gap: 18px;
-  padding-inline: 24px;
-}
-
-.lpb-marquee-toggle {
-  flex: none;
-  color: var(--lpb-muted);
-  font-weight: 600;
 }
 
 .lpb-lender-marquee {
+  position: relative;
   overflow: hidden;
-  margin-top: 10px;
+  margin-top: 14px;
+}
+
+.lpb-lender-marquee::before,
+.lpb-lender-marquee::after {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  bottom: 0;
+  width: 64px;
+  content: "";
+  pointer-events: none;
+}
+
+.lpb-lender-marquee::before {
+  left: 0;
+  background: linear-gradient(90deg, #ffffff 18%, rgb(255 255 255 / 0%));
+}
+
+.lpb-lender-marquee::after {
+  right: 0;
+  background: linear-gradient(270deg, #ffffff 18%, rgb(255 255 255 / 0%));
 }
 
 .lpb-lender-track {
   display: flex;
   width: max-content;
-  animation: lpb-lender-loop 108s linear infinite;
-  animation-play-state: paused;
-}
-
-.lpb-lender-marquee.is-active .lpb-lender-track {
-  animation-play-state: running;
-}
-
-.lpb-lender-marquee:hover .lpb-lender-track,
-.lpb-lender-marquee:focus-within .lpb-lender-track,
-.lpb-lender-marquee.is-paused .lpb-lender-track {
-  animation-play-state: paused;
+  animation: lpb-lender-loop 112s linear infinite;
 }
 
 @keyframes lpb-lender-loop {
@@ -603,33 +593,57 @@
   display: flex;
   flex: 0 0 auto;
   align-items: center;
-  gap: 48px;
-  min-height: 82px;
-  padding-inline: 24px;
+  gap: 40px;
+  min-height: 72px;
+  padding-inline: 20px;
   list-style: none;
 }
 
 .lpb-lender-mark {
   display: grid;
-  width: 144px;
-  min-width: 144px;
+  width: 136px;
+  min-width: 136px;
   height: 40px;
   place-items: center;
 }
 
-.lpb-lender-mark img {
-  display: block;
-  width: 120px;
-  height: 36px;
-  object-fit: contain;
-  transform: scale(var(--lpb-logo-scale, 1));
+.lpb-lender-lockup {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
 }
 
-.lpb-lender-mark[data-lender="westpac"],
-.lpb-lender-mark[data-lender="macquarie"],
-.lpb-lender-mark[data-lender="ing"] { --lpb-logo-scale: 1.18; }
-.lpb-lender-mark[data-lender="athena"] { --lpb-logo-scale: 0.9; }
-.lpb-lender-mark[data-lender="nab"] { --lpb-logo-scale: 0.94; }
+.lpb-lender-lockup.is-symbol {
+  gap: 10px;
+}
+
+.lpb-lender-lockup.is-symbol img {
+  display: block;
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.lpb-lender-lockup.is-symbol > span {
+  color: var(--lpb-ink);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.lpb-lender-lockup.is-wordmark img {
+  display: block;
+  width: auto;
+  max-width: 118px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.lpb-lender-mark[data-lender="amp"] .is-wordmark img {
+  height: 32px;
+}
 
 /* Shared section typography */
 
@@ -660,10 +674,6 @@
 }
 
 /* How it works */
-
-.lpb-how {
-  border-top: 1px solid var(--lpb-line-soft);
-}
 
 .lpb-flow {
   display: grid;
@@ -1503,18 +1513,18 @@
   }
 
   .lpb-lender-rail {
-    gap: 28px;
-    min-height: 70px;
+    gap: 24px;
+    min-height: 66px;
+    padding-inline: 16px;
   }
 
   .lpb-lender-mark {
-    width: 124px;
-    min-width: 124px;
+    width: 128px;
+    min-width: 128px;
   }
 
-  .lpb-lender-mark img {
-    width: 104px;
-    height: 32px;
+  .lpb-lender-lockup.is-symbol > span {
+    font-size: 13px;
   }
 
   .lpb-section {
@@ -1654,20 +1664,29 @@
   }
 
   .lpb-lender-marquee {
-    overflow-x: auto;
-    scrollbar-width: thin;
+    overflow: visible;
+  }
+
+  .lpb-lender-marquee::before,
+  .lpb-lender-marquee::after {
+    display: none;
   }
 
   .lpb-lender-track {
+    display: block;
+    width: 100%;
     animation: none;
+  }
+
+  .lpb-lender-rail {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px 28px;
+    padding: 12px 0;
   }
 
   .lpb-flow-stage-content {
     animation: none;
-  }
-
-  .lpb-marquee-toggle {
-    display: none;
   }
 
   .lpb-lender-rail[aria-hidden="true"] {

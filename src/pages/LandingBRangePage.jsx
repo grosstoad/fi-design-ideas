@@ -11,7 +11,7 @@ import cbaLogo from "../assets/buying-range/lenders/commbank.svg";
 import hsbcLogo from "../assets/buying-range/lenders/hsbc.svg";
 import ingLogo from "../assets/buying-range/lenders/ing.png";
 import macquarieLogo from "../assets/buying-range/lenders/macquarie.png";
-import nabLogo from "../assets/buying-range/lenders/nab.png";
+import nabLogo from "../assets/buying-range/lenders/nab-symbol.svg";
 import suncorpBankLogo from "../assets/buying-range/lenders/suncorp-bank.png";
 import ubankLogo from "../assets/buying-range/lenders/ubank.svg";
 import westpacLogo from "../assets/buying-range/lenders/westpac.png";
@@ -53,6 +53,8 @@ const LENDER_LOGOS = {
   westpac: westpacLogo,
 };
 
+const ICON_ONLY_LENDERS = new Set(["cba", "nab", "westpac", "anz", "macquarie", "ing", "athena"]);
+
 const LENDER_MARKS = [
   ["cba", "CommBank"],
   ["nab", "NAB"],
@@ -68,7 +70,7 @@ const LENDER_MARKS = [
   ["amp", "AMP"],
   ["hsbc", "HSBC"],
   ["ubank", "ubank"],
-].map(([id, name]) => ({ id, name, logo: LENDER_LOGOS[id] }));
+].map(([id, name]) => ({ id, name, logo: LENDER_LOGOS[id], iconOnly: ICON_ONLY_LENDERS.has(id) }));
 
 export function fmtPrice(value) {
   if (value >= 1000000) {
@@ -88,23 +90,6 @@ function fmtIncome(value) {
 
 function fmtRate(value) {
   return `${value.toFixed(2)}%`;
-}
-
-function useVisibility(ref, rootMargin = "100px") {
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const node = ref.current;
-    if (!node || typeof IntersectionObserver === "undefined") return undefined;
-    const observer = new IntersectionObserver(
-      ([entry]) => setIsVisible(entry.isIntersecting),
-      { rootMargin }
-    );
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, [ref, rootMargin]);
-
-  return isVisible;
 }
 
 function ResultStat({ label, value, note }) {
@@ -359,14 +344,13 @@ export function RangeModule() {
 }
 
 function LenderProof() {
-  const marqueeRef = useRef(null);
-  const marqueeIsVisible = useVisibility(marqueeRef);
-  const [paused, setPaused] = useState(false);
-
   function lenderMarks(duplicate = false) {
     return LENDER_MARKS.map((lender) => (
       <li key={`${duplicate ? "duplicate-" : ""}${lender.id}`} className="lpb-lender-mark" data-lender={lender.id}>
-        <img src={lender.logo} alt="" width="120" height="36" loading="lazy" decoding="async" />
+        <span className={`lpb-lender-lockup ${lender.iconOnly ? "is-symbol" : "is-wordmark"}`} aria-hidden="true">
+          <img src={lender.logo} alt="" width="120" height="36" loading="lazy" decoding="async" />
+          {lender.iconOnly ? <span>{lender.name}</span> : null}
+        </span>
         <span className="lpb-sr">{lender.name}</span>
       </li>
     ));
@@ -374,22 +358,17 @@ function LenderProof() {
 
   return (
     <section className="lpb-lender-proof" aria-labelledby="lpb-lender-proof-title">
-      <div className="lpb-lender-proof-head">
-        <p className="lpb-lender-proof-caption" id="lpb-lender-proof-title">
-          Compare how much you can borrow across 14 lenders
-        </p>
-        <button type="button" className="lpb-marquee-toggle" aria-pressed={paused} onClick={() => setPaused((value) => !value)}>
-          {paused ? "Play logos" : "Pause logos"}
-        </button>
-      </div>
-      <div
-        ref={marqueeRef}
-        className={`lpb-lender-marquee ${marqueeIsVisible ? "is-active" : ""} ${paused ? "is-paused" : ""}`}
-        aria-label="All 14 lenders included in the comparison"
-      >
-        <div className="lpb-lender-track">
-          <ul className="lpb-lender-rail" aria-label="Lenders included in the comparison">{lenderMarks()}</ul>
-          <ul className="lpb-lender-rail" aria-hidden="true">{lenderMarks(true)}</ul>
+      <div className="lpb-wrap">
+        <div className="lpb-lender-proof-head">
+          <p className="lpb-lender-proof-caption" id="lpb-lender-proof-title">
+            Compare how much you can borrow across 14 lenders
+          </p>
+        </div>
+        <div className="lpb-lender-marquee" aria-label="All 14 lenders included in the comparison">
+          <div className="lpb-lender-track">
+            <ul className="lpb-lender-rail" aria-label="Lenders included in the comparison">{lenderMarks()}</ul>
+            <ul className="lpb-lender-rail" aria-hidden="true">{lenderMarks(true)}</ul>
+          </div>
         </div>
       </div>
     </section>
