@@ -814,6 +814,7 @@ Readability through affordances, not new copy (owner: no tier names in-UI, no ra
 - The four decision figures — Rate, Comparison rate, Monthly repayment, LVR — render as a **2×2 grid of `--field`-background stat tiles**, same visual family as the capacity pair above (smaller: label 11px muted / value 16px 700), uniform size within the grid. Rate and Comparison keep identical treatment (§2 legal rule).
 - The remaining loan metadata — Loan purpose, Repayment, Loan term, Rate type — renders as a quiet uniform two-column key/value grid beneath: ALL at one size (13px key muted / 14px 600 value). The current mixed sizing (some values large, some small) is the defect; the tile/flat split above replaces it with a deliberate structure.
 - No other content changes; the product/action row, capacity tiles and metadata order are unchanged.
+- **Height-neutral constraint:** the restyled body must preserve the v3.5 card geometry (506px card, 15px bottom inset) — choose tile padding so the tile grid replaces the former rates + repayment/LVR groups (55 + 41 + 20px gap = 116px) at ~116px, and let the uniform metadata grid absorb any remainder. Tab switches stay height-stable per §2 rule 4.
 
 ### 16.3 Mobile sheet height parity (amends §10.1)
 The bottom sheet keeps ONE height across the "Lender details" and "Cost breakdown" tabs — sized to the taller tab (or a fixed snap), with the shorter tab's content top-aligned and the sheet body scrolling internally when needed. Switching tabs never changes the sheet height.
