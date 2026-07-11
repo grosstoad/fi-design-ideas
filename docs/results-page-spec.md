@@ -1,710 +1,842 @@
-# Fundora Results Page — Build Specification (Draft for review)
+# Fundora Results Page — Product and Build Specification
 
-**Status:** DRAFT v3 — ready for owner review. Everything measurable is taken from the **Paper artboard `18WZ-0` ("Results v8 — Clean selected card + detail flow")**, fetched and measured directly (mobile 393px frames; desktop values extrapolated, 🔶 #28). Judgement calls follow `docs/results-page-spec-review.md` §9 and are marked **[ADOPTED]** (override if wrong). Items requiring owner/business input are marked **🔶 FILL-IN #n** inline and collected in §14 as a checklist.
+**Status:** APPROVED REQUIREMENTS v3.6 — IMPLEMENTATION NOT YET VERIFIED (v3.5 + §16 owner-review amendments)
 
-**v2 changes (owner direction from Paper designs, July 2026):** dual-stat headline (max property price + loan amount at equal hierarchy, §7.6/§10.5); interest rate and comparison rate at equal prominence and size everywhere — legal requirement (§7.6, §10.5, §12a); funds-to-complete breakdown now shows funds required *and* where they're sourced from (§8).
+**Last updated:** 2026-07-11
+**Owner decision:** the three desktop Paper states and the reconciliations in this document supersede every earlier results-page architecture, copy, spacing, and interaction instruction.
 
-**v3 changes (Paper frames fetched and visually verified, 2026-07-04 — full artboard sweep of "Results v8 — Clean selected card + detail flow"):**
-- The v2 forest-banner treatment for the dual stat is replaced with the actual built pattern from Paper — two `--field`-bg tiles side by side ("Capacity pair"), not a coloured block (§7.6, §10.5). Rate/Comparison confirmed at identical type treatment in every explored Paper variant (§7.6, §10.5, §12a).
-- Funds-to-complete groups (§8) confirmed against the actual `4WM-0` "Funds chart card" screenshot: required-side rows are Property price / Stamp duty / Transfer + legal fees / Lender fees + setup; verdict is Funds required vs Available funds vs Remaining cash.
-- **Design tokens replaced (§3):** the Paper frames are Helvetica Neue on white with teal accents (`#167D7F` links, `#85C7BE` progress/controls) and a black primary CTA (`#111111`) — not Hanken Grotesk on cream/forest. §3 now carries the Paper-verified palette and type scale; the old Results.html token set is retired. Resolves FILL-IN #16.
-- **Sort reinstated (reverses A6):** the default Results screen has a "Sort" affordance opening a "Sort lenders" sheet (8 options, "Sorting changes the order, not your calculation"). §7.3a/§10.3.
-- **"Update details" replaces "Edit financials" + the in-card edit-loan disclosure (revises A3/A10):** the secondary CTA opens a chooser (Property details / Loan details / Financial inputs) → dedicated sheets with explicit **"Save and recalculate"** — recalculation happens on save-and-return, not on a live 300ms debounce. §7.7 rewritten.
-- **Board-note principles** (from the artboard's "Focused Paper pass" header) recorded in §2a: clean selected card, no redundant copy, separate controls (sort ≠ update), funds after selection — never the default headline.
-- Non-top-selected treatment ("Compare footer") specced from cards "E Non-top selected" / "M4 Compare footer" (§7.8a).
-- FILL-INs #6 (state editable — yes, via Update details → Property details), #16 (palette) resolved; #27 resolved (frames verified). Reference frames: Paper `01KSYP7T3MFEQHHED41F3PQB58/3-0` artboard `18WZ-0` (all five rows swept: Core flow 01–05, Header copy variations, Selected card hierarchy variations, Selected lender detail variations A–E, Detail editing destinations, Stronger selected-card variations M1–M5) and Paper `01KMVY07H2B05015VVNPYFHRWS` node `4WM-0` — the latter inspiration, not literal, per the owner's note.
+This is the single normative results-page document. Historical goal prompts and audits may explain how decisions were reached, but they must not be used to override this file.
 
-**v3.2 changes (casual-client brand alignment, owner decisions 2026-07-08):** brand name is **Fundora** (C1 — reverses the 07-06 fundiq pick, made before the brand repo surfaced); font **Inter 400/600/700** (§3.2); tokens realigned to the casual-client hue system — Grey Page `#FAFAFA` surface model, tiered teal, primary buttons now `--teal` fill with black label everywhere (C2 — reverses the Paper-frame black CTA), mint kept (C3); one shared 10px radius; character/avatar coexists with the object illustrations, scoped to interpretive moments (C4, see `docs/illustration-style.md`); our motion system governs over casual-client's bg-only rule (C5). Full comparison: `docs/casual-client-alignment.md`.
+---
 
-**v3.3 changes (learnings folded back from the landing-page build, 2026-07-10):** tokens reconciled against the LIVE casual-client site (white page, stone greys, teal-400 `#2DD4BF` primary fills, 12px radius, 1180px container, 38px buttons) — §3.1/§3.3/§4.2/§7.1; §8's expanded funds view adopts the owner-approved landing "funds breakdown" pattern (segmented bars + colour-dot legends, "Funding breakdown" group name, "Loan from {lender} (XX% LVR)", "Deposit", "Savings left over"); sheets/modals note the shared `ResponsiveDialog` component now in the repo; wordmark question flagged (live site wordmark is "Ask Fundora").
+## 0. Authority and source mapping
 
-**v3.4 changes (desktop architecture rework, owner decisions 2026-07-11):** desktop drops the master–detail split for a **full-width comparison table + slide-over detail peek** — no lender auto-selected on entry, table gains loan amount / interest rate / comparison rate / monthly repayment columns, rows fill toward the viewport (whole rows only, internal scroll, "View all" removed), clicking a row slides a ~480px detail peek over the right edge without reflowing the table, the funds breakdown **replaces the peek's content** (drill-in with back) rather than expanding inline, and the broker/Update-details actions move to a **standalone band below the table**. Mobile is unchanged (bottom sheet per A4). See §7.0.
+### 0.1 Approved Paper states
 
-**How to review this doc:** read top to bottom, correct any [ADOPTED] decision you disagree with, and answer the numbered FILL-INs (many are one-liners). Once §14 is answered, this spec is intended to be handed to an engineer or a coding agent verbatim.
+| State | Paper reference | Authoritative for | Explicitly superseded within that frame |
+| --- | --- | --- | --- |
+| Unselected desktop | [Full comparison](https://app.paper.design/file/01KMVY07H2B05015VVNPYFHRWS/01KMVY07H36M706X5HW9VW56B4/10W5-0) | Full-width columns, dense row grammar, 1180px rail, financial-value hierarchy | Replace its combined 58px title/header with the shared 46px + 38px header grid; add `Lender` and sort indicators; the leader is not styled as selected; the two CTA cards become the unified CTA band |
+| Selected lender details | [Lender details](https://app.paper.design/file/01KMVY07H2B05015VVNPYFHRWS/01KMVY07H36M706X5HW9VW56B4/10OI-0) | Lender-detail information order, equal capacity tiles, product/action row, rates, repayment/LVR and loan metadata | The left panel, fractional half-widths, mixed `system-ui` typography, tab/header geometry and two CTA cards are replaced by the shared v3.5 shell |
+| Selected cost breakdown | [Cost breakdown and unified next step](https://app.paper.design/file/01KMVY07H2B05015VVNPYFHRWS/01KMVY07H36M706X5HW9VW56B4/11QJ-0) | Equal-width shell, 84px shared divider baseline, compact lender lanes, cost hierarchy, spacing rhythm and unified CTA | `Purchase` becomes the canonical `Property`; bar segments must be data-proportional; the shared header rows are optically aligned as specified below |
 
-**Companion docs:** `docs/results-page-spec-review.md` (rationale for every decision), `docs/design.md` (legacy system — superseded for this page per review §0/§9.1), `docs/results-page-codex-goal-prompt.md` (build task prompt).
+### 0.2 Conflict order
 
-**Paper reference index** (open with a Paper integration or in the browser; all on file `01KSYP7T3MFEQHHED41F3PQB58`, page `3-0`, unless noted):
+When sources conflict, use this order:
 
-| Frame | What it's authoritative for | Link |
-| --- | --- | --- |
-| Artboard "Results v8 — Clean selected card + detail flow" (all rows + board note) | Everything mobile | https://app.paper.design/file/01KSYP7T3MFEQHHED41F3PQB58/3-0/18WZ-0 |
-| 01 Default results | Header, progress bar, hero, list, sort affordance, CTA stack (§7.2–7.4, §10.1–10.3) | https://app.paper.design/file/01KSYP7T3MFEQHHED41F3PQB58/3-0/18XL-0 |
-| 03 Selected plus funds action | Collapsed funds row + View link (§8) | https://app.paper.design/file/01KSYP7T3MFEQHHED41F3PQB58/3-0/191L-0 |
-| 04 Update details sheet (chooser) | §7.7 chooser rows + copy | https://app.paper.design/file/01KSYP7T3MFEQHHED41F3PQB58/3-0/193F-0 |
-| 05 Sort sheet | §7.3a options, caption, radio treatment | https://app.paper.design/file/01KSYP7T3MFEQHHED41F3PQB58/3-0/194T-0 |
-| B Inline expansion | (explored variant — context only) | https://app.paper.design/file/01KSYP7T3MFEQHHED41F3PQB58/3-0/1987-0 |
-| D Funds receipt | Expanded funds breakdown treatment (§8) | https://app.paper.design/file/01KSYP7T3MFEQHHED41F3PQB58/3-0/19BH-0 |
-| E Non-top selected | Compare footer + caption (§7.8a) | https://app.paper.design/file/01KSYP7T3MFEQHHED41F3PQB58/3-0/19CR-0 |
-| Detail editing destinations (row of 3: Property / Loan / Financial sheets) | §7.7 sheet anatomy, fields, conditional rows, Save and recalculate | https://app.paper.design/file/01KSYP7T3MFEQHHED41F3PQB58/3-0/19EL-0 |
-| Stronger selected-card variations (M1–M5) | Card anatomy explorations; M3 is canonical | https://app.paper.design/file/01KSYP7T3MFEQHHED41F3PQB58/3-0/19IT-0 |
-| M3 Statement card (canonical selected card) | §7.6, §10.5 — identity band, rate/comparison parity, statement rows, funds row | https://app.paper.design/file/01KSYP7T3MFEQHHED41F3PQB58/3-0/19MF-0 |
-| Funds chart card (different file — inspiration only, not literal) | §8 expanded breakdown language (stacked bar + legend + verdict strip) | https://app.paper.design/file/01KMVY07H2B05015VVNPYFHRWS/01KMVY07H36M706X5HW9VW56B4/4WM-0 |
+1. Owner decisions recorded in this v3.5 spec.
+2. The state-specific mapping above.
+3. The Fundora/Casual Client brand system and shared application components.
+4. Current implementation and tests.
+5. Historical prompts, audits and older Paper explorations.
 
-Cards named in the text without a deep link ("02 Selected lender clean card", "03 Capacity pair", header copy variations) sit on the artboard's rows — navigate from `18WZ-0`.
+Current code is not proof of design compliance. A requirement is only verified when the implementation, automated coverage and visual evidence named in §14 exist.
+
+Paper’s lender rosters and numbers are illustrative, not separate state data. Unselected and selected views use the same live eligible results. The eight-lender frames correctly show a `$2.21M` minimum; the 10-lender cost frame adds Bendigo and Ubank but fails to update its hero. Its visible `$2.04M` Ubank result makes `$2.04M–$3.09M` the correct range for that roster.
+
+### 0.3 Locked reconciliations
+
+- Canonical term: **Max property price**, never “max purchase price”.
+- Selected secondary tab: **Cost breakdown**, not “Funds to complete”.
+- Cost sections: **Purchase costs** and **Funding breakdown**.
+- Hero: two-line label plus range, with an accessible sentence equivalent to “Your max property price is between {MIN} and {MAX}”.
+- No rank numbers.
+- Unselected desktop shows every eligible lender in normal document flow.
+- Selected desktop is an in-page equal-width two-column layout after subtracting the gutter; it is never an overlay or slide-over.
+- The compact lender comparison is identical on the Lender details and Cost breakdown tabs.
+- One unified CTA band is used in every desktop state.
+- Mobile keeps the shared responsive sheet/dialog, with content parity across both tabs.
 
 ---
 
 ## 1. Purpose and scope
 
-The results page is the final step (7 of 7) of the Fundora affordability flow. It shows the user's **maximum property price per lender**, lets them explore each lender's loan behind that number, adjust loan settings, understand the cash needed to settle, and convert to a broker call-back.
+The results page is the final step of the Fundora affordability flow. It must let a user:
 
-In scope: results list, lender detail, loan-detail editing, funds-to-complete, broker capture, save/exit, loading/empty/error states, desktop + mobile.
-Out of scope: the preceding form flow, broker CRM internals, authentication UI.
+1. Understand their property-price range across eligible lenders.
+2. Compare the lending result behind each maximum.
+3. Inspect the complete loan setup for a selected lender.
+4. Understand how the purchase is funded and what savings remain.
+5. Update inputs and recalculate.
+6. Connect with a broker to discuss options and next steps.
 
----
+In scope: results, sorting, selection, lender details, cost breakdown, Update details, broker capture, loading/recalculation/error/empty states, desktop and mobile.
 
-## 2. Adopted decisions (from review §9 — confirm or override)
-
-| # | Decision | Adopted choice |
-| --- | --- | --- |
-| A1 | Source of truth *(revised v3)* | **Paper artboard `18WZ-0` ("Results v8") is the visual source of truth** — layout, tokens, type, copy voice, and interaction model, all verified in this doc. Results.html remains a secondary reference for desktop layout patterns only (Paper frames are mobile 393px; desktop extrapolates per §7). `design.md` results section to be rewritten. Two carry-backs from design.md stand: remaining-cash concept (§8) and disclaimer voice (§12). |
-| A2 | Deposit maths | Usable-deposit model: savings fund costs first, remainder is deposit (§5.3). |
-| A3 | Edits re-rank *(revised v3 per Paper)* | Yes — updating details re-runs borrowing power and re-ranks the list, but via explicit **"Save and recalculate"** in the Update details sheets, not live debounce (§7.7). On return, rows recalc in place ("stable recalculating lender rows" per the Paper frame note). 🔶 FILL-IN #5 confirms engine support. |
-| A4 | Mobile detail pattern | Bottom sheet (push variant dropped). Sheet gets a close ✕, snap points, dock suppression, URL sync (§10.4). |
-| A5 | Hero | Answer-first: hero leads with the top-lender price on both platforms (§7.2, §10.2). Support line per Paper: "You may be able to afford a property up to {$X.XXM}". |
-| A6 | Sort *(reversed v3 per Paper)* | **Sort is in v1.** "Sort" text affordance in the list head opens a "Sort lenders" sheet (mobile) / popover (desktop): Max property price (default) · Monthly repayment · Interest rate · Comparison rate · Loan amount · LVR · Funds to complete · Policy fit. Caption: "Sorting changes the order, not your calculation." Sorting never triggers a recalc (§7.3a). |
-| A7 | Accent *(revised v3 per Paper)* | Teal link/action accent `#167D7F`; mint `#85C7BE` for progress segments and toggle-on states; primary CTA near-black `#111111`. Forest/cream palette retired (§3.1). FILL-IN #16 resolved. |
-| A8 | Comparison bars | Per-lender colours from a fixed cycle assigned by initial rank; not brand-matched (§4.4). |
-| A9 | Motion | Count-up/bar-fill on first render only; no re-animation on selection; `prefers-reduced-motion` renders final values instantly (§11). |
-| A10 | Dead controls *(revised v3)* | "View product" cut for v1. "Menu" (mobile) replaced by "Save & exit" (the Paper frames show a placeholder "Menu" — the decision to replace it stands). **Progress bar stays on results** (Paper frames consistently show the completed 7-segment bar, all segments filled mint). Sort reinstated (A6). "Edit financials" renamed **"Update details"** and wired to the chooser sheet (§7.7, §7.9). |
-| A11 | Comparison rates | Published product comparison rate only, never client-adjusted (§5.6). |
-| A12 | Naming | "Max property price" is the canonical term everywhere. |
-| A13 | Capacity pair — dual stat *(owner direction, verified against Paper)* | Lender detail leads with max property price AND loan amount at the same hierarchy, as two `--field`-bg tiles side by side (not a coloured banner) — price left, loan right; stacked top/bottom where narrow (§7.6, §10.5). |
-| A14 | Rate prominence *(owner direction — legal requirement, verified against Paper)* | Interest rate and comparison rate always identical in size, weight, and prominence, on every surface that shows a rate (§7.6, §10.5, §12a, landing proof card). |
-| A15 | Funds sourced view *(owner direction, verified against Paper)* | Funds-to-complete "View breakdown" shows funds required (property price, stamp duty, transfer + legal fees, lender fees) and a funds-required/available-funds/remaining-cash summary (§8). Paper `4WM-0` is inspiration for the visual language (stacked bar + legend), not a literal target. |
-
-### 2a. Design principles (from the Paper artboard's board note — normative)
-
-The artboard's "Focused Paper pass" note states four principles that govern every judgement call below:
-
-1. **Clean selected lender card** — "Cathay-style selected item: one crisp offer, quiet metadata, aligned detail rows." One card, no clutter, values right-aligned in consistent lanes.
-2. **No redundant copy** — "No selected-lender explanation, no default scenario chips, no redundant lender-label wording." If a value is visible, don't restate it in prose.
-3. **Separate controls** — "Sorting changes order. Update details changes inputs and recalculates." Sort and Update details are distinct affordances with distinct consequences; never blend them.
-4. **Funds after selection** — "A compact action card and receipt treatment, never the default headline." Funds to complete appears only once a lender is selected, as a quiet row/action card, never competing with the price answer.
+Out of scope: the preceding financial-input flow, production serviceability implementation, authentication UI and broker CRM internals.
 
 ---
 
-## 3. Design tokens — Paper-verified (v3; extracted from the `18WZ-0` frames via computed styles/JSX, not eyeballed)
+## 2. Non-negotiable product and design rules
 
-### 3.1 Colour
-
-```
---bg:         #FFFFFF   page background [v3.3: the LIVE casual-client site is white with stone borders — the #FAFAFA "Grey Page" came from the repo's grammar CSS, which the shipped product does not follow; white wins]
---card:       #FFFFFF   cards/sheets — raised against --bg by contrast, never by shadow
---field:      #F3F3F0   inset panels (capacity tiles, header bands, conditional rows, back-button circle) — Grey Light; merges the frames' #F8F8F5
---ink:        #111111   primary text (Black singleton, shared with casual-client)
---muted:      #5F5E58   body/support text, labels (kept darker than casual-client's #6f6f6a for contrast)
---muted-2:    #8B8982   fine hints, corner labels ("Max price", "Rate" corner tags)
---line:       #D6D3D1   borders + dividers — stone-300, matched to the live site [v3.3; soft internal dividers may use #E9E9E5]
---teal-light: #CCF3EF   badge/card tint tier
---teal:       #2DD4BF   Primary at Solid — button fills, bar fills, slider thumbs [v3.3: matched to the live site's teal-400; hover deepens to #14B8A6]
---teal-dark:  #0F766E   Primary at Dark — text links ("View all lenders", "Sort", "View", "Update details"), selected-lender name in compare rows (replaces #167D7F; near-identical)
---control:    #85C7BE   mint — progress segments, toggle-on, sort radio fill [kept, owner C3 2026-07-08; product-only tint outside the brand ramp]
---err:        #C2462C   validation errors (deltas, if ever added, use casual-client Green Dark #0b6b4a ↑ / Pink Dark #9d174d ↓)
-```
-
-**Primary CTA [C2, owner 2026-07-08 — reverses the Paper-frame black button]:** primary buttons fill `--teal` with a **black `--ink` label**, no border (casual-client Button grammar). Default/secondary buttons: `--field` bg, black label, no border. Extended hue ramps (blue/green/amber/pink/yellow, Light/Solid/Dark) import from casual-client's `VISUAL_GRAMMAR.md` for badges/themed cards as needed.
-
-Notes: the forest/cream palette is retired [A7]; **v3.2 aligns tokens to the casual-client (Fundora) brand system per the owner's 2026-07-08 decisions** — full comparison and rationale in `docs/casual-client-alignment.md`. Focus rings derive from `--teal-dark` (§3.4). Aliases: older references below to `--accent` = `--teal-dark`; `--cta` = teal-filled primary button; `--line-soft` = `--line`.
-
-**Lender cycle palette** (assigned by rank at first render, stable for the session; cycles if > 8 lenders) — as observed in the Paper "01 Default results" bars:
-`#6E9BC4 (blue) · #D9C34A (gold) · #D98E7A (salmon) · #C2462C (red) · #5E8FB5 · #E59A3B (orange) · #7FA37A · #C98AB0`
-🔶 FILL-IN #16b: confirm the exact 8 values from the Paper bars before build (the first four are sampled from the frame; the rest carry over from v2). Rule: colours must NOT approximate lender brand colours.
-
-### 3.2 Typography
-
-Font: **Inter** (Google Fonts), weights **400 / 600 / 700** — canonical per casual-client's `VISUAL_GRAMMAR.md` [owner 2026-07-08; the Paper frames' Helvetica Neue is read as an Inter stand-in — both are loaded in the Paper file]. Usage: 400 body/labels/support, **600 button labels, badges, nav links** (new tier), 700 headings/values/links. Fallback `ui-sans-serif, system-ui, sans-serif`. `font-variant-numeric: tabular-nums` on every dollar/percent value. Sizes in the table below are unchanged (measured from the frames; Inter's metrics are close enough that they carry over).
-
-Mobile column = measured from the 393px Paper frames (normative). Desktop column = extrapolated (Paper artboard is mobile-only); keep the same hierarchy ratios. 🔶 FILL-IN #28: desktop frames to be designed in Paper — until then desktop values below are provisional.
-
-| Style | Mobile (Paper-verified) | Desktop (provisional) | Weight |
-| --- | --- | --- | --- |
-| Page H1 ("Max property price by lender") | 25px / 30px | 36px | 700 |
-| Hero figure | 38px / 42px | 56px | 700 |
-| Hero support line ("You may be able to afford…") | 14px / 19px `--muted` | 16px | 400 |
-| Section head ("Lenders") / sheet titles | 18px / 25px (sheet titles 25px) | 20px | 700 |
-| Eyebrow ("Results", "Property details") | 14px `--muted` | 14px | 400 |
-| Row lender name | 15px (rank-1: 700) | 16.5px | 400/700 |
-| Row price | 15px | 18px | 700 |
-| Card product title ("CBA Extra Home Loan") | 18px / 22px | 21px | 700 |
-| Card sub ("CBA · P&I · Variable") | 13px / 18px `--muted` | 13.5px | 400 |
-| Capacity-pair tile value | 24px / 27px | 28px | 700 |
-| Capacity-pair tile label | 11px / 14px `--muted` | 11.5px | 400 |
-| Statement row key / value | 13px `--muted` / 14px `--ink` | 13.5px / 14.5px | 400 / 700 |
-| Corner tag ("Max price") | 11px `--muted-2` | 11px | 400 |
-| Funds row title / note | 14px 700 / 12px `--muted` | 14.5px / 13px | 700 / 400 |
-| Text links (teal) | 14px (in-card "View": 16px) | 14–15px | 700 |
-| Primary CTA label | 14px on 48px-tall button | 16px | 700 |
-| Header wordmark | 17px | 20px | 700 |
-
-### 3.3 Shape, elevation, spacing (Paper-verified where mobile)
-
-- Radii: one shared radius **12px** on cards, sheets, buttons, inputs [v3.3: matched to the live site's radius-xl; supersedes the 10px pick] · back-button circle 14px on 28px square · progress segments square-ended 4px tall · toggle pill full-round.
-- Borders: 1px `--line` (`#D8D8D0`) on cards; 1px `--line-soft` (`#E2E2DC`) dividers; selected/emphasis cards may use `#CFCFC8`.
-- Elevation: the Paper frames are flat — no card shadows on the results screen. Sheets: single soft shadow `0 -10px 40px -12px rgba(0,0,0,.25)` + scrim. Keep shadows to overlays only.
-- Spacing rhythm: page side padding 32px on the 393px frame (≈8.1%; implement as 24–32px) · card padding 16px · row vertical padding 13–14px · stack gaps 10–14px · CTA height 48px.
-
-### 3.4 Focus (global — review §6.1)
-
-Every interactive element: `outline: 2px solid var(--accent); outline-offset: 2px;` on `:focus-visible`. No element may suppress it.
+1. **Answer first.** Do not show a `Results` eyebrow, repeated H1, single-lender hero number, support paragraph, disclaimer block or `How we estimate` link in the primary results header.
+2. **No implied selection.** The unselected table has no tinted/teal row. If the leader needs explanation later, use an explicit text badge rather than selected-state styling.
+3. **One layout transition.** Selecting a lender reflows the desktop page from one full-width table into two adjacent cards. Deselecting returns to the table.
+4. **One selected shell.** Switching tabs changes only the right card body. Left-card title, column labels, rows, height, width and scroll position remain stable.
+5. **Equal financial prominence.** Max property price and loan amount are equal capacity tiles. Rate and comparison rate always use identical typography, colour and placement.
+6. **No duplicate comparison.** Do not render a compare footer, repeated lender bars, “View all” control, hidden-row count or viewport-derived row count.
+7. **Exact data.** Hero range and cost bars derive from displayed eligible data. Funding values reconcile exactly.
+8. **Stable action hierarchy.** `Connect with a broker` is primary. `Update details` is secondary. Their location does not jump when selection or tabs change.
+9. **Precise alignment.** Do not approximate equal halves, header baselines or numeric lanes with content-dependent gaps.
+10. **Inter only.** All results UI text uses Inter 400/600/700; do not mix in `system-ui` for individual components.
 
 ---
 
-## 4. Page architecture
+## 3. Data and calculation contract
 
-### 4.1 Routing
-
-- Route: `/results` [#18 resolved, owner 2026-07-06 — top-level, no nesting].
-- Selected lender syncs to the URL: `/results?lender=<id>` (desktop selection and mobile sheet). Back button on mobile closes the sheet (history entry per open). Unknown/absent id → default selection (§7.4).
-- Direct navigation without a completed flow → redirect to flow start with a toast "Finish a few questions to see your results". 🔶 FILL-IN #19: confirm session model (anonymous session token? account?), session lifetime, and resume behaviour.
-
-### 4.2 Breakpoints
-
-- **Desktop layout ≥ 1024px** [v3.4]: **1180px** max content width, centered, 16px gutters, 40px top padding. Layout is **full-width table + slide-over peek** (§7.0) — the former `468px + 1fr` master–detail grid is retired.
-- **Mobile layout < 1024px**: single column, 22px side padding, docked CTA bar. (The design frames are 1340 and 392; everything between scales fluidly — list column may shrink to 400px minimum before collapsing to mobile.) 🔶 FILL-IN #20: confirm the 1024px collapse point and whether a distinct tablet treatment is wanted (default: no, mobile layout).
-
-### 4.3 Data contract
-
-**Scenario (input, from the completed flow + this page's edits):**
+### 3.1 Scenario input
 
 ```ts
-{
-  savings: number,            // from flow           🔶 FILL-IN #3: exact source field(s)
-  state: 'NSW'|'VIC'|'QLD'|'WA'|'SA'|'TAS'|'ACT'|'NT',  // from flow (postcode-derived?)
-  firstHomeBuyer: boolean,    // from flow (affects duty concessions)
+type ResultsScenario = {
+  savings: number;
+  state: 'NSW' | 'VIC' | 'QLD' | 'WA' | 'SA' | 'TAS' | 'ACT' | 'NT';
+  firstHomeBuyer: boolean;
+  capitalisePurchaseCosts: boolean;
   loan: {
-    purpose: 'oo' | 'inv',            // default 'oo'
-    rateType: 'var' | 'fix2' | 'fix3',// default 'var'   🔶 FILL-IN #14b: fixed-term set final?
-    repay: 'pi' | 'io',               // default 'pi'
-    termYears: 25 | 30,               // default 30      🔶 FILL-IN #14c: allow 10–30 full range?
-  },
-  // household financials from the flow are opaque to this page; the engine consumes them
-}
+    purpose: 'oo' | 'inv';
+    productType: 'package' | 'basic';
+    repaymentType: 'pi' | 'io';
+    interestOnlyYears?: 1 | 2 | 3 | 4 | 5;
+    rateType: 'variable' | 'fixed';
+    fixedYears?: 1 | 2 | 3 | 4 | 5;
+    termYears: number; // 10–30 inclusive
+  };
+  // Household financials remain opaque to this page and are consumed by the engine.
+};
 ```
 
-**Per-lender result (output of the serviceability engine):**
+Conditional values are invalid when their parent choice is inactive: no `interestOnlyYears` for P&I and no `fixedYears` for Variable.
+
+### 3.2 Per-lender result
 
 ```ts
-{
-  id: string, name: string, product: string,
-  maxLoan: number,          // borrowing power under current scenario.loan settings
-  rate: number,             // % p.a., actual, for these settings
-  comparisonRate: number,   // % p.a., PUBLISHED product figure [ADOPTED A11]
-  monthlyRepayment: number,
-  maxPrice: number,         // maxLoan + usableDeposit (see §5.3)
-  lvr: number,              // maxLoan / maxPrice
-  fees: { application: number, legal: number, other: number },  // 🔶 FILL-IN #8: per-lender data source
-  lmi: number | 0,          // premium if lvr > 0.80                🔶 FILL-IN #7: LMI rules/table
-  eligible: boolean,        // false → excluded from list (§9.4)
-}
+type LenderResult = {
+  id: string;
+  name: string;
+  product: string;
+  maxLoan: number;
+  maxPrice: number;
+  rate: number;
+  comparisonRate: number | null;
+  monthlyRepayment: number;
+  lvr: number;
+  fees: {
+    transfer: number;
+    application: number;
+    legal: number;
+    other: number;
+  };
+  funds: {
+    propertyPrice: number;       // equals maxPrice
+    stampDuty: number;
+    legalAndOtherCosts: number;  // transfer + application + legal + other
+    lmi: number;
+    totalPurchaseCost: number;
+    loanAmount: number;          // actual settlement funding, after capitalisation choices
+    depositUsed: number;
+    savingsAvailable: number;    // equals scenario.savings
+    savingsLeft: number;         // negative means shortfall
+  };
+  eligible: boolean;
+};
 ```
 
-🔶 FILL-IN #2: engine integration — client-side library vs API? Typical latency? (Determines whether §9.1's staged loading is decorative or real.) Cross-reference `fundiq-serviceability-calculations` once accessible.
-🔶 FILL-IN #21: rates feed — where do rate/product data come from, how fresh, and what "rates as at {date}" timestamp is shown (§12)?
+`funds` is the canonical reconciled display view model. The engine may maintain more detailed internal fee/capitalisation data, but the UI does not infer capitalisation or rebuild these values from incomplete fields.
 
-### 4.4 Formatting rules (normative)
+Only eligible lenders appear. The visible hero range is always:
 
-- Prices ≥ $1M: `$3.10M` (2dp, trailing zeros kept). Prices < $1M in list context: `$847k`.
-- Exact money rows (funds breakdown, repayments): `$15,043` — `en-AU` grouping, no cents.
-- Rates: 2dp + `%` (+ ` p.a.` in mobile key-value rows).
-- LVR: whole percent.
-- Repayments: monthly. 🔶 FILL-IN #14: add weekly/fortnightly toggle? (Default: no, v1 monthly only.)
+```ts
+rangeMin = Math.min(...visibleEligibleLenders.map(lender => lender.maxPrice));
+rangeMax = Math.max(...visibleEligibleLenders.map(lender => lender.maxPrice));
+```
+
+The range is independent of the current sort. Therefore, the 10-lender example shown in the approved selected-cost frame would require a `$2.04M–$3.09M` range; `$2.21M–$3.09M` is only correct for the eight-lender example.
+
+### 3.3 Calculation definitions
+
+```text
+legalAndOtherCosts = fees.transfer
+                   + fees.application
+                   + fees.legal
+                   + fees.other
+
+funds.propertyPrice       = maxPrice
+funds.legalAndOtherCosts  = legalAndOtherCosts
+funds.totalPurchaseCost   = funds.propertyPrice
+                          + funds.stampDuty
+                          + funds.legalAndOtherCosts
+                          + funds.lmi
+funds.depositUsed         = funds.totalPurchaseCost − funds.loanAmount
+funds.savingsAvailable    = scenario.savings
+funds.savingsLeft         = funds.savingsAvailable − funds.depositUsed
+```
+
+- The production engine owns borrowing power, iterative price-dependent costs and whether costs/LMI are capitalised into `funds.loanAmount`.
+- The UI displays `funds.loanAmount` as Loan amount and never substitutes `maxLoan` when those values differ.
+- `monthlyRepayment` is the engine-provided repayment for the displayed `funds.loanAmount` and active settings. P&I uses standard amortisation; interest-only uses `funds.loanAmount × rate / 12` during the IO period. The UI never recomputes it from `maxLoan`.
+- Actual and comparison rates come from product data. Never derive a comparison rate with client-side adjustments.
+- If `comparisonRate` is unavailable, show `—` at the same prominence as Rate and provide accessible explanatory text.
+
+### 3.4 Formatting
+
+- Range/max-price values: `$3.09M`; retain two decimals only where required by the established formatter.
+- Exact values and repayments: `$3,299,712`, `$16,223`; `en-AU`, no cents.
+- Full-table repayment: `$16,223/mth`.
+- Detail rate: `6.09% p.a.`; full table may use `6.09%` where the heading provides context.
+- LVR: whole percentage.
+- Every dollar, percentage and repayment value uses tabular numerals.
 
 ---
 
-## 5. Calculation definitions (engine-facing)
+## 4. Visual system
 
-These define what the UI displays; formulas live in the serviceability engine. 🔶 FILL-IN #4: reconcile each against `fundiq-serviceability-calculations` — mark each as exists / build.
+### 4.1 Typography
 
-### 5.1 Borrowing power (`maxLoan`)
-Per lender, under current `scenario.loan`. Changing purpose/repay/rateType/term re-runs it [ADOPTED A3].
+Font stack: `Inter, ui-sans-serif, system-ui, sans-serif`; weights 400, 600 and 700 only.
 
-### 5.2 Transaction costs
-`costs = stampDuty(state, price, firstHomeBuyer, purpose) + transferFee(state) + lenderFees + legalFees (+ lmi if not capitalised)`
-🔶 FILL-IN #6: stamp-duty engine per state incl. FHB concessions and foreign surcharge — exists or build? Is `state` user-visible/editable on this page? [ADOPTED: show a small "NSW · change" affordance in the funds block — cut if state must not be editable here.]
-
-### 5.3 Usable deposit and max price [ADOPTED A2]
-```
-usableDeposit = savings − costs(price)        // solved iteratively with price
-maxPrice      = maxLoan + usableDeposit
-```
-The prototype's `price = loan + savings` double-count is explicitly wrong; do not implement it.
-🔶 FILL-IN #3b: optional retained cash buffer (user keeps $X aside) — v1 feature or not? (Default: not in v1; the funds block shows "remaining cash $0" semantics instead, see §8.)
-
-### 5.4 Repayments
-Standard P&I amortisation at `rate` over `termYears`; interest-only = `maxLoan × rate/12` during IO period.
-
-### 5.5 Rate selection
-Actual rate per lender/product/settings comes from the rates source, not client-side loadings. The prototype's `+0.30 inv / +0.20 io / −0.06 fix2 / +0.04 fix3` are placeholders. 🔶 FILL-IN #5b: confirm rates are product-table lookups.
-
-### 5.6 Comparison rate [ADOPTED A11]
-Published figure for the specific product/term. If unavailable: render `—` with tooltip "Not published for this product". Never arithmetically adjusted.
-
----
-
-## 6. Component index
-
-| ID | Component | Desktop | Mobile |
+| Role | Size / line-height | Weight | Notes |
 | --- | --- | --- | --- |
-| C1 | Header | §7.1 | §10.1 |
-| C2 | Hero | §7.2 | §10.2 |
-| C3 | Lender list | §7.3–7.5 | §10.3 |
-| C4 | Lender detail | §7.6–7.8 | §10.4–10.5 |
-| C5 | Funds to complete | §8 | §8 |
-| C6 | CTAs / dock | §7.9 | §10.6 |
-| C7 | Broker capture | §13 | §13 |
-| C8 | Loading / empty / error | §9 | §9 |
+| Wordmark | 20 / 24 | 700 | `Ask Fundora` |
+| Header action | 14 / 20 | 400 | muted |
+| Hero label | 18 / 24 | 600 | muted |
+| Hero range | 32 / 38 | 700 | `-0.02em` tracking |
+| Panel title / lender identity | 24 / 30 | 700 | exactly equal across adjacent cards |
+| Compact column labels / tabs | 14 / 20 | 400 inactive, 600 active | one line only |
+| Compact lender row | 13 / 16 | 400; selected 600 | price 700 |
+| Full-table column label | 12 / 17 | 400 | sort button keeps full text visible |
+| Full-table row | 14 / 18 | 400 | max price 700 |
+| Capacity label | 13 / 17 | 700 | muted |
+| Capacity value | 24 / 29 | 700 | equal tiles |
+| Product name | 18 / 23 | 700 | same row as Update loan details |
+| Metric label / value | 13 / 16; 16 / 21 | 400; 700 | Rate and comparison rate identical |
+| Metadata label / value | 13 / 16; 14 / 20 | 400; 600 | two-column rows |
+| Cost total label / value | 14 / 20; 28 / 34 | 700; 700 | value `-0.02em` |
+| Cost section heading | 17 / 22 | 700 | Purchase costs / Funding breakdown |
+| Cost legend label / value | 13 / 20 | 400; 600 | fixed amount lane |
+| CTA heading / support | 20 / 26; 13 / 19 | 700; 400 | heading stays one line |
+| Button label | 14 / 20 | 700 | no wrapping |
+
+### 4.2 Colour tokens
+
+Use shared tokens, not per-node Paper near-duplicates:
+
+```css
+--results-bg: #FFFFFF;
+--results-card: #FFFFFF;
+--results-field: #F3F3F0;
+--results-selected: #F5F6F3;
+--results-ink: #111111;
+--results-muted: #5F5E58;
+--results-muted-2: #666660;
+--results-line: #D6D3D1;
+--results-line-soft: #E3E3DF;
+--results-track: #ECECEA;
+--results-teal: #2DD4BF;
+--results-teal-dark: #0F766E;
+--results-cta-surface: #E9F8F5;
+--results-cta-line: #CBE9E4;
+--results-positive-surface: #D8F4F0;
+--results-error: #C2462C;
+```
+
+Paper contains close per-node approximations: CTA `#2FCDBD`, dark teal `#127C74`, card border `#D7D7D3`, field `#F2F2EF` and legend text `#555550`. The shared tokens above intentionally normalize those values and win in implementation.
+
+Lender bar cycle, stable by initial result order and repeated only after ten lenders:
+
+```text
+#7BA5C9 · #D8C342 · #D78973 · #C34B32 · #6594B5
+#E09B3A · #7DA079 · #BC86A9 · #6D9B75 · #8D7BB8
+```
+
+Cost/funding keys:
+
+```text
+Property price #1687C7 · Stamp duty #F0D228
+Legal and other costs #E43E34 · LMI #C88BB9
+Loan #1687C7 · Deposit #48CFC2
+```
+
+Colour must not be the only association: every segment has an adjacent text label and matching dot.
+
+### 4.3 Shape, borders and focus
+
+- Main cards: 12px radius, 1px `--results-line` border, no shadow.
+- Unified CTA band: 12px radius, 1px `--results-cta-line` border, no shadow.
+- Total/verdict tiles: 10px radius.
+- CTA buttons: 8px radius, 46px desktop height.
+- Close: 34×34 circular field button.
+- Comparison tracks: 4px radius.
+- Focus-visible: 2px `--results-teal-dark` outline with 2px offset. Never remove focus without a replacement.
+- Interactive rows use background plus the 3px selected edge; colour alone is insufficient.
+
+### 4.4 Spacing primitives
+
+The primary rhythm is 4, 8, 9, 10, 12, 16, 18, 20, 22 and 26px. Do not substitute arbitrary values where an exact component measurement is specified below.
 
 ---
 
-## 7. Desktop components
+## 5. Page shell and responsive frame
 
-### 7.1 Header (C1)
+### 5.1 Desktop reference frame
 
-- 64px tall (live-site `min-h-16` [v3.3]), white, sticky, 1px `--line` bottom border; content inside the shared 1180px container, 16px gutters.
-- Left: wordmark "Ask Fundora" 20px/700 (the Paper frames show a plain bold wordmark, no logo mark — drop the v2 forest logo square).
-- Right: **Save & exit** — ghost button, 14.5px/400 `--muted`; hover: `--field` bg, `--ink` text; radius 10px, padding 8px 12px.
-- **Save & exit behaviour [ADOPTED A10]:** opens a small modal — "Save your results" / email input / "Email me a link" primary / "Just exit" text — issuing a resume token. **Prototype [#19, owner 2026-07-06]:** no durable persistence — the modal renders and validates but "Email me a link" resolves to a stubbed confirmation ("Prototype: nothing was sent"); state lives in sessionStorage only. 🔶 FILL-IN #10: confirm production mechanism (email link vs account vs silent local save) and destination after exit (marketing home?).
-- No other nav. Logo click = same as Save & exit prompt if unsaved 🔶 FILL-IN #10b: or straight to home?
+At 1440×900:
 
-States: default · hover · focus-visible (§3.4) · modal open.
+- Header: 64px high, 1px bottom border.
+- Header content: `Ask Fundora` left and `Save & exit` right; the header may stick at the top but must not cast a shadow.
+- Header, hero and content share one 1180px rail: 130px from either edge. Older frames with a 72px header inset are incorrect.
+- Hero/answer region: 122px high; 36px top padding, 4px label/range gap, 20px bottom padding.
+- Main content begins at y=186.
+- Main card-to-CTA gap: 18px.
+- Content bottom padding: 26px minimum.
 
-### 7.0 Desktop architecture [v3.4 — table + slide-over peek; supersedes the master–detail split]
+Use a centered `max-width: 1180px` rail with at least 16px viewport gutters below 1212px.
 
-**On entry, nothing is selected.** Below the hero sits one full-width **comparison table**:
+### 5.2 Short desktop
 
-- Columns: `rank · lender · max property price (bar + value) · loan amount · interest rate · comparison rate · monthly repayment` — headers aligned over right-aligned tabular numerals; the bar column keeps ≥40% of row width; interest and comparison rate are **visually identical** in size/weight/colour (§12a, legal). Repayment format `$X,XXX/mth`.
-- **Row count:** as many WHOLE rows as fit the viewport between hero and the action band (no partial rows, no "View all" — §7.5 is retired); remaining lenders behind a quiet internal scroll (hidden scrollbar, bottom fade); scroll chains naturally to the page at the ends (no trap).
-- Rows are buttons: click/Enter opens the **detail peek**; chevron affordance at row end; no inline expansion.
+The following values are a responsive reconciliation to be verified in the required 1280×800 capture; they are not measurements from the 1440×900 Paper frames. For desktop viewports at or below 820px high, compact whitespace rather than hiding lenders or introducing viewport-derived row counts:
 
-**Detail peek:** a ~480px panel slides over the table's right edge (280–360ms `--ease-out`), no scrim, table never reflows; ✕ and Esc close; focus moves in and returns on close; URL syncs `?lender=<id>` (close = history back). Content = the full detail-card anatomy of §7.6 (identity band, capacity pair, rate pair, statement rows, compare footer §7.8a, funds row §8). Selecting another table row while open swaps content in place. Mobile keeps the bottom sheet [A4]; the peek and the sheet share the anatomy and the `ResponsiveDialog` family.
+- Hero: 98px high, with 20px top and 12px bottom padding around the unchanged 24px label, 4px gap and 38px range.
+- Main-card/CTA gap: 12px.
+- Unified CTA remains 112px high so the 82×80px illustration slot fits without clipping.
+- Bottom padding: 8px.
 
-**Funds breakdown from the peek:** tapping the funds row's "View" **replaces the peek's content** with the §8 breakdown plus a "‹ Back to {lender}" link (drill-in, owner 2026-07-11) — never a second stacked overlay. On mobile the same swap happens inside the sheet.
+This produces an exact 800px stack: `64 + 98 + 506 + 12 + 112 + 8`. If the unselected dataset contains more than eight lenders, showing every lender in normal flow takes priority over keeping the CTA above the fold.
 
-**Action band:** a standalone full-width band directly below the table (outside any card): primary "Connect with a broker" + "Update details" text link. Broker prefill = the selected (or last-selected) lender, else the current leader.
+### 5.3 Breakpoint
 
-§7.1–§7.9 below remain normative for component anatomy; where they assume the old side-by-side grid, §7.0 wins.
+- Equal-width in-page desktop layout: `min-width: 1212px`, which preserves the 1180px rail plus 16px minimum gutters.
+- Compact comparison + responsive sheet layout: below 1212px.
+- No third interaction model is introduced for tablet. This rail-driven breakpoint is an approved responsive reconciliation pending device testing, not a Paper measurement.
 
-### 7.2 Hero (C2) — answer-first [ADOPTED A5, copy revised per Paper]
+---
 
-Anatomy (left-aligned, max-width 760px, 26px bottom margin):
-1. Eyebrow "Results" 14px `--muted`.
-2. **Page H1** "Max property price by lender" (25px/700 mobile per Paper; 36px desktop).
-3. **Hero figure**: top lender's `maxPrice`, 38px/700 mobile per Paper (56px desktop), count-up on first render (§11).
-4. Support line 14px `--muted` (verbatim from Paper "01 Default results"): `You may be able to afford a property up to {$X.XXM}.` — one plain sentence, no bold spans, no lender name (principle §2a-2: the list right below answers "which lender"). *(Replaces v2's longer "Your highest estimated property price — with {lender}…" template.)*
-5. Disclaimer line 12.5px `--muted-2`: `Indicative estimates only — not loan offers. Rates as at {date}. How we estimate` — the last two words open an **inline popover** (desktop) / small sheet (mobile) [#17b resolved, owner 2026-07-06]: a short plain-English explainer covering the inputs used, the indicative nature of estimates, and the rates date. Draft copy ships in the prototype marked for owner review; no separate page.
+## 6. Desktop comparison states
 
-Behaviour: hero figure and support line update (no re-animation; 300ms value crossfade) when recalculation changes the top lender (§7.7). The hero always reflects the **max-property-price leader**, regardless of selection or active sort (§7.8a).
+### 6.1 Unselected full-width table
 
-### 7.3 Lender list card (C3)
+With no valid `?lender=`, render one full-width comparison card. Nothing is selected.
 
-- White card, 1px `--line`, r10, padding 20px, width 468px, self-start (doesn't stretch).
-- Head row: "Lenders" 18px/700 · right: "Sorted by {active sort label}" 13px `--muted` + **"Sort"** text button 14px/700 `--accent` [A6 revised — verified in Paper "01 Default results"].
-- Body: rows (§7.4), then view-all control (§7.5).
+Card structure:
 
-### 7.3a Sort control [A6 revised — verified against Paper "05 Sort sheet"]
+1. Title row: 46px, 20px horizontal inset, `Max property price by lender`.
+2. Column-heading row: 38px, 20px horizontal inset, top and bottom soft dividers.
+3. A lender-row region with a 420px minimum for eight or fewer lenders. Rows flex to fill it with a 52px minimum and 70px maximum; eight rows become 52.5px each and six rows become 70px each. With fewer than six lenders, leave intentional space below the rows rather than creating oversized targets. With more than eight lenders, the region grows in normal document flow.
 
-- Desktop: "Sort" opens a small popover anchored to the button; mobile: bottom sheet (§10.4 chrome). Title "Sort lenders" 25px/700 (sheet) · caption 14px `--muted`: **"Sorting changes the order, not your calculation."** (verbatim from Paper — this line is normative copy; it enforces principle §2a-3).
-- Options as a radio list (one per row, 1px `--line-soft` separators, right-aligned 20px radio, selected fill `--control`):
-  1. Max property price (default)
-  2. Monthly repayment
-  3. Interest rate
-  4. Comparison rate
-  5. Loan amount
-  6. LVR
-  7. Funds to complete
-  *(The Paper frame shows an 8th option, "Policy fit" — **cut for v1** per owner 2026-07-06 [#29 resolved]: no backing metric exists; reinstate when an eligibility-strength score does.)*
-- Selecting re-orders the list client-side (FLIP ≈250ms), updates the head-row note ("Sorted by monthly repayment"), closes the sheet/popover. **Never triggers an engine re-run.** Rank numbers re-derive from the active sort order; the hero always shows the max-property-price leader regardless of sort (see §7.8a for the non-top caption).
-- Semantics: `role="radiogroup"`; persist choice for the session.
+The 46px + 38px header and 52.5px eight-row reconciliation preserve the selected state’s 506px card/CTA position while adding the separately requested panel title and column headings. It intentionally supersedes 10W5’s measured 58px combined header + eight 56px rows.
 
-### 7.4 Lender row
+Columns:
 
-Grid `22px | 1fr | 120px | max-content | 18px`, gap 14px, padding 15px 12px, radius 10px, rendered as `<button>`:
+```text
+Lender + bar | Max property price | Loan amount | Rate
+| Comparison rate | Monthly repayment | Chevron
+```
 
-| Lane | Content |
+At the 1180px reference width, preserve the approved lanes:
+
+```text
+300px | 180px | 150px | 130px | 150px | 170px | 20px | 38px end space
+```
+
+Within the 300px lender lane: name 110px, 18px gap, bar track 145×8px. The explicit 38px end space absorbs the remaining inner width after 20px card insets; it is not a content-dependent gap. Keep every column in a fixed lane across every row; long lender names truncate with an accessible full name.
+
+Sorting:
+
+- Every sortable heading is a text button with a subtle paired up/down indicator.
+- `aria-sort` identifies the active column and direction.
+- Clicking an inactive heading applies its default direction; clicking the active heading reverses it.
+- The accessible name includes the column and action; do not rely on the triangles alone.
+- Rate and Comparison rate headings/cells are identical in style.
+
+Rows:
+
+- No rank.
+- No internal vertical scroll, fade, “View all” or “Show fewer”. The page grows normally.
+- The unselected leader uses neutral text/background like every other row.
+- Hover/focus may use `--results-selected`; the teal edge and teal lender name are reserved for an actual selection.
+- Each row exposes one keyboard activation target and a trailing chevron.
+
+### 6.2 Selected equal-width composition
+
+With a valid `?lender=`, the 1180px rail becomes:
+
+```text
+581px comparison | 18px gutter | 581px selected-lender card
+```
+
+Each card is `(rail width − 18px gutter) / 2`; at 1180px this is exactly 581px. Use equal explicit grid tracks (`581px 581px` at the reference width, otherwise `repeat(2, minmax(0, 1fr))`). “50/50” means equal columns after subtracting the gutter, not two 50%-wide cards plus a gutter. Do not use unequal fractions or `round(50%)` widths that create drift.
+
+Both cards are 506px high and share the same two header tracks:
+
+```text
+46px title row + 38px column/tab row = divider at exactly 84px
+```
+
+Alignment contract:
+
+- Both 24/30 titles share the same top position and text baseline.
+- Both selected-card title rows use a 22px horizontal inset; compact lender rows retain their separate 18px lane inset.
+- Left column labels and right tabs share the same 14/20 vertical position.
+- The line below the column headings and the line below the tabs are the same y-coordinate.
+- The right card must not reintroduce the current Paper frame’s 2px title offset or 4px tab offset.
+
+### 6.3 Compact selected comparison
+
+Title: `Max property price by lender`.
+
+Columns: `Lender` and `Max property price`, each on one line.
+
+Reference row lanes inside the 579px inner width:
+
+```text
+18px inset | lender 112px | bar 235×7px | price 140px | chevron 25px | 31px end space | 18px inset
+```
+
+- The explicit 31px end space absorbs the remaining inner width; it is not a content-dependent gap.
+- Row minimum height: 42px.
+- The rows region is 420px in the 506px reference card.
+- Rows use flex growth between 42px and 70px to fill the region. With fewer than six lenders, leave intentional space below them. This fill/overflow rule is an approved responsive reconciliation beyond the static Paper frame.
+- When the total minimum row height exceeds 420px, only the rows region scrolls vertically.
+- Focusing or selecting an off-screen row scrolls it into view.
+- No full-card scroll and no hidden-row affordance.
+- Selected row: soft background, 3px teal leading edge, teal 600 lender name.
+- Track `#ECECEA`, 4px radius; bar width is proportional to the largest eligible result in the complete list, independent of scroll viewport and active sort.
+
+The compact card is the same component on both right-panel tabs. Tab changes must not reset its scroll; selecting a different lender updates selection and resets the right tab to Lender details.
+
+### 6.4 Selection and URL behaviour
+
+- Select row → push/update `/results?lender=<id>` and show the in-page composition.
+- Select another row → update the right card in place.
+- Close → clear the lender query, restore focus to the originating row where possible and return to full width.
+- Unknown lender id → unselected full-width state; never silently select rank one.
+- Browser Back reverses the user’s selection history sensibly.
+
+---
+
+## 7. Selected lender details
+
+### 7.1 Shared right-card header
+
+- Card: 581×506, 22px horizontal content inset, 12px radius, 1px border.
+- Title row: 46px, lender name 24/30/700, close 34×34.
+- Tabs row: 38px, `Lender details` / `Cost breakdown`, 26px gap.
+- Active tab: 600 ink text with teal underline integrated into the shared bottom divider.
+- Use true `tablist`, `tab` and `tabpanel` semantics, roving focus and Left/Right arrow navigation.
+- A new lender always opens `Lender details`.
+
+### 7.2 Lender details body
+
+Order is fixed:
+
+1. Equal capacity tiles.
+2. Product name and `Update loan details` on one row.
+3. Rate and Comparison rate.
+4. Monthly repayment and LVR.
+5. Loan purpose and Repayment type.
+6. Loan term and Rate type.
+
+The detail body begins 20px below the shared header divider and uses a 20px vertical gap between each of the six groups above. With the specified group heights (81, 30, 55, 41, 40 and 40px), the final row ends at y=491 inside the 506px card, leaving a deliberate 15px bottom inset. This is the locked v3.5 breathing-room reconciliation; 10OI measured 16px gaps beneath its older, deeper header.
+
+Capacity tiles:
+
+- Two equal flexible tiles, 81px high, with a 12px gap. At the exact 535px content width they are 261.5px each; treat 262px as a rounded design-tool measurement, not a CSS width.
+- 15px vertical / 16px horizontal padding; 12px radius; field background.
+- Labels and values use identical treatment in both tiles.
+- Max property price remains left only as a reading-order convention, not additional prominence.
+
+Product/action row:
+
+- 30px high.
+- Product name 18/23/700 left.
+- `Update loan details` 14/20/600 teal right; it opens Update details directly at the Loan step.
+- No divider immediately above or below the product row.
+
+Rates:
+
+- Two equal lanes.
+- Rate and Comparison rate labels 13/16; values 16/21/700.
+- They are identical in size, weight, colour and vertical position.
+- The metrics row may carry the single soft divider beneath it.
+
+Remaining pairs:
+
+| Left | Right |
 | --- | --- |
-| Rank | `1`…`n`, 14px/400 `--muted`, tabular |
-| Name | lender name, 15px/400 (`700` on rank-1 row, per Paper "01 Default results"); truncate with ellipsis at one line, min 90px before the bar shrinks |
-| Bar | 8px pill, track `--field`; fill = lender cycle colour [A8]; `width % = maxPrice / (rank1.maxPrice × 1.08)` |
-| Price | `maxPrice` fmt `$X.XXM`, 15px/700, right-aligned |
-| Chevron | 16px `--muted-2`; selected: `--accent` |
+| Monthly repayment | LVR |
+| Loan purpose | Repayment type |
+| Loan term | Rate type |
 
-**States**
+- Monthly repayment label/value: 13/16 and 16/21/700.
+- LVR label/value: 13/16 and 15/21/600.
+- Loan metadata labels/values: 13/16 and 14/20/600.
 
-| State | Treatment |
-| --- | --- |
-| Default | transparent bg, rows separated by 1px `--line-soft` (per Paper — bordered container, hairline rows, no per-row border) |
-| Hover | bg `--field`; transition 140ms |
-| Pressed | bg `#EFEFEA` (one step darker than `--field`) |
-| Selected | bg `--field`, lender name `--accent` 700 (teal name = selected cue per Paper "E Non-top selected" compare rows) |
-| Focus-visible | global ring (§3.4) |
-| Recalculating | value + bar shimmer (§9.2); row not disabled |
+Display rules:
 
-**Interaction & semantics**
-- Click/Enter/Space selects; exactly one row is always selected; clicking the selected row is a no-op (no deselect on desktop).
-- Container: `role="listbox"` `aria-label="Lenders ranked by max property price"`; rows `role="option"` + `aria-selected`. Arrow Up/Down moves selection directly (selection follows focus). Each row's accessible name: `"{rank}. {name}, max property price {$X.XXM}"` — bar is `aria-hidden`.
-- Selecting updates the detail card (§7.6) — announce via `aria-live="polite"` region: "Showing {lender} {product}".
-- Selection resets the detail card's open disclosures to closed.
+- Purpose: `Owner occupied` or `Investment`.
+- Repayment: `P&I` or `Interest only ({N} years)`.
+- Rate type: `Variable` or `Fixed ({N} years)`.
+- Loan term: `{N} years`.
+- LVR: `{N}%`; if applicable append ` · incl. {$X} LMI` without obscuring LVR.
+- Do not show separate IO-term, fixed-term or generic product-type rows.
+- Do not render another bar chart or compare footer inside this card.
 
-### 7.5 View all / show fewer — RETIRED on desktop [v3.4]; mobile shows the same fill-and-scroll pattern (no button). Historical text:
+---
 
-- Default shows top 6. Button full-width below list: `View all lenders ({n})` ⇄ `Show fewer lenders`; white, 1px `--line`, r10, 14px padding, 15px/700; hover `--field`. (Paper shows the plain "View all lenders" label on the default screen and a teal "View all lenders" text link in the selected-lender state — both map to this control.)
-- Expanded: list region gets `max-height: 7 rows` + internal scroll (page doesn't grow) with top/bottom fade masks. **Bars render on all rows at every rank** [#22 resolved, owner 2026-07-06 — condensed treatment rejected].
-- "Show fewer" resets internal scroll to top; if the selected lender is outside the top 6, it stays selected and a one-line note appears under the button: "{name} is selected · rank #{r}".
-- Hidden entirely when n ≤ 6.
+## 8. Cost breakdown
 
-### 7.6 Lender detail card (C4)
+The Cost breakdown tab replaces only the right-card body. It does not open another overlay.
 
-White card, r10, flat (§3.3), padding 28px 30px 30px. Contents update **in place** on selection (no remount animation, [A9]).
+### 8.1 Vertical spacing contract
 
-1. **Identity band** (`--field` bg per Paper "M3 Statement card"): product title 21px/700 `{name} {product}` · sub-line 13.5px `--muted`: `{name} · {Repay label} · {Rate type label}` — no colour dot, no purpose, no rank string (Paper shows none; principle §2a-2). Rank context appears only via the compare footer (§7.8a). ("View product" removed [A10].)
-2. **Capacity pair — dual stat [A13, verified against Paper `01KSYP7T…/3-0` "03 Capacity pair"]**: two tiles side by side, NOT a coloured banner — `--field` bg (`#F8F8F5`), r14, padding 14px, 12px gap between tiles, each tile `flex: 1`:
-   - Left tile: label "Max property price" 11.5px/400 `--muted` · value = `maxPrice`, 24px/700 `--ink` tabular.
-   - Right tile: label "Loan amount" 11.5px/400 `--muted` · value = `maxLoan`, 24px/700 `--ink` tabular.
-   - Identical tile size, value type (size/weight/colour), and label treatment — position (price left, per owner direction) is the only precedence cue. Below ~360px of available card width the tiles stack (price above loan) rather than compress. Value changes animate 300ms count (only interior animation permitted on selection).
-   - Reference frames (fetched and visually verified 2026-07-04): Paper `01KSYP7T3MFEQHHED41F3PQB58/3-0/19MF-0` ("M3 Statement card") shows the max-property-price row at large scale as a single hero stat; Paper `01KSYP7T3MFEQHHED41F3PQB58/3-0` card "03 Capacity pair" (same artboard, "Selected card hierarchy variations" row) is the closest built match for the *paired* tile layout and is what this spec now encodes, with loan and price swapped per the owner's explicit left/right instruction (Paper's built version has loan left, price right).
-3. **Rate pair** — directly below the identity row (mobile) / beside the product name (desktop), a tight two-column mini key-value block, NOT full-width stat tiles: label 11.5–12px `--muted` over value 13–14px/700 `--ink` tabular, 4px gap between label and value, 16px gap between the two columns:
+All measurements are relative to the 84px shared header divider:
 
-| Column | Value | Sub |
-| --- | --- | --- |
-| Rate | `X.XX%` (+ " p.a." on mobile rows) | — |
-| Comparison | `X.XX%` (or "—" + "not published") | — |
+- Total tile begins 10px below the divider and is 535×72px.
+- Purchase costs heading begins 16px below the total tile.
+- Section heading → bar: 9px.
+- Bar → legend: 9px.
+- Legend row gap: 7px.
+- Purchase legend container: 65px high. Its two 20px rows plus 7px row gap leave 18px of internal bottom breathing room.
+- Purchase legend container → Funding group: 9px, producing 27px visible space from the final purchase row to the Funding heading.
+- Deposit row → Savings verdict: 18px clear space.
+- Savings verdict: 535×50px.
 
-   **[A14 — legal, verified against Paper]** Rate and Comparison use the identical class: same font size, weight, and colour, side by side, no visual precedence. This is confirmed directly in the built Paper frames (`19MF-0`, and card "01 Default results" / "02 Selected lender clean card" on the same artboard) — every variant explored keeps Rate and Comparison at the same type treatment. Never demote comparison to a sub-label, footnote, or smaller type.
-4. **Supporting rows** — `Monthly repayment` and `LVR` as standard key-value rows (13px key / 14px/700 value), below the rate pair, separated by 1px `--line-soft`. If `lmi > 0`, the LVR row sub becomes "incl. LMI ${lmi fmt k}" 🔶 FILL-IN #7b: confirm LMI display slot.
-5. **Funds to complete** row (§8), separated by 1px `--line-soft` top border — the last row inside the card, per Paper "M3 Statement card" ("funds nested as a row") and principle §2a-4.
-6. **CTA row** (§7.9). *(There is no in-card edit affordance — Paper's cards contain no edit-loan disclosure; all input changes go through Update details, §7.7.)*
+Do not collapse the 16px tile-to-heading space, 27px last-purchase-row-to-funding-heading space or 18px deposit-to-verdict space. The verdict ends at y=475 inside the 506px card, leaving approximately 30px of inner bottom breathing room; do not turn it into another content slot.
 
-### 7.7 Update details (chooser + sheets) — replaces the v2 in-card "Edit loan details" disclosure [A3/A10 revised — verified against Paper "04 Update details sheet" and the "Detail editing destinations" row]
+### 8.2 Total purchase cost
 
-**Entry:** the page-level secondary CTA "Update details" (§7.9 / mobile dock §10.6). Desktop presents the same surfaces as centered modals; mobile as bottom sheets.
+- One cream/field tile, 10px radius, 12px vertical / 16px horizontal padding.
+- Left: `Total purchase cost`.
+- Right: exact total, 28/34/700.
+- This is the only total purchase cost display.
 
-**Chooser sheet** — title "Update details" 25px/700 · sub 14px `--muted`: "Choose what changes the calculation." · three rows (leading **illustration ~40px anchored directly in the row — no chip, no thumbnail box**; title 15px/700; description 13px `--muted`; trailing chevron). Illustrations [#32, owner 2026-07-10]: **casual-client candy-cartoon assets** — `house.png` (Property), `calculator.png` (Loan), `piggy-bank.png` (Financial; `coins.png` fallback) from casual-client `assets/`:
+### 8.3 Purchase costs
 
-| Row | Description (verbatim from Paper) | Destination |
+- Heading `Purchase costs`, 17/22/700.
+- Bar: 535×12px, 6px outer radius, no decorative gaps.
+- Legend: two columns (approximately 255px / 245px), two rows each.
+- Dots: 9×9px circles; label 13/20; amount 13/20/600.
+- Rows: Property price; Estimated stamp duty; Legal and other costs; LMI only when non-zero.
+- `Legal and other costs` combines transfer/legal and lender application/other fees for this presentation.
+
+Bar geometry is data, not decoration:
+
+```ts
+segmentWidth = segmentValue / totalPurchaseCost * availableWidth;
+```
+
+Every non-zero category receives at least a 2px visible segment; take any minimum-width adjustment from the largest segment so the full bar remains exactly 535px. The current Paper mock’s manually exaggerated legal/LMI shares are not normative.
+
+### 8.4 Funding breakdown
+
+- Heading `Funding breakdown`, 17/22/700.
+- Matching 535×12px proportional bar.
+- Rows:
+  - `Loan from {lender} ({XX}% LVR)`
+  - `Your deposit (from your {$SAVINGS} savings)`
+- Values are `funds.loanAmount` and `funds.depositUsed`.
+- Segments use the same proportional/minimum-width rule.
+
+### 8.5 Verdict
+
+- Positive: `Savings left over` and positive amount on the mint surface.
+- Negative: `Savings shortfall` and absolute shortfall amount on an error-tint surface, followed by concise recovery guidance outside the strip if needed.
+- Do not show Cash needed to settle, Funds required, Available funds, Total available or duplicate totals.
+
+Required invariant:
+
+```text
+funds.loanAmount + funds.depositUsed = funds.totalPurchaseCost
+funds.depositUsed + funds.savingsLeft = funds.savingsAvailable
+purchase-cost legend sum = funds.totalPurchaseCost
+```
+
+Allow a maximum ±$1 difference after whole-dollar rounding; reconciliation tests fail outside that tolerance.
+
+---
+
+## 9. Actions and editable details
+
+### 9.1 Unified desktop CTA band
+
+Use the approved unified band in every desktop state:
+
+- 1180×112px at the 1440×900 reference frame.
+- 18px below the comparison component.
+- Mint surface, 1px mint border, 12px radius, 16px vertical / 20px horizontal padding.
+- Illustration slot 82×80; asset 70×70, static, transparent, Casual Client sticker style.
+- Copy block has 10px left inset and flexible width.
+- Headline: `Make sense of your lender options`, 20/26/700, one line.
+- Support: `A broker can help you compare the trade-offs, sense-check the costs and decide which lender fits your situation.`, maximum two lines.
+- Action group: 358×46px with 22px internal left padding and a 12px button gap. The 22px is not an extra flex gap between copy and actions.
+- Secondary `Update details`: 135×46px, white, teal border/text.
+- Primary `Connect with a broker`: 189×46px, teal fill, ink text.
+
+The CTA band does not change when a lender is selected or tabs switch. Broker prefill uses the selected lender; without a selection it uses the max-property-price leader.
+
+The coffee-mug **subject, slot and static treatment** are approved and described in `docs/illustration-style.md`; the final implementation asset still requires export/generation and visual approval. It is a deliberate exception to the otherwise austere results data surfaces. No illustration appears in the hero, lender table, detail metrics or cost bars.
+
+### 9.2 Update details
+
+`Update details` opens a chooser:
+
+| Choice | Description | Destination |
 | --- | --- | --- |
 | Property details | State, purpose, savings and purchase costs. | Property sheet |
 | Loan details | Loan term, repayment type, product and rate type. | Loan sheet |
 | Financial inputs | Income, expenses, liabilities and existing properties. | Section chooser |
 
-**Property sheet** — eyebrow "Property details" · title "Update purchase assumptions" · sub "Saving returns to Results and recalculates lender estimates." Fields as a bordered key-value card (each row opens its picker/input):
+Use the Casual Client category stickers at approximately 40px, directly in each row without a thumbnail box.
 
-| Field | Example value | Notes |
-| --- | --- | --- |
-| State | NSW | resolves 🔶 #6: state IS user-editable here (not inline in the funds block — drop the "NSW · change" affordance from §8) |
-| Purpose | Owner occupied | |
-| First home buyer | Yes | |
-| Savings | $356k | |
-| Property price in mind | Optional | **analytics capture only** [#30 resolved, owner 2026-07-06]: stored and editable here, never displayed on Results and never alters the calculation — its purpose is measuring whether results met the user's target (emit `price_target_set` and the target-vs-top-max delta with results events) |
-| Capitalise purchase costs | toggle (`--control` when on) | rolls costs into the loan — interacts with §5.2/§8 maths |
+Property fields: State, Purpose, First home buyer, Savings, optional Property price in mind, Capitalise purchase costs.
 
-**Loan sheet** — eyebrow "Loan details" · title "Update loan assumptions" · sub "Conditional terms appear only when they matter." Same bordered key-value card; **conditional rows render on a `--field` tinted bg and appear only when applicable**:
+Loan fields: Loan term 10–30 years; Repayment type; conditional IO term 1–5 years; Product type; Rate type; conditional fixed term 1–5 years.
 
-| Field | Values [#14 resolved, owner 2026-07-06] | Conditional on |
-| --- | --- | --- |
-| Loan term | 10–30 years, 1-year steps (default 30) | — |
-| Repayment type | P&I · Interest only (default P&I) | — |
-| Interest-only term | 1–5 years, 1-year steps (default 3) | Repayment type = Interest only |
-| Product type | Package · Basic (default Package) | — |
-| Rate type | Variable · Fixed (default Variable) | — |
-| Fixed-rate term | 1–5 years, 1-year steps (default 2) | Rate type = Fixed |
+Property and Loan flows end with `Save and recalculate`. Edits remain local until save; Cancel discards. Saving returns to Results, preserves selection where eligible and re-ranks under the active sort.
 
-   (This supersedes the v2 "Fixed 2yr/3yr" combined control — rate type and its term are separate fields with the term conditional. Value sets are owner-confirmed defaults; tighten later against real lender product data.)
+`Update loan details` in the lender card bypasses the chooser and opens the Loan step. It edits the same global scenario as `Update details`; only the entry path is different. No loan edit is lender-specific.
 
-**Financial inputs sheet** — eyebrow "Financial inputs" · title "Choose section to edit" · sub "You will return to Results after saving the selected section." Rows: Income ("Salary, variable income and other income.") · Expenses ("Living costs and recurring commitments.") · Liabilities ("Cards, personal loans and other debts.") · Existing properties ("Values, rents and current home loans."). Footer note (tinted panel): "After save, Results returns with stable recalculating lender rows." CTA "Back to Results".
-**Prototype behaviour [#11 part-resolved, owner 2026-07-06]:** these four rows are intentional dead-ends in the prototype — tapping one shows an inline note "Edited in the main application flow (not part of this prototype)"; the recalc loop is exercised via the Property and Loan sheets. Production routes/return contract remain 🔶 FILL-IN #11.
+### 9.3 Broker capture
 
-**Commit model [A3 revised]:** Property and Loan sheets end in a primary **"Save and recalculate"** (48px, `--teal` fill + black label per C2) + text "Cancel". No live recalculation while editing; on save → return to Results → affected values shimmer in place (§9.2) → list re-ranks (FLIP ≈250ms) under the *active sort* (§7.3a). Selected lender stays selected; if its rank changed, transient chip "now #3 (was #1)" for 4s; hero updates if the max-price leader changed. Cancel discards.
-**Scope:** edits are global by construction — the sheets edit the scenario, not a lender. (v2's FILL-IN #5c is resolved: global.)
-Settings persist for the session and round-trip through Save & exit.
+Desktop: centered modal. Mobile: shared responsive bottom sheet. Require focus trap, labelled dialog, Esc/close/scrim dismissal and focus return.
 
-### 7.8 Detail card — data edge cases
+Fields: first/last name, AU mobile, email, preferred lender, buying stage, optional notes, required contact consent. Preferred lender is prefilled from the selected lender or leader.
 
-- `comparisonRate` null → tile sub "comparison n/a".
-- `eligible: false` lenders never reach the list (§9.4) — the detail card never renders an ineligible lender.
-- Selected lender becomes ineligible after an edit → selection moves to the nearest eligible rank; toast: "{name} can't lend under these settings — showing {newName}".
+Submit: `Request a call back`; preserve inputs on failure; prevent duplicate submissions. Success locks page CTAs to `Call back requested ✓` for the session.
 
-### 7.8a Non-top selection — compare footer [verified against Paper "E Non-top selected" / "M4 Compare footer"]
-
-When the selected lender is not the max-property-price leader (via sort or direct selection):
-- The hero keeps the leader's figure (§7.2 — it always answers "your maximum").
-- The selected card's sub-line may carry a neutral qualifier from the active sort (Paper example: "CBA · lower monthly repayment").
-- Below the selected card, a **compare module**: two compact rows — the max-price leader and the selected lender (name · bar · price; selected row's name in `--accent` 700) — followed by a caption 13px `--muted`: "Sorted by {sort label}. {Leader} remains the highest max price." No scolding copy, no warning tone (Paper board note: "Non-top context without a scolding paragraph").
-- Hidden when the selected lender is the leader.
-
-### 7.9 CTA row (C6)
-
-- Layout: primary button + centered text secondary beneath, 10px gap, margin-top 24px.
-- **Primary "Connect with a broker"** [C2, owner 2026-07-08]: `--teal` (#14B8A6) bg, **black `--ink` label** 14px/600 (16px desktop), no border, r10, height 48px; hover: bg deepens toward `--teal-dark`, Motion Slow bg-only; active translateY(1px); no shadow (§3.3 — flat). Opens broker overlay (§13) with the *selected* lender prefilled.
-- **Secondary "Update details"**: text button 14px/700 `--accent`, centered under the primary (per every Paper frame). Opens the chooser (§7.7).
-- After a successful broker submission this row's primary becomes disabled-styled "Call back requested ✓" for the session (§13.6).
+Production consent copy, privacy URL, lead endpoint and payload remain open in §13.
 
 ---
 
-## 8. Funds to complete (C5) — revised per usable-deposit model [A2]
+## 10. Mobile, states, accessibility and motion
 
-Replaces the prototype's breakdown (which double-counted the deposit).
+### 10.1 Mobile/tablet
 
-**Collapsed (default)** — per Paper "M3 Statement card" (row form) / "M5 Prep action stack" (action-card form; M3 row form is canonical since the funds row lives inside the statement card, §7.6):
-- Title "Funds to complete" 14px/700 · note 12px `--muted`: `About {$XXXk} needed to settle` (Paper verbatim shape: "About $542k needed to settle") where the figure = `savings` allocated (deposit + costs); if a buffer exists it reads `{savings − buffer}`. Optional second line where space allows (M5): "Deposit, purchase costs and remaining cash buffer."
-- Right: text link **"View"** ⇄ "Hide", 16px/700 `--accent`. `aria-expanded`.
+- Single-card compact comparison below 1212px. Hide Loan amount, Rate, Comparison rate and Monthly repayment columns; render only lender, bar, max property price and chevron.
+- Hero retains the same label/range and exact min/max invariant.
+- Compact rows show lender, bar, max property price and chevron; no rank.
+- Sorting uses an explicit Sort control/sheet when columns collapse.
+- Selecting a lender opens the shared responsive dialog/bottom sheet.
+- Sheet content uses the same two tabs and the same lender/cost data as desktop.
+- Desktop-only fixed widths/heights in §§7–8 are removed inside the sheet: tiles and bars use `width: 100%`, panel height is content-driven within a scrollable sheet body, and cost legend columns stack to one column when two columns would compress labels or values.
+- Capacity tiles may stack below 360px; Rate and Comparison rate remain adjacent/equal whenever space permits and otherwise stack with identical styling.
+- The page dock contains primary Connect with a broker and secondary Update details; hide it while a modal/sheet is open.
 
-**Expanded view [A15]** — two aligned groups then the verdict, inspired by Paper `01KMVY07H2B05015VVNPYFHRWS`'s node `4WM-0` ("Funds chart card") required-vs-sourced framing (adapted, not copied — the owner's explicit direction). Desktop: two columns side by side (equal width, 24px gutter); mobile and narrow cards: stacked groups, required first. Row style: 13.5px key `--muted` / value 700 `--ink` tabular, 9px gaps; group headers 12px/700 uppercase `--muted-2`.
+### 10.2 Page states
 
-*Verified against the actual `4WM-0` screenshot (2026-07-04):* the Paper reference is not two mirrored breakdown lists — it's one categorised breakdown (with a stacked-bar + coloured-dot legend: Property price, Stamp duty, Transfer + legal fees, Lender fees + setup, each with a % of total) followed by a three-figure summary strip: **Funds required** / **Available funds** / **Remaining cash (+ %)**. This spec adapts that into Group 1 (the categorised "what you'll need" breakdown, kept as a row list rather than a bar+legend to fit the card's existing row language) and a verdict strip carrying the same three figures, while keeping Group 2 ("where it comes from") as an addition beyond the reference — needed here because, unlike the `4WM-0` scenario (savings entered directly as an input), this page's "available funds" can come from multiple sources (§25) and showing them itemised is more transparent than a single number.
+- **Loading:** stable hero/table skeleton; do not imply a selected lender.
+- **Recalculating:** values shimmer in place; layout and row controls remain stable.
+- **Partial failure:** show successful lenders plus a quiet count of lenders that could not be checked.
+- **Full error:** clear message, Try again and Update details.
+- **No eligible lenders:** range becomes an em dash; primary Update details, secondary broker path.
+- **Selected lender becomes ineligible:** select the nearest eligible result and announce the change, or return to unselected if none remain.
+- **Returning user:** recalculate and disclose materially changed results once saved-state behaviour exists.
 
-*Group 1 — "What you'll need":*
+### 10.3 Accessibility
 
-| Row | Value |
-| --- | --- |
-| Property price | `maxPrice` (matches the `4WM-0` reference, whose breakdown leads with Property price) |
-| Stamp duty ({STATE}, est.) | engine value — no inline "change" link; state is edited via Update details → Property details (#6 resolved) |
-| Transfer & legal fees | engine value |
-| Lender fees ({name}) | per-lender (🔶 #8) |
-| LMI (if LVR > 80%) | engine value; row hidden when 0 |
-| **Funds required** | sum — divider above, 14.5px/700 |
+- Logical heading order; only one page H1.
+- Visual range has an accessible sentence using “between” and “and”, not an en dash alone.
+- Sort buttons expose `aria-sort` and meaningful names.
+- One keyboard activation target per lender row; Enter/Space works.
+- Selection is conveyed by text/semantics plus background/edge treatment.
+- Tabs implement standard arrow-key behaviour and visible focus.
+- Internal selected-list scroll keeps focused rows visible and does not trap page scrolling.
+- Close restores focus.
+- Comparison rate is never hidden, demoted or hover-only.
+- All dialogs use labelled focus management and background inertness.
+- Colour-dot legends remain readable without colour.
+- Minimum contrast is WCAG AA.
 
-*(v3.1 note: with the loan now a Group 2 source row [#25], Group 1 is the full purchase cost — price + costs — replacing the earlier cash-only "Deposit toward purchase" framing. The collapsed row's "About {$XXXk} needed to settle" still quotes the **cash** side only: `Funds required − loan`.)*
+### 10.4 Motion
 
-*Group 2 — **"Funding breakdown"** [renamed v3.3 per the owner-approved landing pattern; #25 resolved 2026-07-06: "it's either savings or the loan, and be clear if there's any savings left over (or a deficit)"]:*
-
-| Row | Value |
-| --- | --- |
-| Loan from {lender} ({XX}% LVR) | `maxLoan` — LVR belongs to the loan row, in parentheses, no middle dot (owner, landing round 2026-07-10) |
-| Deposit | `savings` allocated (renamed from "Your savings" per the same direction) |
-| **Total available** | sum — 14.5px/700 |
-
-**Presentation [v3.3 — proven on the landing]:** each group renders as a **segmented horizontal bar** (10px, 2px white gaps between segments, rounded outer ends) with a **colour-dot legend** beneath (dot · label · right-aligned value) — the realestate.com.au equity-card pattern the owner picked. Groups are separated by spacing/background, **no hairlines** between the cost group and "Funding breakdown" or above the savings row. The landing's `FundsCard` in `src/pages/LandingBRangePage.jsx` is the reference implementation to lift.
-
-No gift/FHOG/sale-proceeds rows in v1 (not captured in the flow). Because the loan is now a source row, Group 1's "what you'll need" total is the **full purchase cost (price + costs)**, not just the cash side — the two groups reconcile: `price + costs = loan + savings − remaining`. Rows in the two groups share a baseline grid so the totals align horizontally on desktop. The leftover-savings figure (or the unlikely deficit) is the verdict strip's job and must always be visible when the breakdown is open.
-
-*Verdict strip (full width, below both groups)* — three figures in a row, matching the `4WM-0` reference's "Funds required / Available funds / Remaining cash" summary:
-
-| Column | Value |
-| --- | --- |
-| Funds required | = Group 1 total, 13.5px label / 20px/700 value |
-| Available funds | = Group 2 total, 13.5px label / 20px/700 value |
-| **Remaining cash** | `Available funds − Funds required`, 13.5px label / 20px/700 value + inline `%` of available funds (matches `4WM-0`'s "$290K \| 8%" treatment) |
-
-**Verdict states:**
-- Remaining ≥ 0: row label **"Savings left over"** [v3.3, landing-approved phrasing], value in green-dark `#0b6b4a` — the owner explicitly wants leftover savings unmistakable [#25].
-- Shortfall (< 0): value `--err`, row label "Shortfall", plus a compact notice band under the block (r10, `--err` at 8% tint bg): "Your savings don't cover the costs at this price. Lower the price range or talk to a broker about options." with "Update details" link. *(With the usable-deposit model a shortfall shouldn't occur by construction — this state guards engine edge cases and future buffer settings.)*
-
-Mobile: identical block inside the lender card, bg `--field`, link label "View"/"Hide".
+- Initial number/bar animation runs once only.
+- Recalculation may shimmer and re-rank with a short FLIP transition.
+- Selection reflows in place; do not animate an overlay from the right.
+- Tabs use an immediate or ≤140ms content transition without layout movement.
+- `prefers-reduced-motion` renders final states immediately.
+- Accessible values are announced at their final value, not every animation frame.
 
 ---
 
-## 9. Page states (C8)
-
-### 9.1 Initial loading — staged reveal
-- Header + hero eyebrow render immediately; hero figure area shows a shimmer block.
-- List card renders with title and 6 skeleton rows; caption above rows: `Checking {n} lenders against your profile…` Rows resolve top-down as results arrive (or in 120ms stagger if the engine returns in one batch), bars filling per §11.
-- Detail card renders skeleton until rank-1 resolves, then populates and becomes the default selection.
-- Budget: if the engine is client-side and < 300ms total, skip staging — render complete with the standard first-render animation. 🔶 FILL-IN #2 decides which path is real.
-
-### 9.2 Recalculating (after "Save and recalculate" returns to Results)
-Values (prices, bars, tiles, hero) shimmer in place ≤ engine latency; layout never collapses; rows stay interactive ("stable recalculating lender rows" — Paper frame note, verbatim). FLIP re-rank on resolve (§7.7).
-
-### 9.3 Error
-- Full failure: list card replaced by an error panel — icon, "We couldn't calculate your results" 17px/700, body "Something went wrong on our side. Your answers are saved.", primary "Try again" (re-runs), secondary "Update details". Detail card hidden.
-- Partial failure (some lenders error): show successful lenders; footnote under the list: "{k} lenders couldn't be checked right now." [#23 resolved, owner 2026-07-06 — tolerate partial failure.]
-
-### 9.4 No eligible lenders
-List card body: illustration-free panel — title "No lender matched this scenario" 17px/700; body explains the binding constraint when the engine can name it (`"Your deposit is below the minimum lenders accept."` / generic fallback "Based on your answers, no lender on our panel could offer a loan."); **primary: "Update details"**, secondary text: "Talk to a broker about low-deposit options" (opens §13 with lender = "No preference"). Hero shows an em-dash figure with support line "We couldn't find a match — yet." Dock CTA (mobile) relabels to "Talk to a broker".
-🔶 FILL-IN #17c: sign off this copy set.
-
-### 9.5 Few lenders (1–5)
-Standard layout; view-all hidden; lede grammar per §7.2.
-
-### 9.6 Returning user (saved link)
-Results recalculate on open (rates may have moved). If any figure changed vs the saved snapshot by > 1%: dismissible banner "Rates have moved since you saved — your numbers are refreshed." 🔶 FILL-IN #21b: confirm snapshot-vs-recalc policy.
-
----
-
-## 10. Mobile components
-
-### 10.1 Header — per Paper frames
-- Row: circular back button 28px (`--field` bg, chevron-left) · centered wordmark "Ask Fundora" 17px/700 · right: **"Save & exit"** text button (the Paper frames show a placeholder "Menu"; the A10 decision to replace it stands) — same flow as §7.1.
-- Back from results → the flow's review step 🔶 FILL-IN #11b: confirm; alternative is Save & exit prompt.
-- **Progress bar stays** [A10 revised — every Paper frame shows it]: 7 segments, 4px tall, all filled `--control` (results = flow complete), full-width row under the header.
-
-### 10.2 Hero (list screen) — per Paper "01 Default results"
-- Eyebrow "Results" 14px `--muted` · H1 "Max property price by lender" 25px/700 (two lines OK) · hero figure 38px/700 (rank-1 `maxPrice`) · support line 14px `--muted` "You may be able to afford a property up to {$X.XXM}." · disclaimer line.
-- The visible H1 is canonical for a11y/SEO (screen-reader order: eyebrow → heading → figure → support).
-
-### 10.3 Lender list — per Paper "01 Default results"
-- Section head: "Lenders" 18px/700 · right: "Sorted by {sort label}" 13px `--muted` + "Sort" 14px/700 `--accent` → sort sheet (§7.3a).
-- Container: 1px `--line`, r10, rows separated by `--line-soft`.
-- Row grid `22px | 1fr | 92px | max-content | 16px`, padding 14px 12px, min-height 52px. Bar 8px. Price 15px/700.
-- States: pressed `--field`; active (sheet open for that row) `--field` + teal name. Same semantics as §7.4; tapping opens the sheet (§10.4).
-- View-all identical to §7.5 (page grows on mobile instead of internal scroll — the page is the scroll container; expanded list simply lengthens).
-
-### 10.4 Lender detail bottom sheet [A4]
-*(Implementation note [v3.3]: the repo now has a shared `src/components/ResponsiveDialog.jsx` — centered modal on desktop, bottom sheet on mobile, focus trap + Esc/scrim close — built for the landing. Every sheet/modal in this spec (this one, §7.7's Update details surfaces, §13 broker capture, "How we estimate") should reuse it rather than re-implementing the chrome.)*
-- Scrim `rgba(0,0,0,.34)`, tap closes. Sheet: white, r16 top corners (Paper "05 Sort sheet" shows large top radius + centered grab bar), shadow §3.3, max-height 90%.
-- Structure: grab handle (40×5px pill `--line`, 12px padding zone) · **close ✕** 34px circular `--field` button top-right (required) · body (scrollable): eyebrow "Selected lender" + lender card (§10.5) · footer (fixed): primary "Connect with a broker" + secondary "Update details", top border `--line-soft`.
-- **Snap points:** opens at 65% viewport height; drag up → full (90%); drag down past 110px or velocity flick → dismiss; between snaps, settle to nearest (spring 300ms).
-- Entrance: translateY slide-up 300ms ease-out (instant under reduced motion).
-- While open: the docked CTA bar (§10.6) is hidden; body scroll locked; focus trapped; `role="dialog"` `aria-modal="true"` labelled by the lender name; Esc/close/scrim/back-button all dismiss and return focus to the originating row.
-- Open state syncs `?lender=` (§4.1); switching lenders happens by dismissing and tapping another row (no in-sheet pager in v1) 🔶 FILL-IN #24: optional next/prev lender arrows in the sheet header — v1 or later? (Default: later.)
-
-### 10.5 Lender card (inside sheet) — per Paper "M3 Statement card" / "02 Selected lender clean card"
-- Header band `--field`, 16px padding: `{name} {product}` 18px/700 + sub 13px `--muted` `{name} · {Repay label} · {Rate type label}` · top-right corner tag "Max price" 11px `--muted-2` over the price (M3 keeps a compact max-price echo in the band corner).
-- **Capacity pair [A13, verified against Paper "03 Capacity pair" card]**: two tiles stacked top/bottom on mobile width (side by side reflows to stacked below ~360px per §7.6) — "Max property price" (top) then "Loan amount" (bottom), `--field` bg tiles, r10, 12px gap, both label 11px/400 `--muted` + value 24px/700 tabular. Identical treatment for both; order (price first) is the only precedence cue.
-- **Rate pair** — tight two-column mini block directly under the identity band (not full key-value rows): Rate and Comparison, both same label/value class. **[A14 — legal, verified against Paper]** No visual precedence between them — confirmed in every Paper variant inspected (`19MF-0` and the "Selected lender detail variations" row).
-- Key-value rows (13px key `--muted` / 14px/700 value, `--line-soft` separators, 13px vertical padding): Monthly repayment ("(interest only)" suffix when IO) · LVR (+ "incl. LMI" per §7.6). Loan amount and the rate pair leave these rows — they're in the capacity pair / rate pair above.
-- Funds to complete row per §8 (last row in the card).
-- No in-card edit affordance — Update details is in the sheet footer / dock (§7.7).
-
-### 10.6 Docked CTA bar
-- Fixed bottom, padding 14px 22px 26px (respect safe-area inset), bg gradient `--bg` 72% → transparent upward.
-- Primary "Connect with a broker" full-width (48px, `--teal` fill + black label per C2, r10) + secondary "Update details" 14px/700 `--accent` centered beneath (matches every Paper frame's CTA stack).
-- Hidden while any sheet/overlay is open. List scroll area reserves 150px bottom padding.
-- In the no-eligibility state the primary relabels "Talk to a broker" (§9.4).
-
----
-
-## 11. Motion spec [A9]
-
-| Element | Animation | Timing | When |
-| --- | --- | --- | --- |
-| Hero figure, prices, tile values | count-up 0→value | 850ms cubic-out | First render only |
-| Comparison bars | width 0→pct | 900ms cubic-out | First render only |
-| Banner value on selection | 300ms count from previous value | selection change |
-| List re-rank | FLIP position transition | 250ms ease | After engine re-run |
-| Disclosure chevron / panel | rotate 90° / height auto | 200ms ease | toggle |
-| Sheet / modal | slide-up / fade+scale(0.98→1) | 300ms / 200ms ease-out | open; reverse on close |
-| Hover/pressed surfaces | background | 140ms | — |
-
-`prefers-reduced-motion: reduce` → all of the above render final state instantly (sheets may fade 100ms).
-Numbers are announced to AT once, at final value (render final value into the accessible name immediately; animate visually only).
-
----
-
-## 12. Copy table (canonical strings)
+## 11. Canonical copy
 
 | Key | String |
 | --- | --- |
-| hero.eyebrow | Results |
-| hero.h1 | Max property price by lender |
-| hero.support | You may be able to afford a property up to {$X.XXM}. |
-| hero.disclaimer | Indicative estimates only — not loan offers. Rates as at {date}. How we estimate |
-| list.title / list.sortnote | Lenders / Sorted by {sort label} (default: Sorted by max property price) |
-| list.sort / sort.title / sort.caption | Sort / Sort lenders / Sorting changes the order, not your calculation. |
-| sort.options | Max property price / Monthly repayment / Interest rate / Comparison rate / Loan amount / LVR / Funds to complete (Policy fit cut, #29) |
-| list.viewall / list.viewfewer | View all lenders ({n}) / Show fewer lenders |
-| pair.price / pair.loan | Max property price / Loan amount |
-| card.rows | Rate / Comparison rate / Monthly repayment / LVR |
-| update.title / update.sub | Update details / Choose what changes the calculation. |
-| update.rows | Property details · State, purpose, savings and purchase costs. / Loan details · Loan term, repayment type, product and rate type. / Financial inputs · Income, expenses, liabilities and existing properties. |
-| update.property.title / .sub | Update purchase assumptions / Saving returns to Results and recalculates lender estimates. |
-| update.loan.title / .sub | Update loan assumptions / Conditional terms appear only when they matter. |
-| update.financial.title / .sub | Choose section to edit / You will return to Results after saving the selected section. |
-| update.financial.note | After save, Results returns with stable recalculating lender rows. |
-| update.save / update.cancel / update.back | Save and recalculate / Cancel / Back to Results |
-| compare.caption | Sorted by {sort label}. {leader} remains the highest max price. |
-| funds.title / funds.note | Funds to complete / About {x} needed to settle |
-| funds.sub | Deposit, purchase costs and remaining cash buffer. |
-| funds.view | View |
-| funds.groups | What you'll need / Funding breakdown |
-| funds.rows | Property price / Stamp duty ({state}, est.) / Transfer & legal fees / Lender fees ({lender}) / LMI / Funds required / Loan from {lender} ({XX}% LVR) / Deposit / Total available / Savings left over |
-| update.financial.deadend | Edited in the main application flow (not part of this prototype) |
-| funds.shortfall | Your savings don't cover the costs at this price. Lower the price range or talk to a broker about options. |
-| cta.primary / cta.secondary | Connect with a broker / Update details |
-| cta.done | Call back requested ✓ |
-| loading.checking | Checking {n} lenders against your profile… |
-| empty.title / empty.body | No lender matched this scenario / Based on your answers, no lender on our panel could offer a loan. |
-| error.title / error.body | We couldn't calculate your results / Something went wrong on our side. Your answers are saved. |
-| rerank.toast | {lender} can't lend under these settings — showing {newLender} |
-| saved.banner | Rates have moved since you saved — your numbers are refreshed. |
+| brand | Ask Fundora |
+| hero.label | Your max property price |
+| hero.range.a11y | Your max property price is between {MIN} and {MAX}. |
+| comparison.title | Max property price by lender |
+| comparison.columns | Lender / Max property price / Loan amount / Rate / Comparison rate / Monthly repayment |
+| detail.tabs | Lender details / Cost breakdown |
+| detail.capacity | Max property price / Loan amount |
+| detail.metrics | Rate / Comparison rate / Monthly repayment / LVR |
+| detail.metadata | Loan purpose / Repayment type / Loan term / Rate type |
+| detail.updateLoan | Update loan details |
+| costs.total | Total purchase cost |
+| costs.groups | Purchase costs / Funding breakdown |
+| costs.rows | Property price / Estimated stamp duty / Legal and other costs / LMI / Loan from {LENDER} ({LVR}% LVR) / Your deposit (from your {SAVINGS} savings) |
+| costs.verdict | Savings left over / Savings shortfall |
+| cta.title | Make sense of your lender options |
+| cta.body | A broker can help you compare the trade-offs, sense-check the costs and decide which lender fits your situation. |
+| cta.primary | Connect with a broker |
+| cta.secondary | Update details |
+| update.save | Save and recalculate |
+| broker.done | Call back requested ✓ |
 
-Broker strings in §13. 🔶 FILL-IN #17: overall copy sign-off (especially disclaimer, empty, shortfall — legal-sensitive).
-
-### 12a. Rate display rule [A14 — legal requirement, verified against Paper 2026-07-04]
-
-Wherever an interest rate appears — detail tiles, mobile rows, any future tooltip, marketing surfaces including the landing proof card — the comparison rate appears with it at **equal prominence**: same type size, weight, and colour, adjacent placement. Never as a sub-label, footnote, or hover-only detail. If the comparison rate is unavailable for a product, show "—" at the same size with an explanatory sub ("not published"). Confirmed directly against the built Paper frames: in every explored "Selected lender detail variations" card on `01KSYP7T3MFEQHHED41F3PQB58/3-0`, Rate and Comparison (or "Comp.") render with the identical Tailwind class — same size, weight, colour — with no exceptions found.
-
-**Warning statement placement [#26a resolved, owner 2026-07-06]:** the standard AU comparison-rate warning renders **once, as a footnote in the page's disclaimer block**, with each comparison-rate label carrying a superscript marker linking to it. Prototype ships placeholder warning text clearly marked `[COMPLIANCE TO CONFIRM]`. Still open 🔶 FILL-IN #26: (a) exact wording from compliance, (b) whether the rule extends to rates inside broker comms/emails.
+Do not add a results disclaimer to the hero. Any legally required comparison-rate warning belongs in a single dedicated compliance footnote outside the primary answer/comparison composition; exact wording remains open.
 
 ---
 
-## 13. Broker capture (C7)
+## 12. Broker form detail
 
-Presentation: desktop centered modal 560px, r22; mobile bottom sheet ≤95% height with grab handle. Scrim `rgba(20,26,18,.42)`. `role="dialog"` `aria-modal`, focus trap, Esc + ✕ + scrim close, focus returns to trigger.
+| Field | Requirement |
+| --- | --- |
+| First / last name | Required; minimum sensible text validation |
+| Mobile | Required AU number; normalise `+61` and `04` formats |
+| Email | Required valid email |
+| Preferred lender | Optional; prefilled from selection/leader; includes No preference |
+| Buying stage | Required single choice: researching / actively looking / found a property / offer or contract |
+| Notes | Optional, 500 characters |
+| Consent | Required, with real privacy-policy link before launch |
 
-### 13.1 Header
-Eyebrow "FUNDORA BROKERS" (11.5px/700 uppercase, `--accent`) · title "Connect with a broker" 23px/700 · ✕ 34px circle · lede: "A real mortgage broker, free to you, who can take this estimate to settlement."
-
-### 13.2 Fields
-
-| # | Field | Type | Validation (on submit; per-field clear on change) |
-| --- | --- | --- | --- |
-| 1 | First name / Last name | text, 2-col | required — "Enter your first name." / "Enter your last name." |
-| 2 | Mobile | tel, placeholder `0400 000 000` | AU format: normalise `+61`, accept `04xx xxx xxx` — "Enter a valid Australian mobile number." |
-| 3 | Email | email | RFC-ish — "Enter a valid email address." |
-| 4 | Preferred lender | native select: each lender "Name — Product" + "No preference"; **prefilled from selected lender**; hint "Pre-filled from your selection" | optional |
-| 5 | Where are you up to? | 2×2 chip group, single-select: Just researching / Actively looking / Found a property / Offer made / under contract | required — "Select where you are in the journey." |
-| 6 | Anything else? | textarea rows 3, hint "Optional", placeholder "e.g. self-employed, looking in inner west, settling in March…" | optional, max 500 chars |
-| 7 | **Consent** (new) | checkbox: "I agree that a Fundora broker may contact me about my scenario. Privacy policy" (link) | required — "Please agree so a broker can contact you." 🔶 FILL-IN #12: legal wording; #13: privacy policy URL |
-
-Prefill first/last/mobile/email from flow answers where collected 🔶 FILL-IN #12b: which are collected?
-Input spec: 1.5px `--line` border, r10, padding 12px 14px, 15px/400; focus `--accent` border + 4px `rgba(22,125,127,.15)` glow; error `--err` border + 12.5px `--err` message below. Invalid submit scrolls to first error and focuses it.
-
-### 13.3 Submit
-"Request a call back" — primary style. On submit: disable + inline spinner ("Sending…"), single-flight guard.
-
-### 13.4 Failure
-Inline banner above submit (r10, err-tint bg): "That didn't send — please try again." Inputs preserved; button re-enabled. 🔶 FILL-IN #12c: lead API endpoint + payload. **Payload question:** form fields only, or attach the scenario (lender ranks, loan settings, financials)? Lede implies the estimate travels — users must be told what's shared (add a line under consent if scenario is attached).
-
-### 13.5 Success
-Replaces form: 60px `--field` circle with `--accent` check · "You're all set, {first}" 22px/700 · "A Fundora broker will call you on **{mobile}** within one business day to talk through your **{lender}** option." (no-preference variant: "…to talk through your options.") · "Done" primary.
-
-### 13.6 Post-success page state
-CTAs (desktop row + mobile dock + sheet footer) become non-interactive "Call back requested ✓" for the session; re-open shows the success view. Prevents duplicate leads.
-
-### 13.7 Fine print
-Under submit, 12px centered `--muted-2`: "No credit check. We'll only use these details to arrange your call." (revise with #12).
+Invalid submit focuses the first error. Submitting is single-flight. Failure preserves the form. Success states which phone number and lender option will be discussed.
 
 ---
 
-## 14. FILL-IN checklist (owner answers required)
+## 13. Open production decisions
 
-| # | Question | Where | Blocking? |
-| --- | --- | --- | --- |
-| 1 | ~~Confirm Results.html direction as source of truth~~ **RESOLVED 2026-07-06** — owner directed the update to the Paper frames; A1 now names Paper artboard `18WZ-0` as visual source of truth. design.md rewrite still pending as a follow-up task | §2 A1 | Resolved |
-| 2 | Engine integration: **owner answered "undecided" (2026-07-06)** — keep the `Engine` interface agnostic (fixture engine with injectable latency for the prototype); real integration decided when engine work starts | §4.3, §9.1 | No for prototype |
-| 3 | Savings source field still to confirm; ~~3b retained-buffer~~ **RESOLVED 2026-07-06: no buffer in v1** — all savings deployed; leftover shows in the funds verdict | §4.3, §5.3, §7.7 | Yes (3 only) |
-| 4 | Reconcile §5 calc definitions against `fundiq-serviceability-calculations` (exists/build per item) | §5 | **Yes — engine scope** |
-| 5 | Edits re-run borrowing power (engine supports?); 5b rates as product lookups; ~~5c global vs per-lender scope~~ **RESOLVED** — global by construction: the Update details sheets edit the scenario, not a lender (§7.7) | §7.7 | **Yes — core loop** |
-| 6 | Stamp-duty engine (states, FHB, foreign) — still open; ~~state editable on this page?~~ **RESOLVED** — yes, via Update details → Property details (Paper "Update purchase assumptions": State, Purpose, First home buyer rows) | §5.2, §7.7, §8 | Yes |
-| 7 | LMI rules/table; 7b display slot | §4.3, §7.6 | Yes |
-| 8 | Per-lender fee data source | §4.3, §8 | Yes |
-| 9 | *(merged into #4)* | — | — |
-| 10 | Save & exit mechanism + destination; 10b logo-click behaviour | §7.1 | No (stub OK) |
-| 11 | Update details → Financial inputs: **prototype = dead-end rows with note (owner 2026-07-06)**; production flow-section routes + return contract still open; 11b mobile back target | §7.7, §10.1 | No for prototype |
-| 12 | Broker lead: **prototype = stubbed submit (owner 2026-07-06)**; consent legal wording, 12b prefill, 12c API + payload still owed before launch | §13 | Launch-blocking, not prototype |
-| 13 | Privacy policy URL: **prototype = placeholder `#` marked for replacement (owner 2026-07-06)**; real URL owed before any live traffic | §13.2 | Launch-blocking, not prototype |
-| 14 | ~~Loan picker value sets~~ **RESOLVED 2026-07-06**: Loan term 10–30 yrs (1-yr steps), IO term 1–5 yrs, Fixed term 1–5 yrs, Product type Package/Basic (§7.7). Repayment-frequency toggle stays out of v1 | §4.4, §7.7 | Resolved |
-| 15 | Analytics: tooling + event list sign-off (suggested: `results_viewed`, `lender_selected`, `sort_changed`, `update_details_opened`, `details_saved`, `price_target_set` (#30), `funds_expanded`, `viewall_toggled`, `broker_opened/submitted/succeeded`, `save_exit`) | — | No |
-| 16 | ~~Accent sign-off~~ **RESOLVED 2026-07-06** — Paper palette adopted (§3.1). ~~16b~~ **RESOLVED 2026-07-06**: ship the 8 specced bar colours; owner judges in the running prototype | §3.1 | Resolved |
-| 17 | ~~Copy review process~~ **RESOLVED 2026-07-06: owner reviews copy in the running prototype** and edits `lib/copy.ts` directly. ~~17b~~ **RESOLVED 2026-07-06: inline popover** (§7.2). Still open: 17c empty-state copy; legal lines ride on #26 | §12 | No for prototype |
-| 18 | ~~Route path~~ **RESOLVED 2026-07-06: `/results`** | §4.1 | Resolved |
-| 19 | Session/auth model: **prototype = sessionStorage only, nothing durable (owner 2026-07-06)** — Save & exit renders as a stub acknowledging the prototype. Real model (anonymous link vs account) decided later | §4.1, §7.1 | No for prototype |
-| 20 | Breakpoint 1024px + tablet treatment | §4.2 | No (default stated) |
-| 21 | Rates feed + "as at" timestamp (prototype: static fixture date); 21b saved-link recalc policy (moot until #19 has a real answer) | §4.3, §9.6 | No for prototype |
-| 22 | ~~Condensed rows below rank 10~~ **RESOLVED 2026-07-06: bars on all rows** | §7.5 | Resolved |
-| 23 | ~~Partial engine failure~~ **RESOLVED 2026-07-06: tolerate** — show successful lenders + footnote "{k} lenders couldn't be checked right now." (§9.3) | §9.3 | Resolved |
-| 24 | ~~Next/prev pager in mobile sheet~~ **RESOLVED 2026-07-06: later, not v1** | §10.4 | Resolved |
-| 25 | ~~Funding sources~~ **RESOLVED 2026-07-06**: sources are the loan + savings only; make leftover savings (or unlikely deficit) unmistakable in the verdict (§8 rewritten) | §8 | Resolved |
-| 26 | Compliance: ~~placement~~ **26a RESOLVED 2026-07-06: single footnote in the disclaimer block, superscript-linked from each comparison rate**. Still owed: exact warning wording; scope for broker comms/emails | §12a | Yes — before launch |
-| 27 | ~~Visual verification of §7.6 banner and §8 breakdown against Paper frames~~ **RESOLVED 2026-07-04** — both frames fetched and inspected directly (JSX + computed styles + screenshots). §7.6/§10.5/§8 rewritten to match the actual built patterns ("Capacity pair" tiles, verified rate/comparison equality, funds-required/available/remaining verdict strip). No longer blocking. | §7.6, §8 | Resolved |
-| 28 | Desktop frames: the Paper artboard is mobile-only (393px); desktop type/layout values in §3.2/§7 are extrapolated — owner approved extrapolate-and-review (2026-07-06). [v3.3] Desktop CHROME is no longer extrapolated: header/footer/container/buttons are transcribed from the live site (§4.2, §7.1); the master–detail layout and desktop type steps remain extrapolations to be judged in the running prototype | §3.2, §7 | No (extrapolation stated) |
-| 29 | "Policy fit" sort option: what metric backs it? Cut from the sort sheet if no engine eligibility-strength score exists in v1 | §7.3a | No (default: cut if undefined) |
-| 30 | "Property price in mind" (optional field, Property sheet): engine behaviour when set — cap displayed results at the target, show a gap indicator, or informational only? | §7.7 | No (default: informational only) |
+| Area | Outstanding decision | Blocking |
+| --- | --- | --- |
+| Engine | Integration method and reconciliation against the production serviceability engine | Production |
+| Savings | Exact upstream source field(s) | Production |
+| Rates | Product/rate feed and freshness timestamp | Production |
+| Stamp duty | State/FHB/foreign-buyer engine | Production |
+| LMI | Calculation rules and capitalisation treatment | Production |
+| Fees | Per-lender legal/application/other data source | Production |
+| Save & exit | Persistence model, destination and wordmark behaviour | Product |
+| Financial edits | Production routes and return contract | Product |
+| Broker | API endpoint, payload, consent language and scenario-sharing disclosure | Launch |
+| Privacy | Real privacy URL | Launch |
+| Compliance | Exact comparison-rate warning and communication scope | Launch |
+| Analytics | Tooling and final event contract | Product |
+| Tablet | Confirm the rail-driven 1212px breakpoint after device testing | Product |
+| Empty states | Final legal/product copy | Launch |
 
-| 31 | ~~Wordmark~~ **RESOLVED 2026-07-10: "Ask Fundora"** — spec strings updated (§7.1, §10.1); prototype retrofit carries it | §7.1, §10.1 | Resolved |
-| 32 | ~~Illustration canon~~ **RESOLVED 2026-07-10: casual-client's candy-cartoon standard wins.** The muted inked set is deprecated (`illustration-style.md` carries the superseding note); §7.7's chooser rows map to casual-client `assets/`: Property → house.png, Loan → calculator.png, Financial inputs → piggy-bank.png (coins.png fallback). Paper-flow assets to be regenerated in the standard eventually | §7.7 | Resolved |
+Prototype defaults may remain fixture-backed and session-only, but must be explicitly labelled in the implementation README.
 
-**Definition of ready — prototype (owner Q&A completed 2026-07-06): READY.** Every open item is either resolved above or has a stated prototype behaviour (stub/placeholder/fixture). Nothing blocks the codex build.
-**Definition of ready — production:** #4 (calc reconciliation), #5/#5b (engine support), #2 (integration choice), #12 (broker lead API + consent), #13 (privacy URL), #26 (comparison-rate warning wording), #17c (empty-state copy), #6–#8 (stamp duty / LMI / fees data), #10, #11, #19, #21 remain owed before real users see this page.
+---
+
+## 14. Verification and definition of done
+
+### 14.1 Automated requirements
+
+- Typecheck and production build pass.
+- Unit tests cover range min/max, formatters and exact cost reconciliation.
+- Interaction tests cover sorting/direction, select/deselect, lender swap, tab reset and arrow-key tab navigation.
+- Detail tests cover purpose, repayment, loan term, rate type, IO/fixed conditional formatting and LMI.
+- Cost tests cover optional LMI, savings-left and shortfall.
+- Accessibility tests cover sort buttons, tabs, close/focus return and the mobile dialog—not merely an axe scan of isolated happy-path components.
+- E2E covers unselected full width, both selected tabs and mobile sheet.
+
+### 14.2 Visual evidence
+
+Capture and compare against the approved Paper states:
+
+1. 1440×900 unselected, eight eligible lenders.
+2. 1440×900 selected Lender details.
+3. 1440×900 selected Cost breakdown.
+4. 1280×800 selected with the complete CTA visible.
+5. 393×852 mobile on both tabs.
+6. Fixed + interest-only metadata.
+7. LMI omitted and present.
+8. Savings-left and shortfall outcomes.
+9. More than ten selected-state lenders proving internal row scrolling.
+
+For the equal-width selected states, verify with coordinates—not eyesight alone:
+
+- equal outer widths;
+- 18px gutter;
+- title and tab/column baselines;
+- shared divider at 84px;
+- fixed row lanes and right-aligned values;
+- unchanged left card across tabs.
+
+### 14.3 Current verification status
+
+The current implementation appears to contain the major reflow, tabs, richer detail data and two-bar cost structure, but v3.5 is **not yet verified** against the three approved Paper states. In particular, do not claim complete until the accessibility cases, arithmetic invariant, conditional visual states and selected-list overflow behaviour above are evidenced.
+
+### 14.4 Definition of done
+
+- The three approved desktop states form one consistent system.
+- All spacing and alignment contracts in §§5–9 are met.
+- Hero/list/cost data reconcile.
+- No stale overlay, duplicate compare bars, rank, viewport row count or split CTA remains.
+- Mobile has content and interaction parity.
+- Automated and visual evidence in this section exists and is reviewable.
+
+---
+
+## 15. Documentation governance
+
+Keep as live documentation:
+
+- `docs/results-page-spec.md` — this canonical product/design/build contract.
+- `src/pages/results/README.md` — implementation architecture, commands, prototype defaults and verified deviations.
+- `docs/results-page-icon-prompts.md` — auxiliary icon rules only.
+- `docs/illustration-style.md` — shared illustration system and the CTA exception.
+
+Historical execution records must carry a superseded banner and must not be listed as read-first material. Once this spec and README have been accepted, the deletion proposal is:
+
+| File | Why it can be deleted | Content retained elsewhere |
+| --- | --- | --- |
+| `docs/results-page-codex-goal-prompt.md` | Initial build prompt for a retired component/state model | Engine boundary, states and verification rules are in §§3, 10 and 14 |
+| `docs/results-page-implementation-guide.md` | Duplicates the spec and prescribes View all, compare footer, default selection and old typography. Before deletion, retarget the comments in `useResults.ts`, `lib/fillIns.ts` and `dev/StatesGallery.tsx` to this spec | Evergreen architecture is in this spec and the live README |
+| `docs/results-page-spec-review.md` | Pre-implementation divergence audit; conclusions were superseded through several owner rounds | Approved decisions are in §§0–2 |
+| `docs/results-visual-refresh-goal-prompt.md` | Execution log for the retired v3.4 slide-over | No unique current requirement |
+| `docs/results-selected-detail-rework-goal-prompt.md` | Its owner decisions are now fully merged; its completion claims are not sufficient verification | Requirements are in §§5–10; evidence standard is §14 |
+| `output/imagegen/fundora-sr5-max-purchase-results-brief.md` | Obsolete mobile variation brief using a different IA and typography direction | Current desktop/mobile contract is in §§5–10 |
+| `output/imagegen/fundora-sr5-results-completion-audit.md` | Audit of a different Paper file and Assessment route | No current results requirement |
+| `output/imagegen/results-v7-core-flow/results-v7-execution-audit.md` | Exploration manifest containing retired View-all/compare-footer concepts | Approved Paper sources are indexed in §0 |
+
+Deletion is intentionally not performed as part of the v3.5 consolidation. Preserve them until the owner approves cleanup or move them to an external decision archive if provenance is required.
+
+---
+
+## 16. v3.6 owner-review amendments (2026-07-11) — normative overrides
+
+The owner reviewed the running v3.5 build. Each item below OVERRIDES the corresponding earlier section where they conflict. Nothing else in v3.5 changes.
+
+### 16.1 Comparison table (amends §6.1)
+- **Chevron affordance:** fixed ~20px column sitting flush against the row's right padding (row right padding = card left padding); exactly one 16px gap between it and the Monthly repayment column. No flexible gutter around the chevron.
+- **Card head crowding:** the card title "Max property price by lender" STAYS (owner decision). Fix the crowding instead: card head gets a 20–24px block padding and a clear baseline relationship to the sort control; title never sits within 16px of the card border.
+- **Column headers:** one consistent style — 12.5px / 600 / muted, right-aligned exactly over their right-aligned values (Lender header left-aligned); sort glyphs one step lighter than the label so they read as affordance, not content. Headers deliberately smaller than values (metadata vs data) — do not enlarge.
+- **Repayment format:** values render `$16,223` — NO `/mth` suffix; the "Monthly repayment" header carries the unit. (§3.4 amended: the `/mth` suffix applies only on surfaces without a column header naming the unit, e.g. the landing module.)
+
+### 16.2 Lender details body (amends §7.2)
+Readability through affordances, not new copy (owner: no tier names in-UI, no ranking lines, no added text):
+- The four decision figures — Rate, Comparison rate, Monthly repayment, LVR — render as a **2×2 grid of `--field`-background stat tiles**, same visual family as the capacity pair above (smaller: label 11px muted / value 16px 700), uniform size within the grid. Rate and Comparison keep identical treatment (§2 legal rule).
+- The remaining loan metadata — Loan purpose, Repayment, Loan term, Rate type — renders as a quiet uniform two-column key/value grid beneath: ALL at one size (13px key muted / 14px 600 value). The current mixed sizing (some values large, some small) is the defect; the tile/flat split above replaces it with a deliberate structure.
+- No other content changes; the product/action row, capacity tiles and metadata order are unchanged.
+
+### 16.3 Mobile sheet height parity (amends §10.1)
+The bottom sheet keeps ONE height across the "Lender details" and "Cost breakdown" tabs — sized to the taller tab (or a fixed snap), with the shorter tab's content top-aligned and the sheet body scrolling internally when needed. Switching tabs never changes the sheet height.
+
+### 16.4 Header (amends §5.1 shell)
+- **Back affordance:** a circular back button (28px, `--field` bg, chevron-left) leads the wordmark; it returns to the flow's review step (history back when same-origin). Present on desktop and mobile.
+- **"Save & exit" becomes a secondary button** — `--field` background, 38px min-height, 12px radius, 14px/600 ink — not a bare text link floating in the nav.
+- **About / Learn are deliberately OMITTED from the results header** (owner-reviewed decision): results is an application flow, not a marketing surface; its header carries only back · wordmark · Save & exit. Marketing nav lives on the landing/site pages.
+
+### 16.5 Broker dialog (amends §12)
+- Preferred-lender options are **lender names only** ("NAB") — no em dashes, no product names.
+- **Field trim:** remove "Anything else?"; Email becomes optional or is removed (phone callback product). Target set: First name, Last name, Mobile, Preferred lender, "Where are you up to?", consent, CTA.
+- **Sticky dialog footer:** consent + "Request a call back" are always visible; content scrolls behind them. The CTA must never require scrolling to reach, at any viewport in the supported matrix.
+
+### 16.6 NEW below the CTA band: "How we worked this out" FAQ
+A quiet, container-width section after the action band (before the footer):
+- Section title: **"How we worked this out"**. Accordion of four items (canonical copy, §11 additions):
+  1. **"How did we work this out?"** — the assumptions summary (scenario inputs, current advertised rates, engine caveat) — this becomes the canonical home of the assumptions content.
+  2. **"Is this a credit check?"** — "No. Nothing here touches your credit file. These are estimates from the details you entered."
+  3. **"Why do lenders give different numbers?"** — one short paragraph on policy/rate/assessment differences.
+  4. **"How accurate are these numbers?"** — indicative-estimates caveat; also the permanent home of the comparison-rate warning statement (placeholder wording until compliance supplies it — open decision #26).
+- Styling: no card per item; 1px `--line-soft` separators, chevron rotation, 44px min touch targets, `aria-expanded`; content 14px muted. One item open at a time is acceptable; all-closed default.
+- This section does NOT add illustrations, testimonials, or marketing content (owner-reviewed scope limit).
+
+### 16.7 Copy additions (amends §11)
+faq.title "How we worked this out" · faq.q1–q4 + faq.a1–a4 as above (a4 ends with the comparison-rate warning placeholder marked [COMPLIANCE TO CONFIRM]).
